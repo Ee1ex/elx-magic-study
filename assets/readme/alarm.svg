@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="280" viewBox="0 0 1200 280" role="img" aria-labelledby="title desc">
+  <title id="title">给书屋定个小闹钟</title>
+  <desc id="desc">每周定时整理新增资料并检查问题，默认只产出草稿和检查结果，不自动改写笔记。</desc>
+  <rect width="1200" height="280" rx="26" fill="#f5f3ec"/>
+  <g font-family="Microsoft YaHei, PingFang SC, system-ui, sans-serif">
+
+    <!-- 闹钟插画 -->
+    <g>
+      <circle cx="180" cy="150" r="72" fill="#fffef6" stroke="#176752" stroke-width="6"/>
+      <circle cx="180" cy="150" r="6" fill="#176752"/>
+      <line x1="180" y1="150" x2="180" y2="102" stroke="#176752" stroke-width="6" stroke-linecap="round"/>
+      <line x1="180" y1="150" x2="214" y2="164" stroke="#c9a227" stroke-width="6" stroke-linecap="round"/>
+      <!-- 铃铛 -->
+      <path d="M122 96 a30 30 0 0 1 24 -30" fill="none" stroke="#c9a227" stroke-width="7" stroke-linecap="round"/>
+      <path d="M238 96 a30 30 0 0 0 -24 -30" fill="none" stroke="#c9a227" stroke-width="7" stroke-linecap="round"/>
+      <!-- 脚 -->
+      <line x1="140" y1="210" x2="126" y2="234" stroke="#176752" stroke-width="7" stroke-linecap="round"/>
+      <line x1="220" y1="210" x2="234" y2="234" stroke="#176752" stroke-width="7" stroke-linecap="round"/>
+      <text x="180" y="262" font-size="20" font-weight="700" fill="#176752" text-anchor="middle">每周一 · 9:00</text>
+    </g>
+
+    <!-- 流程 -->
+    <g>
+      <rect x="330" y="86" width="240" height="128" rx="16" fill="#e2ece1"/>
+      <text x="356" y="126" font-size="21" font-weight="700" fill="#244438">① 到点醒一醒</text>
+      <text x="356" y="160" font-size="18" fill="#33503f">先和你确认时间与范围，</text>
+      <text x="356" y="186" font-size="18" fill="#33503f">再注册定时任务。</text>
+
+      <rect x="620" y="86" width="240" height="128" rx="16" fill="#ece4f2"/>
+      <text x="646" y="126" font-size="21" font-weight="700" fill="#534461">② 只做草稿</text>
+      <text x="646" y="160" font-size="18" fill="#5d4f72">整理草稿 + 检查结果，</text>
+      <text x="646" y="186" font-size="18" fill="#5d4f72">不自动改写飞书笔记。</text>
+
+      <rect x="910" y="86" width="240" height="128" rx="16" fill="#176752"/>
+      <text x="936" y="126" font-size="21" font-weight="700" fill="#fffef6">③ 有事才打扰</text>
+      <text x="936" y="160" font-size="18" fill="#dcebe0">没有变化时保持安静，</text>
+      <text x="936" y="186" font-size="18" fill="#dcebe0">有新草稿或问题再提醒。</text>
+
+      <g fill="none" stroke="#a9b8a4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M578 150 H612 M600 137 L613 150 L600 163"/>
+        <path d="M868 150 H902 M890 137 L903 150 L890 163"/>
+      </g>
+    </g>
+
+    <text x="740" y="252" font-size="18" fill="#6a7a6e" text-anchor="middle">没真正注册成功，就不会说“小闹钟已经开了”。</text>
+  </g>
+</svg>

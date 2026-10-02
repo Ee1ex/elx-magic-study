@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="title desc">
+  <title id="title">魔法书屋 Magic Study</title>
+  <desc id="desc">把好资料放进来，需要的时候找出来。一个住在飞书里的 AI 小书屋。</desc>
+  <rect width="1200" height="380" rx="28" fill="#f5f3ec"/>
+
+  <!-- 装饰圆点 -->
+  <circle cx="70" cy="70" r="10" fill="#e2ece1"/>
+  <circle cx="1130" cy="310" r="14" fill="#ece4f2"/>
+  <circle cx="1090" cy="60" r="7" fill="#c7dcc9"/>
+
+  <!-- 左侧文字 -->
+  <g font-family="Microsoft YaHei, PingFang SC, system-ui, sans-serif">
+    <text x="72" y="140" font-size="64" font-weight="700" fill="#244438">📚 魔法书屋</text>
+    <text x="76" y="188" font-size="26" font-weight="600" fill="#176752">Magic Study · elx-ms</text>
+    <text x="76" y="238" font-size="24" fill="#4a5a50">把好资料放进来，需要的时候找出来。</text>
+
+    <!-- 标签 chips -->
+    <g font-size="20" font-weight="600">
+      <rect x="76" y="272" width="128" height="42" rx="21" fill="#e2ece1"/>
+      <text x="140" y="300" fill="#244438" text-anchor="middle">飞书知识库</text>
+      <rect x="218" y="272" width="108" height="42" rx="21" fill="#ece4f2"/>
+      <text x="272" y="300" fill="#534461" text-anchor="middle">AI Skill</text>
+      <rect x="340" y="272" width="116" height="42" rx="21" fill="#e2ece1"/>
+      <text x="398" y="300" fill="#244438" text-anchor="middle">Node 22+</text>
+    </g>
+  </g>
+
+  <!-- 右侧小屋插画 -->
+  <g>
+    <!-- 屋子主体 -->
+    <rect x="760" y="130" width="330" height="190" rx="14" fill="#fffef6" stroke="#d8d2c2" stroke-width="3"/>
+    <!-- 屋顶 -->
+    <path d="M736 138 L925 56 L1114 138 Z" fill="#176752"/>
+    <rect x="905" y="30" width="40" height="34" rx="6" fill="#176752"/>
+    <!-- 门 -->
+    <rect x="900" y="230" width="52" height="90" rx="8" fill="#c9a227"/>
+    <circle cx="942" cy="278" r="5" fill="#fffef6"/>
+    <!-- 窗：里面透出书架 -->
+    <rect x="786" y="170" width="86" height="72" rx="8" fill="#e2ece1" stroke="#b9cdb9" stroke-width="3"/>
+    <g>
+      <rect x="796" y="182" width="10" height="26" rx="2" fill="#176752"/>
+      <rect x="809" y="178" width="10" height="30" rx="2" fill="#c9a227"/>
+      <rect x="822" y="184" width="10" height="24" rx="2" fill="#8a7ba6"/>
+      <rect x="835" y="180" width="10" height="28" rx="2" fill="#5d8a72"/>
+      <rect x="796" y="214" width="66" height="5" rx="2.5" fill="#b9cdb9"/>
+    </g>
+    <rect x="980" y="170" width="86" height="72" rx="8" fill="#ece4f2" stroke="#cec3de" stroke-width="3"/>
+    <g>
+      <rect x="990" y="184" width="10" height="24" rx="2" fill="#534461"/>
+      <rect x="1003" y="178" width="10" height="30" rx="2" fill="#c9a227"/>
+      <rect x="1016" y="182" width="10" height="26" rx="2" fill="#176752"/>
+      <rect x="1029" y="186" width="10" height="22" rx="2" fill="#8a7ba6"/>
+      <rect x="990" y="214" width="66" height="5" rx="2.5" fill="#cec3de"/>
+    </g>
+    <!-- 门口招牌 -->
+    <rect x="806" y="330" width="240" height="34" rx="17" fill="#176752"/>
+    <text x="926" y="354" font-family="Microsoft YaHei, PingFang SC, system-ui, sans-serif" font-size="20" font-weight="600" fill="#fffef6" text-anchor="middle">开门营业 · 随时来问</text>
+    <!-- 星光点缀 -->
+    <g fill="#c9a227">
+      <path d="M726 84 l6 14 14 6 -14 6 -6 14 -6 -14 -14 -6 14 -6 z"/>
+      <path d="M1128 200 l5 11 11 5 -11 5 -5 11 -5 -11 -11 -5 11 -5 z"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">飞书里的书架：四个分类</title>
+  <desc id="desc">首页指路，下面是收件箱与来源、主题知识、实践经验、维护记录四个书架。</desc>
+  <rect width="1200" height="560" rx="26" fill="#f5f3ec"/>
+  <g font-family="Microsoft YaHei, PingFang SC, system-ui, sans-serif">
+
+    <!-- 顶部：首页指路牌 -->
+    <rect x="430" y="34" width="340" height="56" rx="28" fill="#176752"/>
+    <text x="600" y="70" font-size="24" font-weight="700" fill="#fffef6" text-anchor="middle">🏠 首页：从这里找路</text>
+    <line x1="600" y1="90" x2="600" y2="120" stroke="#a9b8a4" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- 书架框 -->
+    <rect x="70" y="124" width="1060" height="396" rx="18" fill="#fffef6" stroke="#d8d2c2" stroke-width="3"/>
+
+    <!-- 层板 1：收件箱与来源 -->
+    <g>
+      <rect x="100" y="146" width="250" height="152" rx="12" fill="#e2ece1"/>
+      <text x="120" y="182" font-size="22" font-weight="700" fill="#244438">📥 收件箱与来源</text>
+      <g>
+        <rect x="122" y="204" width="14" height="58" rx="3" fill="#176752"/>
+        <rect x="141" y="196" width="14" height="66" rx="3" fill="#c9a227"/>
+        <rect x="160" y="208" width="14" height="54" rx="3" fill="#5d8a72"/>
+        <rect x="179" y="200" width="14" height="62" rx="3" fill="#8a7ba6"/>
+        <rect x="122" y="262" width="90" height="6" rx="3" fill="#b9cdb9"/>
+      </g>
+      <text x="232" y="222" font-size="17" fill="#33503f">刚收藏的资料</text>
+      <text x="232" y="248" font-size="17" fill="#33503f">原文出处都留在这</text>
+      <!-- 说明 -->
+      <text x="392" y="210" font-size="20" fill="#4a5a50">文章、视频、链接进来先落在这层，</text>
+      <text x="392" y="240" font-size="20" fill="#4a5a50">每一份都带着出处，方便回头核对。</text>
+      <line x1="100" y1="312" x2="1100" y2="312" stroke="#e6e0d0" stroke-width="2"/>
+    </g>
+
+    <!-- 层板 2：主题知识 -->
+    <g>
+      <rect x="100" y="326" width="250" height="76" rx="12" fill="#ece4f2"/>
+      <text x="120" y="358" font-size="22" font-weight="700" fill="#534461">🗂 主题知识</text>
+      <text x="120" y="386" font-size="17" fill="#5d4f72">围绕一个问题整理好的笔记</text>
+      <text x="392" y="358" font-size="20" fill="#4a5a50">同一个问题的资料汇总成一篇笔记，</text>
+      <text x="392" y="388" font-size="20" fill="#4a5a50">新经验可以继续补进去。</text>
+    </g>
+
+    <!-- 右侧两块：实践经验 + 维护记录 -->
+    <g>
+      <rect x="640" y="416" width="220" height="76" rx="12" fill="#f3ead2"/>
+      <text x="660" y="448" font-size="21" font-weight="700" fill="#7a5c14">🛠 实践经验</text>
+      <text x="660" y="476" font-size="16" fill="#8a6f2e">真正试过的办法和踩坑</text>
+
+      <rect x="880" y="416" width="220" height="76" rx="12" fill="#e8e4da"/>
+      <text x="900" y="448" font-size="21" font-weight="700" fill="#4f4a3e">🧾 维护记录</text>
+      <text x="900" y="476" font-size="16" fill="#6a6455">改了什么、还要检查什么</text>
+    </g>
+    <line x1="100" y1="416" x2="620" y2="416" stroke="#e6e0d0" stroke-width="2"/>
+    <text x="120" y="452" font-size="20" fill="#4a5a50">AI 更新前会先读当前内容，</text>
+    <text x="120" y="482" font-size="20" fill="#4a5a50">尽量保留你自己改过的部分。</text>
+
+    <!-- 底注 -->
+    <text x="600" y="545" font-size="19" fill="#6a7a6e" text-anchor="middle">你随时可以在飞书里直接看、直接改 —— 书屋只是帮你守着秩序。</text>
+  </g>
+</svg>

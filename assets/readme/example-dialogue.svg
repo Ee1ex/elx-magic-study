@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">一个小例子：今天收藏，过几天提问</title>
+  <desc id="desc">今天收藏一个视频，过几天带着插件的问题来问，小助手找出相关资料、讲清理由并附上原文链接。</desc>
+  <rect width="1200" height="430" rx="26" fill="#f5f3ec"/>
+  <g font-family="Microsoft YaHei, PingFang SC, system-ui, sans-serif">
+
+    <!-- 时间轴 -->
+    <line x1="120" y1="58" x2="1080" y2="58" stroke="#d8d2c2" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="230" cy="58" r="10" fill="#176752"/>
+    <circle cx="600" cy="58" r="10" fill="#c9a227"/>
+    <circle cx="970" cy="58" r="10" fill="#8a7ba6"/>
+    <text x="230" y="30" font-size="19" font-weight="600" fill="#176752" text-anchor="middle">今天</text>
+    <text x="600" y="30" font-size="19" font-weight="600" fill="#a67c1a" text-anchor="middle">过几天</text>
+    <text x="970" y="30" font-size="19" font-weight="600" fill="#534461" text-anchor="middle">小助手出手</text>
+
+    <!-- 卡片 1：收藏 -->
+    <rect x="90" y="92" width="300" height="150" rx="18" fill="#e2ece1"/>
+    <rect x="90" y="92" width="300" height="150" rx="18" fill="none" stroke="#c7dcc9" stroke-width="2"/>
+    <text x="116" y="134" font-size="21" font-weight="700" fill="#244438">🙋 你说</text>
+    <text x="116" y="172" font-size="20" fill="#33503f">“用魔法书屋收藏这个视频，</text>
+    <text x="116" y="202" font-size="20" fill="#33503f">以后做插件时可能用得上。”</text>
+
+    <!-- 卡片 2：提问 -->
+    <rect x="450" y="92" width="300" height="150" rx="18" fill="#f3ead2"/>
+    <rect x="450" y="92" width="300" height="150" rx="18" fill="none" stroke="#e0d3ac" stroke-width="2"/>
+    <text x="476" y="134" font-size="21" font-weight="700" fill="#7a5c14">🙋 你问</text>
+    <text x="476" y="172" font-size="20" fill="#5d4a1f">“我现在要做一个插件，</text>
+    <text x="476" y="202" font-size="20" fill="#5d4a1f">以前存的资料有什么能帮上忙？”</text>
+
+    <!-- 卡片 3：助手回应 -->
+    <rect x="810" y="92" width="300" height="220" rx="18" fill="#176752"/>
+    <text x="836" y="134" font-size="21" font-weight="700" fill="#fffef6">📚 小助手</text>
+    <g font-size="19" fill="#dcebe0">
+      <text x="836" y="172">① 找出相关那几份资料</text>
+      <text x="836" y="206">② 讲清哪些能用、为什么</text>
+      <text x="836" y="240">③ 附上原文链接方便核对</text>
+    </g>
+    <rect x="836" y="262" width="248" height="34" rx="17" fill="#fffef6" opacity="0.16"/>
+    <text x="960" y="285" font-size="17" fill="#fffef6" text-anchor="middle">不丢一堆链接 · 不编造答案</text>
+
+    <!-- 连接箭头 -->
+    <g fill="none" stroke="#a9b8a4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M398 167 H432 M420 154 L433 167 L420 180"/>
+      <path d="M758 167 H792 M780 154 L793 167 L780 180"/>
+    </g>
+
+    <!-- 底部一句话 -->
+    <text x="600" y="392" font-size="21" fill="#4a5a50" text-anchor="middle">收藏 → 提问 → 有出处、有理由的回答</text>
+  </g>
+</svg>

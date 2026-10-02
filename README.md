@@ -1,10 +1,12 @@
-# 📚 魔法书屋 · Magic Study
+<div align="center">
 
-**把好资料放进来，需要的时候找出来。**
+![魔法书屋 Magic Study：把好资料放进来，需要的时候找出来](assets/readme/hero.svg)
 
 简称 **elx-ms** · 正式 Skill 名称 **`elx-magic-study`**
 
 [怎么用](#-平时这样说就行) · [开始使用](#-第一次怎么用) · [看看图谱](#-还能画一张知识地图) · [开发说明](docs/DEVELOPMENT.md)
+
+</div>
 
 你是不是也存了很多文章和视频，过几天就忘了放在哪？
 
@@ -13,6 +15,8 @@
 **它是一份教 AI 怎么工作的“小手册”（Skill），需要配合能使用 Skill 的 AI 工具。**
 
 ## 🪄 看一个小例子
+
+![今天收藏一个视频，过几天带着问题来问，小助手找出资料、讲清理由并附上原文链接](assets/readme/example-dialogue.svg)
 
 > **今天的你：**“用魔法书屋收藏这个视频。以后做插件时可能用得上。”
 >
@@ -69,6 +73,8 @@
 
 你需要：**一个飞书账号、能使用 Skill 的 AI 工具，以及 Node.js 22 或更高版本。** 飞书连接使用官方 `lark-cli`。
 
+![三个步骤：把小手册交给 AI，连接飞书，放进第一份资料](assets/readme/setup-steps.svg)
+
 ### 1. 把小手册交给 AI
 
 下载本仓库后，在仓库目录运行：
@@ -113,6 +119,8 @@ node scripts/install.mjs --apply
 
 小书屋会按约定使用这些分类：
 
+![飞书里的书架：首页指路，下面是收件箱与来源、主题知识、实践经验、维护记录](assets/readme/shelves.svg)
+
 ```text
 首页：从这里找路
 ├── 收件箱与来源：刚收藏的资料、原文出处
@@ -126,6 +134,8 @@ node scripts/install.mjs --apply
 **换个项目，也能用同一个书屋。** 前提是那个项目里的 AI 能使用这个 Skill，并能访问已绑定的飞书。
 
 ## ⏰ 给书屋定个小闹钟
+
+![定时任务：到点醒一醒，只做草稿和检查，有事才打扰](assets/readme/alarm.svg)
 
 你可以说：
 

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
+  <title id="title">第一次怎么用：三个步骤</title>
+  <desc id="desc">第一步把小手册交给 AI，第二步连接飞书，第三步放进第一份资料。</desc>
+  <rect width="1200" height="320" rx="26" fill="#f5f3ec"/>
+  <g font-family="Microsoft YaHei, PingFang SC, system-ui, sans-serif">
+
+    <!-- 步骤 1 -->
+    <rect x="60" y="60" width="330" height="200" rx="20" fill="#fffef6" stroke="#d8d2c2" stroke-width="3"/>
+    <circle cx="110" cy="110" r="26" fill="#176752"/>
+    <text x="110" y="120" font-size="26" font-weight="700" fill="#fffef6" text-anchor="middle">1</text>
+    <text x="150" y="118" font-size="23" font-weight="700" fill="#244438">把小手册交给 AI</text>
+    <rect x="86" y="150" width="278" height="40" rx="8" fill="#2b3a33"/>
+    <text x="102" y="176" font-size="17" fill="#a7d7b8" font-family="Consolas, monospace">node scripts/install.mjs</text>
+    <text x="86" y="224" font-size="18" fill="#4a5a50">Skill 装进个人目录，</text>
+    <text x="86" y="248" font-size="18" fill="#4a5a50">已有改动不会被覆盖。</text>
+
+    <!-- 步骤 2 -->
+    <rect x="435" y="60" width="330" height="200" rx="20" fill="#fffef6" stroke="#d8d2c2" stroke-width="3"/>
+    <circle cx="485" cy="110" r="26" fill="#c9a227"/>
+    <text x="485" y="120" font-size="26" font-weight="700" fill="#fffef6" text-anchor="middle">2</text>
+    <text x="525" y="118" font-size="23" font-weight="700" fill="#244438">连接飞书</text>
+    <text x="461" y="176" font-size="18" fill="#4a5a50">“用 $elx-magic-study</text>
+    <text x="461" y="204" font-size="18" fill="#4a5a50">帮我连接飞书知识库。”</text>
+    <text x="461" y="248" font-size="17" fill="#8a6f2e">授权由你亲自在飞书确认。</text>
+
+    <!-- 步骤 3 -->
+    <rect x="810" y="60" width="330" height="200" rx="20" fill="#176752"/>
+    <circle cx="860" cy="110" r="26" fill="#fffef6"/>
+    <text x="860" y="120" font-size="26" font-weight="700" fill="#176752" text-anchor="middle">3</text>
+    <text x="900" y="118" font-size="23" font-weight="700" fill="#fffef6">放进第一份资料</text>
+    <text x="836" y="176" font-size="18" fill="#dcebe0">“用魔法书屋整理这篇文章，</text>
+    <text x="836" y="204" font-size="18" fill="#dcebe0">告诉我准备存到哪里。”</text>
+    <text x="836" y="248" font-size="17" fill="#bcd8c4">先看预览，确认后再保存。</text>
+
+    <!-- 箭头 -->
+    <g fill="none" stroke="#a9b8a4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M398 160 H427 M415 147 L428 160 L415 173"/>
+      <path d="M773 160 H802 M790 147 L803 160 L790 173"/>
+    </g>
+  </g>
+</svg>
