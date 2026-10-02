@@ -1,0 +1,72 @@
+# 首次使用引导
+
+## 先说明用户将得到什么
+
+用一句话解释：“我会连接你指定的飞书资料，建立本地检索索引；整理结果写入你选择的节点，主题修改先给预览。你可以继续在飞书阅读和编辑。”
+
+只询问当前缺少的信息，不重新询问已确认选择：准确的 Wiki 整理根链接、允许读取的范围、是否愿意配置定时维护。定时的时间和时区没有给出时先完成其他独立步骤。
+
+## 1. 检查而不自动改设置
+
+运行 `node <SKILL_ROOT>/scripts/library.mjs doctor`。只输出认证摘要，不贴完整 auth 配置、scope 全表或用户身份信息。
+
+- `CLI_MISSING`：说明需要官方 CLI。用户同意安装后依据[官方安装指南](https://open.feishu.cn/document/no_class/mcp-archive/feishu-cli-installation-guide.md)操作；不执行来源不明的安装脚本。
+- 未配置应用：区分复用已有配置和新建应用。注册／新建前再次确认，不能因需要文档读取而自动新建应用。
+- `AUTH_REQUIRED`：进入下面的设备授权。
+- `needs_refresh`：先尝试用户请求的只读操作让 CLI 正常刷新；失败再授权，不因这个状态自动重装。
+- 连接成功但目标无权限：指出准确目标与所需能力；不扩大文档分享范围。
+
+准备认证前，先读取本机 CLI 自带的参考，避免版本差异：
+
+```text
+lark-cli skills read lark-shared
+lark-cli skills read lark-shared/references/lark-shared-identity-and-permissions.md
+lark-cli auth login --help
+```
+
+所有个人知识读取使用 `--as user`。不切换到 bot 去绕过用户授权，也不改默认 profile。指定 profile 时，全流程保持相同 `--profile`。
+
+## 2. 确定最小必要权限，再确认
+
+向用户解释读文档、搜索、浏览指定 Wiki 的用途；写入权限可在首次保存时增量申请。精确 scope 以当前 CLI 的缺失权限错误、官方 schema 和 auth check 为准，不硬编码过期权限名。
+
+不要默认申请 `--domain all` 或大量不相关权限。文档读取需求不需要消息发送、通讯录管理等能力。用户确认本次授权范围后再发起登录。
+
+## 3. 分步授权，不让用户看不到链接
+
+```text
+lark-cli auth login --scope <已确认的准确scope列表> --no-wait --json
+```
+
+这是操作示例，不得把尖括号内容直接作为参数。若用户明确同意按业务域授权，可使用 CLI 支持的 docs／drive／wiki 范围，但先说明可能比单 scope 更广。
+
+拿到真实 `verification_url` 与 `device_code` 后：
+
+1. 原样保留授权 URL，不重拼参数；生成二维码：先检查 `lark-cli auth qrcode --help`，按当前参数生成 PNG。
+2. 给用户可点击的授权链接，再内嵌二维码图片，说明将访问的范围。
+3. 交还控制权：“请在飞书完成授权，再回来告诉我已完成。”不要同轮立刻阻塞轮询。
+4. device code 仅在当前授权流程使用，不写入知识库、共享日志或仓库，不展示为普通用户需要操作的命令。
+5. 用户回复完成后，由 Agent 执行 `lark-cli auth login --device-code <本流程code>`。
+6. 调用 `auth status --json --verify`，只报告必要摘要；再对用户提供的目标进行真实只读读取。
+
+过期时重新发起同范围授权，不复用过期链接；取消时停止认证，不换账号。需要 app secret 时让用户在 CLI 安全输入，不要求粘贴到聊天。
+
+## 4. 确认连接目标并绑定
+
+展示“库编号、根节点标题及链接、读取范围、写入根、账号摘要”。用户确认后执行：
+
+```text
+node <SKILL_ROOT>/scripts/library.mjs bind --id personal --root <准确Wiki链接> --write-root <准确Wiki链接> --confirm
+```
+
+`--root` 可重复；docx 链接仅授权该篇，Wiki 链接授权其子树。写入根必须在读取范围中。不支持把不明确的空间名或相似标题自动当成目标。
+
+绑定只保存本地配置，不创建或移动飞书节点。根节点不存在时，先准备准确初始化方案并征得确认，再用官方 CLI 创建；拿到实际链接后绑定。
+
+运行 `sync --max-docs 10` 做首次读取；说明刷新数、失败数和未覆盖范围。不是一次运行就自动证明整库索引完成。
+
+## 5. 给用户一个立即可用的入口
+
+告诉用户现在可以说：“查一下以前关于……的资料”“先收藏这个”“给我看看知识图谱”。跨项目使用要求当前宿主已识别安装的 Skill；新装后必要时开启新对话。
+
+用户愿意启用维护时转 [maintenance.md](maintenance.md)，问时间与时区后配置。不要为了完成新手引导强迫用户同时创建定时任务。

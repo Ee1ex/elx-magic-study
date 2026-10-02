@@ -1,0 +1,4 @@
+interface:
+  display_name: "魔法书屋 · Magic Study"
+  short_description: "把飞书资料整理成能随时找回的知识，支持图谱浏览与定时检查"
+  default_prompt: "使用 $elx-magic-study 帮我连接飞书知识库，或整理和查找已有知识。"

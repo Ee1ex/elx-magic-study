@@ -1,0 +1,10 @@
+.skillpick/
+.elx-library/
+artifacts/
+docs/design/
+docs/DELIVERY_*.md
+.env
+.env.*
+!.env.example
+node_modules/
+*.log

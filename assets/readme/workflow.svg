@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="title desc">
+  <title id="title">魔法书屋的三个小步骤</title>
+  <desc id="desc">把文章和视频放进来，让小助手整理好，需要的时候再问它。</desc>
+  <rect width="1200" height="260" rx="26" fill="#f5f3ec"/>
+  <g font-family="Microsoft YaHei, PingFang SC, system-ui, sans-serif" font-size="56" font-weight="600" text-anchor="middle">
+    <rect x="42" y="42" width="326" height="176" rx="22" fill="#e2ece1"/>
+    <rect x="437" y="42" width="326" height="176" rx="22" fill="#176752"/>
+    <rect x="832" y="42" width="326" height="176" rx="22" fill="#ece4f2"/>
+    <text x="205" y="147" fill="#244438">① 放进来</text>
+    <text x="600" y="147" fill="#fffef6">② 整理好</text>
+    <text x="995" y="147" fill="#534461">③ 随时问</text>
+  </g>
+  <g fill="none" stroke="#718574" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M385 130H415M403 117L416 130L403 143"/>
+    <path d="M780 130H810M798 117L811 130L798 143"/>
+  </g>
+</svg>
