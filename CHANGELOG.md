@@ -1,5 +1,15 @@
 # 变更记录
 
+## [0.2.0] - 2026-10-02
+
+- feat: add version-aware graph summaries and text excerpts
+- feat: add safe plan retirement and read-only diagnosis
+- feat: introduce Magic Study skill and beginner-friendly README
+- fix: resume catalog scans and refresh changed documents
+- fix: separate input sources from generated knowledge
+- docs: initialize level 1 spec and optimization roadmap
+- docs(readme): add visual illustrations across sections
+
 ## 未发布
 
 - 建立 LEVEL 1 项目流程、SPEC、文档地图、需求／Bug／决策／进度台账。
