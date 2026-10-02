@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-verification",
+  "stage": "release-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,7 +15,7 @@
   "current_task": {
     "id": "OPT-01-04",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.2.0 四项优化与 README 文字已完成，准备发布并回读",
+    "summary": "OPT-01—04 与 README 文字完成，0.2.0 已发布并回读",
     "scope": "用户已确认实施防重复、任务恢复、同步断点与图谱摘要；合成测试和文档同步；用户追加授权 README 文字更新与 GitHub main、版本 Tag、Release 发布",
     "out_of_scope": "真实资料迁移、飞书写入、全局安装升级、调度注册、多平台功能、README 图片与设计修改",
     "paths": [
@@ -38,12 +38,16 @@
       "package.json",
       "docs/releases"
     ],
-    "next_step": "集中验证后按已授权范围发布并回读"
+    "next_step": "本轮结束；安装副本升级与真实知识库试用需独立范围，图谱浏览器交互仍待验"
   },
   "artifacts": [
     {
       "path": "docs/progress/PROG-002-optimizations.md",
       "summary": "四项优化实施、复现与验收记录"
+    },
+    {
+      "path": "docs/releases/RELEASE-0.2.0.md",
+      "summary": "公开发布与回读记录"
     }
   ],
   "verifications": [
@@ -61,13 +65,18 @@
       "command": "static syntax, links and README preservation checks",
       "status": "passed",
       "summary": "9 个脚本语法通过；文档相对链接有效；README 图片、章节和排版标记未改"
+    },
+    {
+      "command": "git ls-remote and gh readback",
+      "status": "passed",
+      "summary": "main 与 Tag 目标一致；README 字节和 Release 正文一致，远端树无忽略的私人产物"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "df42fae5707609c0557ade0c1a58bc04c6ff8f60",
-    "last_commit_note": "本轮文档开始前的基线；当前提交以 Git 历史为准",
+    "last_commit": "eb270369af81908af2b6611090e00e626ecd95d4",
+    "last_commit_note": "0.2.0 Tag 对应提交；后续仅发布记录收尾",
     "repository": true
   },
   "remote": {
@@ -126,6 +135,11 @@
     {
       "event": "release_limitation",
       "summary": "浏览器 file URL 策略拒绝，桌面与窄屏新版交互未验证；已公开列为限制"
+    },
+    {
+      "event": "release_verified",
+      "version": "0.2.0",
+      "commit": "eb270369af81908af2b6611090e00e626ecd95d4"
     }
   ],
   "updated_at": "2026-10-02T20:25:34.766Z"

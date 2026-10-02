@@ -1,6 +1,6 @@
 # 项目流程状态
 
-- 状态：in_progress
+- 状态：completed
 - 负责人：项目负责人（当前用户）
 - 执行策略：AUTO
 
@@ -8,7 +8,7 @@
 
 ## 当前 LEVEL、阶段与任务
 
-LEVEL 1 / release-verification / 0.2.0 四项优化与 README 文字已完成，准备发布并回读
+LEVEL 1 / release-completed / OPT-01—04 与 README 文字完成，0.2.0 已发布并回读
 
 ## 本轮目标与不做范围
 
@@ -18,12 +18,14 @@ LEVEL 1 / release-verification / 0.2.0 四项优化与 README 文字已完成，
 ## 已完成内容
 
 - 四项优化实施、复现与验收记录
+- 公开发布与回读记录
 
 ## 验证命令与结果摘要
 
 - 38 项合成行为测试通过；未触碰真实用户资料
 - Skill 格式有效
 - 9 个脚本语法通过；文档相对链接有效；README 图片、章节和排版标记未改
+- main 与 Tag 目标一致；README 字节和 Release 正文一致，远端树无忽略的私人产物
 
 
 ## 最近等级迁移
@@ -32,4 +34,4 @@ LEVEL 1 / release-verification / 0.2.0 四项优化与 README 文字已完成，
 
 ## 推荐选择与下一步
 
-集中验证后按已授权范围发布并回读
+本轮结束；安装副本升级与真实知识库试用需独立范围，图谱浏览器交互仍待验
