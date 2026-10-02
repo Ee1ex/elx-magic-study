@@ -57,9 +57,14 @@ node CLI plans
 node CLI plan-show --id <计划编号>
 node CLI apply --id <计划编号> --approve <用户已确认预览的digest>
 node CLI recover --id <计划编号> --step 1 --doc <核实的结果链接>
+node CLI diagnose --id <计划编号> --step 1 --doc <结果链接>
+node CLI plan-cancel --id <未发送计划> --approve <原digest> --reason <原因>
+node CLI plan-supersede --id <未发送旧计划> --replacement <新预览计划> --approve <旧digest> --reason <原因>
 ```
 
 digest 绑定预览内容，不能自行生成新计划后沿用旧确认。计划写入状态不代表语义正确，Agent 仍应核对实际结果与用户目标。
+
+取消／替代只改变本地未发送计划的生命周期，保留 payload 和 digest。diagnose 是只读检查，不等于 recover；成功诊断后仍需 recover 更新核验状态。status 会给出待确认、待查证等计数。
 
 ## 维护任务
 

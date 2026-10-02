@@ -6,7 +6,7 @@ import { stateHome, loadLibrary, libraryPath, readJSON, writeJSON, writeNew, loc
 import { Lark } from './lark.mjs';
 import { search, lint } from './retrieval.mjs';
 import { exportGraph } from './graph.mjs';
-import { doctor, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue } from './library-core.mjs';
+import { doctor, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan } from './library-core.mjs';
 
 const HELP = {
   version: '0.1.0', usage: 'node <SKILL_ROOT>/scripts/library.mjs <command> [--home <个人状态目录>] [--library <编号>]',
@@ -23,6 +23,9 @@ const HELP = {
     plan: '--file <动作JSON>；读取基线并生成可审核的飞书增改计划',
     plans: '列出操作状态、来源版本和结果链接，供定时任务去重',
     'plan-show': '--id <计划编号>；读取完整计划',
+    'plan-cancel': '--id <计划编号> --approve <digest> --reason <原因>；仅终止未发送计划',
+    'plan-supersede': '--id <旧计划> --replacement <新计划> --approve <旧digest> --reason <原因>；标记替代关系',
+    diagnose: '--id <计划> --step <序号> [--doc <结果URL>]；只读差异诊断，不改变计划状态',
     apply: '--id <计划编号> --approve <预览digest>；用户已确认后执行并回读',
     recover: '--id <计划编号> --step <序号> [--doc <确认的结果URL>]；只查证，不重发',
     lint: '[--stale-days 180] [--offline]；本地只读检查，语义矛盾由Agent核对',
@@ -36,39 +39,35 @@ const HELP = {
 function parse(argv) {
   const [command = 'help', ...args] = argv; const options = {};
   const boolean = new Set(['confirm', 'offline', 'refresh']);
-  const allowed = new Set(['home', 'library', 'profile', 'id', 'root', 'write-root', 'name', 'query', 'limit', 'max-docs', 'max-nodes', 'url', 'title', 'note', 'file', 'coverage', 'approve', 'step', 'doc', 'stale-days', 'output', 'time', 'timezone', 'days', 'role', ...boolean]);
+  const allowed = new Set(['home', 'library', 'profile', 'id', 'root', 'write-root', 'name', 'query', 'limit', 'max-docs', 'max-nodes', 'url', 'title', 'note', 'file', 'coverage', 'approve', 'step', 'doc', 'stale-days', 'output', 'time', 'timezone', 'days', 'role', 'replacement', 'reason', ...boolean]);
   for (let i = 0; i < args.length; i++) { assert(args[i].startsWith('--'), 'ARGUMENT', '参数使用 --name value 形式'); const key = args[i].slice(2); assert(allowed.has(key), 'ARGUMENT', `未知参数 ${key}`); const value = boolean.has(key) ? true : args[++i]; assert(value !== undefined && !String(value).startsWith('--'), 'ARGUMENT', `参数 ${key} 缺少值`); if (['root', 'query'].includes(key)) (options[key] ||= []).push(value); else { assert(!(key in options), 'ARGUMENT', `参数 ${key} 不能重复`); options[key] = value; } }
   return { command, options };
 }
 function number(value, fallback, min, max) { const n = value === undefined ? fallback : Number(value); assert(Number.isInteger(n) && n >= min && n <= max, 'LIMIT', `数量必须在 ${min}—${max} 之间`); return n; }
 async function localAccess(state, offline) { if (state.provider === 'feishu' && !offline) await new Lark(state.profile).assertAccount(state); }
-async function listPlans(home, state) {
-  const dir = path.join(libraryPath(home, state.id), 'operations'); let names; try { names = await fs.readdir(dir); } catch (e) { if (e.code === 'ENOENT') return []; throw e; }
-  const result = [];
-  for (const name of names.filter(n => n.endsWith('.json'))) { const p = await readJSON(path.join(dir, name)); result.push({ id: p.payload.operation, purpose: p.payload.purpose, state: p.state, sources: p.payload.sources, digest: p.digest, results: p.steps.map(s => ({ state: s.state, url: s.url })) }); }
-  return result;
-}
 export async function run(argv) {
   const { command, options: o } = parse(argv), home = stateHome(o.home);
   if (command === 'help' || command === '--help') return HELP;
   if (command === 'doctor') return doctor(home, o.profile);
-  const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','apply','recover','maintenance','schedule-record']);
+  const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','plan-cancel','plan-supersede','apply','recover','maintenance','schedule-record']);
   const execute = async () => {
     if (command === 'bind') return bind(home, { id: o.id, name: o.name, profile: o.profile, readRoots: o.root, writeRoot: o['write-root'], confirmed: !!o.confirm });
     if (command === 'demo-import') return importManifest(home, o.id, await readJSON(o.file));
     const state = await loadLibrary(home, o.library); const id = state.id;
-    if (command === 'status') { const queue = intakeQueue(state.documents); return { id, name: state.name, provider: state.provider, readRoots: state.readRoots, writeRoot: state.writeRoot, indexed: state.documents.length, pendingInputs: queue.pending.length, needsClassification: queue.needsClassification.length, lastSync: state.lastSync || null, schedules: state.schedules || [], next: state.documents.length ? '可 search、graph 或 maintenance；回答重要问题前 fetch 最新正文' : '先 sync 建立索引' }; }
+    if (command === 'status') { const queue = intakeQueue(state.documents); const plans = await planOverview(home, state); const tasks = {}; for (const p of plans) tasks[p.label] = (tasks[p.label] || 0) + 1; return { id, name: state.name, provider: state.provider, readRoots: state.readRoots, writeRoot: state.writeRoot, indexed: state.documents.length, pendingInputs: queue.pending.length, needsClassification: queue.needsClassification.length, tasks, lastSync: state.lastSync || null, schedules: state.schedules || [], next: state.documents.length ? '可 search、graph 或 maintenance；回答重要问题前 fetch 最新正文' : '先 sync 建立索引' }; }
     if (command === 'sync') return sync(home, id, { maxDocs: number(o['max-docs'], 30, 1, 200), maxNodes: number(o['max-nodes'], 500, 1, 5000) });
     if (command === 'fetch') return fetchDocument(home, id, o.id);
     if (command === 'capture') return capture(home, id, { url: o.url, title: o.title, note: o.note });
     if (command === 'classify') return classifyDocument(home, id, o.id, o.role, !!o.confirm);
     if (command === 'source-content') return sourceContent(home, id, o.id, { markdown: await fs.readFile(o.file, 'utf8'), coverage: o.coverage, sourceNote: o.note });
     if (command === 'plan') return makePlan(home, id, await readJSON(o.file));
-    if (command === 'plans') return { plans: await listPlans(home, state) };
+    if (command === 'plans') return { plans: await planOverview(home, state) };
+    if (command === 'plan-cancel' || command === 'plan-supersede') { if (command === 'plan-supersede') assert(o.replacement, 'REPLACEMENT', '需要明确新计划编号'); return retirePlan(home, id, o.id, { approval: o.approve, reason: o.reason, replacement: command === 'plan-supersede' ? o.replacement : undefined }); }
+    if (command === 'diagnose') return diagnosePlan(home, id, o.id, number(o.step, 1, 1, 12), o.doc);
     if (command === 'plan-show') return readJSON(path.join(libraryPath(home, id), 'operations', identifier(o.id) + '.json'));
     if (command === 'apply') return applyPlan(home, id, o.id, o.approve);
     if (command === 'recover') return recoverPlan(home, id, o.id, number(o.step, 1, 1, 12), o.doc);
-    if (command === 'maintenance') { const report = await maintenance(home, id, { refresh: !!o.refresh }); report.plans = await listPlans(home, state); return report; }
+    if (command === 'maintenance') return maintenance(home, id, { refresh: !!o.refresh });
     if (command === 'search') { await localAccess(state, o.offline); assert(o.query?.some(q => q.trim()), 'QUERY', '请提供至少一个非空关键词'); return search(state.documents, o.query, { limit: number(o.limit, 8, 1, 30) }); }
     if (command === 'lint') { await localAccess(state, o.offline); return lint(state.documents, { staleDays: number(o['stale-days'], 180, 1, 36500) }); }
     if (command === 'graph') { await localAccess(state, o.offline); assert(o.output, 'OUTPUT', '需要明确图谱输出路径'); return exportGraph(state.documents, path.resolve(o.output), { maxNodes: number(o.limit, 300, 1, 1000), title: state.name + ' · 知识关系图谱', demo: state.provider === 'demo' }); }

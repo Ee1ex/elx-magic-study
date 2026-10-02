@@ -10,6 +10,7 @@ import { tokenize, search, graphData, lint } from '../skills/elx-magic-study/scr
 import { graphHTML, exportGraph } from '../skills/elx-magic-study/scripts/graph.mjs';
 import { bind, capture, sourceContent, makePlan, applyPlan, recoverPlan, sync, maintenance, schedulePrompt } from '../skills/elx-magic-study/scripts/library-core.mjs';
 import { run } from '../skills/elx-magic-study/scripts/library.mjs';
+import * as core from '../skills/elx-magic-study/scripts/library-core.mjs';
 
 const base = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../artifacts/test-runs', randomUUID());
 const root = 'https://example.feishu.cn/wiki/ROOT12345678901234567890';
@@ -129,4 +130,23 @@ test('OPT-01 单条角色分类需要确认，分类后输入正常入队且正�
   const {dir}=await fixture();const s=await loadLibrary(dir,'test');s.documents.push({id:'legacy',markdown:'保留正文',hash:hash('保留正文'),remote:true});await saveLibrary(dir,s);
   await assert.rejects(run(['classify','--home',dir,'--library','test','--id','legacy','--role','input']),e=>e.code==='CONFIRM_REQUIRED');
   await run(['classify','--home',dir,'--library','test','--id','legacy','--role','input','--confirm']);assert.equal((await maintenance(dir,'test')).pending[0].id,'legacy');assert.equal((await loadLibrary(dir,'test')).documents[0].markdown,'保留正文');
+});
+test('OPT-02 已取消预览不能执行，保留原计划与摘要', async () => {
+  const {dir,lark}=await fixture();const p=await makePlan(dir,'test',{actions:[{kind:'create',title:'取消样例',content:'正文'}]},lark);
+  await run(['plan-cancel','--home',dir,'--library','test','--id',p.plan,'--approve',p.digest,'--reason','用户取消']);
+  await assert.rejects(applyPlan(dir,'test',p.plan,p.digest,lark),e=>e.code==='PLAN_RETIRED');assert.equal(lark.writes,0);
+  const stored=await run(['plan-show','--home',dir,'--library','test','--id',p.plan]);assert.equal(stored.digest,p.digest);assert.equal(stored.state,'cancelled');
+});
+test('OPT-02 替代计划保留指向且不能沿用旧授权，未知写入禁止取消', async () => {
+  const {dir,lark}=await fixture();const spec={actions:[{kind:'create',title:'替代样例',content:'正文'}]};const a=await makePlan(dir,'test',spec,lark),b=await makePlan(dir,'test',spec,lark);
+  await run(['plan-supersede','--home',dir,'--library','test','--id',a.plan,'--replacement',b.plan,'--approve',a.digest,'--reason','用户选择新方案']);
+  await assert.rejects(applyPlan(dir,'test',a.plan,a.digest,lark),e=>e.code==='PLAN_RETIRED');await assert.rejects(applyPlan(dir,'test',b.plan,a.digest,lark),e=>e.code==='PLAN_APPROVAL');
+  lark.throwAfterCreate=true;await assert.rejects(applyPlan(dir,'test',b.plan,b.digest,lark));
+  await assert.rejects(run(['plan-cancel','--home',dir,'--library','test','--id',b.plan,'--approve',b.digest,'--reason','不能掩盖未知结果']),e=>e.code==='PLAN_HAS_EFFECTS');
+});
+test('OPT-02 失败诊断只读且不接受缺字；终态不会进入维护活动任务', async () => {
+  const {dir,lark}=await fixture();const p=await makePlan(dir,'test',{actions:[{kind:'create',title:'诊断样例',content:'应当完整保留的关键文字'}]},lark);lark.throwAfterCreate=true;await assert.rejects(applyPlan(dir,'test',p.plan,p.digest,lark));const d=lark.docs.get('created1');d.markdown=d.markdown.replace('关键文字','');
+  const result=await core.diagnosePlan(dir,'test',p.plan,1,d.url,lark);assert.equal(result.verified,false);assert.equal(result.code,'VERIFY_FAILED');assert.ok(result.comparison.expectedLength>0);assert.equal(lark.writes,1);
+  const old=await makePlan(dir,'test',{actions:[{kind:'create',title:'未使用',content:'草稿'}]},lark);await run(['plan-cancel','--home',dir,'--library','test','--id',old.plan,'--approve',old.digest,'--reason','不需要']);
+  const report=await maintenance(dir,'test');assert.ok(!report.plans.some(x=>x.id===old.plan));assert.ok(report.plans.some(x=>x.id===p.plan&&x.label==='待查证'));
 });

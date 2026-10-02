@@ -126,6 +126,39 @@ export async function sourceContent(home, id, sourceId, { markdown, coverage, so
   Object.assign(d, { markdown, coverage, sourceNote, hash: snapshot.hash, fetchedAt: snapshot.capturedAt }); await saveLibrary(home, state); return { id: sourceId, hash: d.hash, coverage, remoteSaved: false };
 }
 const planFile = (home, id, operation) => path.join(libraryPath(home, id), 'operations', identifier(operation) + '.json');
+const retired = plan => ['cancelled', 'superseded'].includes(plan.state);
+export async function planOverview(home, state) {
+  const dir = path.join(libraryPath(home, state.id), 'operations'); let files;
+  try { files = await fs.readdir(dir); } catch (e) { if (e.code === 'ENOENT') return []; throw e; }
+  const result = [];
+  for (const file of files.filter(f => f.endsWith('.json')).sort()) {
+    const p = await readJSON(path.join(dir, file)); const uncertain = p.steps.some(s => ['sending', 'unknown', 'needs_review'].includes(s.state));
+    const label = p.state === 'complete' ? '已完成' : p.state === 'cancelled' ? '已取消' : p.state === 'superseded' ? '已替代' : uncertain ? '待查证' : '待确认';
+    result.push({ id: p.payload.operation, purpose: p.payload.purpose, state: p.state, label, active: !retired(p) && p.state !== 'complete', sources: p.payload.sources, digest: p.digest, replacement: p.replacement || null, results: p.steps.map(s => ({ state: s.state, url: s.url, error: s.error })) });
+  }
+  return result;
+}
+export async function retirePlan(home, id, operation, { approval, reason, replacement } = {}) {
+  const state = await loadLibrary(home, id); const file = planFile(home, state.id, operation); const plan = await readJSON(file);
+  assert(plan.digest === planDigest(plan.payload) && approval === plan.digest, 'PLAN_APPROVAL', '需核对原计划摘要并明确确认本地终止／替代');
+  assert(plan.payload.library === state.id && plan.payload.account === state.account, 'PLAN_BINDING', '计划与当前知识库身份不一致');
+  assert(typeof reason === 'string' && reason.trim() && reason.length <= 500, 'REASON', '需要 1—500 字符的原因');
+  if (retired(plan)) { assert(plan.replacement === replacement, 'PLAN_RETIRED', '已终止的计划不能改换替代关系'); return { id: operation, state: plan.state, alreadyRetired: true }; }
+  assert(plan.state !== 'complete' && plan.steps.every(s => s.state === 'pending' && !s.startedAt && !s.documentId), 'PLAN_HAS_EFFECTS', '计划已发送或结果未知，不能用取消掩盖远端影响；先查证');
+  if (replacement) {
+    assert(replacement !== operation, 'REPLACEMENT', '计划不能替代自己');
+    const next = await readJSON(planFile(home, state.id, replacement));
+    assert(next.digest === planDigest(next.payload) && next.state === 'preview' && next.steps.every(s => s.state === 'pending') && next.payload.account === plan.payload.account && next.payload.library === state.id && hash(next.payload.writeRoot) === hash(plan.payload.writeRoot), 'REPLACEMENT', '替代目标必须是同库、同写入范围的有效未执行预览');
+  }
+  plan.state = replacement ? 'superseded' : 'cancelled'; plan.retiredAt = now(); plan.reason = reason;
+  if (replacement) plan.replacement = replacement;
+  await writeJSON(file, plan); return { id: operation, state: plan.state, replacement: replacement || null, remoteChanged: false };
+}
+function contentComparison(expected, actual) {
+  const e = normalizeText(expected), a = normalizeText(actual); let difference = 0;
+  while (difference < Math.min(e.length, a.length) && e[difference] === a[difference]) difference++;
+  return { matched: a.includes(e), expectedLength: e.length, actualLength: a.length, expectedHash: hash(e), actualHash: hash(a), prefixDifference: difference };
+}
 function validContent(content) { assert(typeof content === 'string' && content.trim() && content.length <= 200000, 'CONTENT', '写入内容不能为空且单项不超过 20 万字符'); assert(!/<\s*(?:img|source|script|iframe|object)\b|!\[[^\]]*\]\(/i.test(content), 'ACTIVE_RESOURCE', '第一版仅导入纯文本 Markdown，图片／附件等资源须走独立审核流程'); }
 export function normalizeText(s) { return s.normalize('NFKC').replace(/\\([\[\]_*~`|$<>])/g, '$1').replace(/[#*`_\s]/g, ''); }
 export function planDigest(payload) { return hash(payload); }
@@ -164,6 +197,7 @@ export async function makePlan(home, id, spec, supplied) {
 export async function applyPlan(home, id, operation, approval, supplied) {
   const state = await loadLibrary(home, id); const file = planFile(home, state.id, operation); const plan = await readJSON(file); const p = plan.payload;
   assert(planDigest(p) === plan.digest && approval === plan.digest, 'PLAN_APPROVAL', '需要用户确认后传入原预览的完整 digest，计划被修改则必须重新预览');
+  assert(!retired(plan), 'PLAN_RETIRED', '计划已取消或被替代，禁止执行；新方案需要自己的摘要授权');
   assert(p.library === state.id && p.account === state.account && hash(p.writeRoot) === hash(state.writeRoot), 'PLAN_BINDING', '绑定与计划不一致');
   const lark = client(state, supplied); await lark.assertAccount(state);
   const liveWriteRoot = await lark.node(state.writeRoot.url);
@@ -189,15 +223,16 @@ export async function applyPlan(home, id, operation, approval, supplied) {
       assert(step.url, 'WRITE_RESPONSE', '返回值缺少可回读的文档，结果未知');
       await verifyStep(lark, state, a, step);
       step.state = 'verified'; step.verifiedAt = now(); await writeJSON(file, plan);
-    } catch (e) { step.state = 'unknown'; step.error = { code: e.code || 'ERROR' }; plan.state = 'incomplete'; await writeJSON(file, plan); throw issue('WRITE_UNCERTAIN', '写入结果尚未核实；不要重发，使用 recover 查证', { plan: operation, step: i + 1, cause: e.code }); }
+    } catch (e) { step.state = 'unknown'; step.error = { code: e.code || 'ERROR', ...(e.code === 'VERIFY_FAILED' ? { comparison: e.details } : {}) }; plan.state = 'incomplete'; await writeJSON(file, plan); throw issue('WRITE_UNCERTAIN', '写入结果尚未核实；不要重发，使用 diagnose／recover 查证', { plan: operation, step: i + 1, cause: e.code }); }
   }
   await finishPlan(home, state, plan, lark); return { plan: operation, state: plan.state, results: plan.steps.map(s => ({ state: s.state, url: s.url })) };
 }
-async function verifyStep(lark, state, action, step) {
-  await lark.inScope(step.url, [state.writeRoot]); const actual = await lark.fetch(step.url);
+async function verifyStep(lark, state, action, step, fetched) {
+  await lark.inScope(step.url, [state.writeRoot]); const actual = fetched || await lark.fetch(step.url);
   assert(!step.documentId || actual.id === step.documentId, 'DOC_ID_CHANGED', '回读文档身份不一致');
   if (action.kind === 'create') { const node = await lark.node(step.url); assert(node.parent_node_token === (action.parentNodeToken || state.writeRoot.node_token), 'PARENT_MISMATCH', '文档没有创建在预期分类下'); }
-  assert(normalizeText(actual.markdown).includes(normalizeText(action.content)), 'VERIFY_FAILED', '回读正文没有完整匹配预期内容');
+  const comparison = contentComparison(action.content, actual.markdown);
+  if (!comparison.matched) throw issue('VERIFY_FAILED', '回读正文没有完整匹配预期内容', comparison);
   if (action.kind === 'str_replace') assert(hash(normalizeText(actual.markdown)) === action.expectedTextHash, 'VERIFY_FAILED', '回读结果与精确替换后的预期正文不一致');
   assert(!step.warningCount && step.result !== 'partial_success' && step.result !== 'failed', 'WRITE_WARNING', '返回警告或部分成功，需要人工核对');
   step.documentId = actual.id; step.verifiedHash = hash(actual.markdown); return actual;
@@ -215,6 +250,7 @@ async function finishPlan(home, state, plan, lark) {
 export async function recoverPlan(home, id, operation, index, url, supplied) {
   const state = await loadLibrary(home, id), file = planFile(home, state.id, operation), plan = await readJSON(file);
   assert(planDigest(plan.payload) === plan.digest, 'PLAN_CHANGED', '计划摘要不匹配');
+  assert(!retired(plan), 'PLAN_RETIRED', '已终止计划不能恢复为执行状态');
   assert(plan.payload.account === state.account && hash(plan.payload.writeRoot) === hash(state.writeRoot), 'PLAN_BINDING', '计划绑定已变化');
   const step = plan.steps[index - 1], a = plan.payload.actions[index - 1]; assert(step && a, 'STEP', '步骤编号不存在');
   const lark = client(state, supplied); await lark.assertAccount(state);
@@ -224,13 +260,25 @@ export async function recoverPlan(home, id, operation, index, url, supplied) {
   await writeJSON(file, plan); await finishPlan(home, state, plan, lark);
   return { plan: operation, step: index, state: plan.state, note: '只核对已有远端结果，没有重发写操作；剩余 pending 步骤可按原授权继续 apply。' };
 }
+export async function diagnosePlan(home, id, operation, index, url, supplied) {
+  const state = await loadLibrary(home, id), plan = await readJSON(planFile(home, state.id, operation));
+  assert(plan.digest === planDigest(plan.payload), 'PLAN_CHANGED', '计划摘要不匹配');
+  assert(plan.payload.account === state.account && hash(plan.payload.writeRoot) === hash(state.writeRoot), 'PLAN_BINDING', '计划绑定已改变');
+  const action = plan.payload.actions[index - 1], old = plan.steps[index - 1]; assert(action && old, 'STEP', '步骤不存在');
+  const step = { ...old, url: feishuURL(url || old.url || '').url };
+  const lark = client(state, supplied); await lark.assertAccount(state); await lark.inScope(step.url, [state.writeRoot]);
+  const actual = await lark.fetch(step.url); let code = null;
+  try { await verifyStep(lark, state, action, step, actual); } catch (e) { code = e.code || 'ERROR'; }
+  return { plan: operation, step: index, mode: 'read-only', verified: code === null, code, comparison: contentComparison(action.content, actual.markdown), expectedExcerpt: action.content.slice(0, 160), actualExcerpt: actual.markdown.slice(0, 160), note: '摘录仅用于本次人工诊断；未改变计划或远端。比较开头的位置不是精确缺失位置，不能据此自动放宽核验。' };
+}
 export async function maintenance(home, id, { refresh = false, supplied } = {}) {
   let state = await loadLibrary(home, id); let syncResult = null;
   if (refresh && state.provider === 'feishu') { syncResult = await sync(home, state.id, { supplied }); state = await loadLibrary(home, state.id); }
   const report = lint(state.documents); const { pending, needsClassification } = intakeQueue(state.documents);
-  const signature = hash({ report: report.signature, pending, needsClassification, errors: syncResult?.failures || [], complete: syncResult?.catalogComplete });
+  const plans = (await planOverview(home, state)).filter(p => p.active);
+  const signature = hash({ report: report.signature, pending, needsClassification, plans: plans.map(p => ({ id: p.id, state: p.state, steps: p.results.map(s => s.state) })), errors: syncResult?.failures || [], complete: syncResult?.catalogComplete });
   const changed = state.maintenanceSignature !== signature; state.maintenanceSignature = signature; state.maintenanceAt = now(); await saveLibrary(home, state);
-  return { mode: 'draft-and-check-only', changed, notify: changed && (!!pending.length || !!needsClassification.length || !!report.issues.length || !!syncResult?.failures.length), pending, needsClassification, report, sync: syncResult, note: '脚本只更新本地状态；旧记录角色不明时列入待分类，不自动重整或回填。无变化时保持静默。' };
+  return { mode: 'draft-and-check-only', changed, notify: changed && (!!pending.length || !!needsClassification.length || !!plans.length || !!report.issues.length || !!syncResult?.failures.length), pending, needsClassification, plans, report, sync: syncResult, note: '脚本只更新本地状态；已取消／替代计划不再作为活动任务，未知结果仍需查证。无变化时保持静默。' };
 }
 export function schedulePrompt(state, skillPath, home) {
   const context = JSON.stringify({ library: state.id, stateHome: stateHome(home), skillPath: path.resolve(skillPath) });

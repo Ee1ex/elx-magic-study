@@ -3,82 +3,51 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "optimization-ready",
+  "stage": "optimization-implementation",
   "gate": null,
-  "status": "completed",
-  "risk": "R1",
+  "status": "in_progress",
+  "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
     "allow_push_own_branch": false,
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "next_step": "本轮仅建档；用户阅览后选择实施切片，并确认涉及数据语义与兼容的方案。",
+    "id": "OPT-01-04",
+    "owner": "项目负责人（当前用户）",
+    "summary": "OPT-01 完成；继续 OPT-02",
+    "scope": "用户已确认实施防重复、任务恢复、同步断点与图谱摘要；合成测试和文档同步",
+    "out_of_scope": "真实资料迁移、远端写入、全局安装升级、调度注册、多平台功能与发布",
     "paths": [
       "AGENTS.md",
       "DOCUMENT_MAP.md",
       "CHANGELOG.md",
-      ".gitignore",
       ".elx-level",
+      "skills/elx-magic-study",
+      "tests",
       "docs/SPEC.md",
-      "docs/ROADMAP.md",
       "docs/bugs",
-      "docs/decisions",
       "docs/requirements",
+      "docs/decisions",
       "docs/progress",
-      "docs/releases",
-      "docs/pending-verification.md",
       "docs/plans",
-      "docs/elx-level"
+      "docs/elx-level",
+      "docs/pending-verification.md",
+      "docs/DEVELOPMENT.md"
     ],
-    "id": "REQ-005",
-    "out_of_scope": "功能代码、个人资料迁移、飞书写入、调度注册、安装升级和远端发布",
-    "owner": "项目负责人（当前用户）",
-    "scope": "记录既有项目事实、历史与拓展方向，准备 OPT-01 至 OPT-04 的执行卡",
-    "summary": "SPEC、项目记忆与优化计划已完成；功能优化未实施"
+    "next_step": "按计划完成下一个切片，验证后作本地提交。"
   },
   "artifacts": [
     {
-      "summary": "SPEC：当前目标、架构、数据与行为边界",
-      "path": "docs/SPEC.md"
-    },
-    {
-      "summary": "规则、文档地图及三类演进台账",
-      "path": "DOCUMENT_MAP.md"
-    },
-    {
-      "summary": "OPT-01—04 任务卡，明确未实施",
-      "path": "docs/plans/OPTIMIZATION_PLAN.md"
-    },
-    {
-      "summary": "三项体验优化、真实问题验收与六类拓展计划",
-      "path": "docs/ROADMAP.md"
-    },
-    {
-      "summary": "保留未验证和环境受阻事项",
-      "path": "docs/pending-verification.md"
+      "path": "docs/progress/PROG-002-optimizations.md",
+      "summary": "四项优化实施、复现与验收记录"
     }
   ],
   "verifications": [
     {
+      "command": "npm test",
       "status": "passed",
-      "summary": "2026-10-03 实际重跑：24 项现有测试通过；功能代码未修改",
-      "command": "npm test"
-    },
-    {
-      "summary": "LEVEL 1 状态结构校验通过",
-      "status": "passed",
-      "command": "workflow.py validate --project ."
-    },
-    {
-      "summary": "14 份 Markdown、40 个本地链接与公开资料边界检查通过",
-      "status": "passed",
-      "command": "local documentation checks"
-    },
-    {
-      "summary": "Diff 检查通过；功能代码、测试和 README 无改动",
-      "status": "passed",
-      "command": "git diff --check; runtime scope check"
+      "summary": "27 项合成行为测试通过；未触碰真实用户资料"
     }
   ],
   "git": {
@@ -111,7 +80,13 @@
       "at": "2026-10-03T03:48:21.8746834+08:00",
       "stage": "optimization-ready",
       "event": "documentation_completed"
+    },
+    {
+      "event": "optimization_slice",
+      "summary": "OPT-01 完成；继续 OPT-02",
+      "status": "in_progress",
+      "at": "2026-10-02T20:00:58.546Z"
     }
   ],
-  "updated_at": "2026-10-03T03:48:21.8746834+08:00"
+  "updated_at": "2026-10-02T20:00:58.546Z"
 }
