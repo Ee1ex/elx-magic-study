@@ -187,6 +187,7 @@ export async function makePlan(home, id, spec, supplied) {
   for (let i = 0; i < spec.actions.length; i++) {
     const a = spec.actions[i]; assert(['create', 'append', 'str_replace'].includes(a.kind), 'WRITE_KIND', '只支持创建、追加和精确行内替换'); validContent(a.content);
     const action = { kind: a.kind, title: a.title, content: a.content, category: a.category || 'document' };
+    if (a.summary !== undefined) { assert(typeof a.summary === 'string' && a.summary.trim() && a.summary.length <= 400, 'SUMMARY', '摘要需为 1—400 字符，描述修改后的整篇知识页'); action.summary = a.summary.trim(); }
     assert(['document', 'source', 'topic', 'experience', 'index', 'log'].includes(action.category), 'CATEGORY', '未知知识类型');
     if (a.kind === 'create') { assert(typeof a.title === 'string' && a.title.trim() && a.title.length <= 200, 'TITLE', '创建文档需要明确标题'); assert(!titles.has(a.title) && !remoteTitles.has(a.title) && !state.documents.some(d => !d.outOfScope && d.title === a.title), 'DUPLICATE_TITLE', '已有同名文档或同一批次标题重复，请先核对'); titles.add(a.title); action.parent = feishuURL(a.parent || state.writeRoot.url).url; await lark.inScope(action.parent, [state.writeRoot]); action.parentNodeToken = (await lark.node(action.parent)).node_token; }
     else {
@@ -254,6 +255,7 @@ async function finishPlan(home, state, plan, lark) {
     if (!record) { record = { id: d.id }; state.documents.push(record); }
     Object.assign(record, d, { url: step.url, title: a.title || record.title || d.id, kind: a.category, hash: hash(d.markdown), fetchedAt: now(), coverage: 'full_text', remote: true });
     if (a.kind === 'create') Object.assign(record, { recordRole: ['index', 'log'].includes(a.category) ? 'navigation' : 'derived', producedBy: plan.payload.operation, inputVersions: plan.payload.sources });
+    if (a.summary) Object.assign(record, { summary: a.summary, summaryForHash: step.verifiedHash });
   }
   for (const src of plan.payload.sources) { const d = state.documents.find(d => d.id === src.id); if (d?.hash === src.hash) d.processedHash = src.hash; }
   await saveLibrary(home, state); plan.state = 'complete'; plan.completedAt = now(); await writeJSON(planFile(home, state.id, plan.payload.operation), plan);

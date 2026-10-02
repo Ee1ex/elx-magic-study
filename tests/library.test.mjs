@@ -207,3 +207,47 @@ test('OPT-03 三页游标失效可显式重启；账号改变拒绝，移动节�
   assert.equal(f.fetchCalls.length - fetched, 2, '缺修改时间时每轮重新读取正文');
   assert.equal(f.lark.writes, 0);
 });
+
+
+test('OPT-04 旧记录提取干净正文，只有元信息时明确无摘要', () => {
+  const markdown = '# 标题\n<title>标题</title>\n来源：https://example.com\n作者：甲\n作者／发布日期：已确认\n获取日期与覆盖：节选\n日期：2026-10-03\nELX记录 test-1\n```js\nignore()\n```\n\n保存原始资料，整理时保留[来源依据](https://example.com/source)。';
+  const nodes = graphData([{ id:'a', markdown, hash:hash(markdown) }, { id:'b', markdown:'# 导航\n- [入口](https://example.com)' }]).nodes;
+  assert.equal(nodes[0].summary, '保存原始资料，整理时保留来源依据。');
+  assert.equal(nodes[0].summaryKind, 'excerpt'); assert.equal(nodes[1].summaryKind, 'missing');
+});
+
+test('OPT-04 Agent 摘要写入计划并绑定回读版本，更新后退回正文摘录', async () => {
+  const {dir,lark} = await fixture();
+  const p = await makePlan(dir, 'test', { actions:[{ kind:'create', title:'图谱主题', category:'topic', content:'新的知识正文。', summary:'说明何时使用及来源边界。' }] }, lark);
+  assert.equal(p.actions[0].summary, '说明何时使用及来源边界。');
+  await applyPlan(dir, 'test', p.plan, p.digest, lark);
+  let d = (await loadLibrary(dir, 'test')).documents[0];
+  assert.equal(d.summaryForHash, d.hash); assert.equal(graphData([d]).nodes[0].summaryKind, 'summary');
+  lark.docs.get(d.id).markdown = '更新后的适用条件。';
+  await core.fetchDocument(dir, 'test', d.id, lark);
+  d = (await loadLibrary(dir, 'test')).documents[0]; const node = graphData([d]).nodes[0];
+  assert.equal(node.summaryKind, 'excerpt'); assert.equal(node.summaryStale, true);
+  assert.equal(node.summary, '更新后的适用条件。'); assert.equal(d.recordRole, 'derived');
+});
+
+test('OPT-04 未绑定版本的旧摘要不冒充最新；恶意摘要作为安全文本', async () => {
+  const markdown = '当前内容。', contentHash = hash(markdown);
+  const nodes = graphData([{ id:'a', markdown, hash:contentHash, summary:'无版本的旧观点' }]).nodes;
+  assert.equal(nodes[0].summary, markdown); assert.equal(nodes[0].summaryStale, true);
+  const dangerous = '</script><script>alert(123)</script>';
+  const {html,data} = await graphHTML([{ id:'b', markdown, hash:contentHash, summary:dangerous, summaryForHash:contentHash }]);
+  assert.equal(data.nodes[0].summary, dangerous); assert.ok(!html.includes(dangerous));
+  assert.ok(html.includes('正文摘录')); assert.ok(html.includes('摘要对应旧版本'));
+});
+
+
+test('OPT-04 回读后正文再次变化不会把旧摘要绑定新正文，过长摘要拒绝', async () => {
+  const {dir,lark} = await fixture();
+  await assert.rejects(makePlan(dir, 'test', {actions:[{kind:'create',title:'过长',content:'内容',summary:'字'.repeat(401)}]}, lark), e=>e.code==='SUMMARY');
+  const p = await makePlan(dir, 'test', {actions:[{kind:'create',title:'并发修改',content:'原始正文。',summary:'原始简述。'}]}, lark);
+  const fetch = lark.fetch.bind(lark); let reads = 0;
+  lark.fetch = async url => { const d = await fetch(url); if (++reads === 2) d.markdown += '\n人工补充的新条件。'; return d; };
+  await applyPlan(dir, 'test', p.plan, p.digest, lark);
+  const d = (await loadLibrary(dir, 'test')).documents[0];
+  assert.notEqual(d.hash, d.summaryForHash); assert.equal(graphData([d]).nodes[0].summaryStale, true);
+});

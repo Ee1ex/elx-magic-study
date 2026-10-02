@@ -87,3 +87,7 @@ schedule-plan 只准备提示与时间配置；实际调用宿主调度工具后
 重复 sync 会续跑目录与正文队列；catalogComplete=true 且 remainingThisPass=0 表示本轮完成。下一次启动新一轮。directoryTasks 仅表示待办任务数，不是剩余文档数。
 
 相同非空修改时间可跳过正文，skippedUnchanged 给出数量，不更新 fetchedAt；缺元数据时照常读取。要整轮重读可 `sync --restart-scan --force`，之后继续 sync 直到完成；不要每次都 restart。游标失效时可显式 restart-scan，保留正文与旧记录。节点读取前再次核对范围；完整目录才标 outOfScope，绝不删除。
+
+## 可选的图谱摘要
+
+actions 中可添加 `"summary":"讲什么、何时有用及依据边界。"`（1—400 字符）。摘要描述动作执行后的整篇页面，纳入计划 digest。回读成功后保存 summaryForHash；图谱只接受与当前 hash 一致的摘要，否则使用明确标注的正文摘录。不要为旧数据批量伪造版本。

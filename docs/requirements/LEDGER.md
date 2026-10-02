@@ -8,13 +8,13 @@
 | REQ-002 | 第一版纳入定时维护、本地增强检索、按需图谱、授权引导 | 已实现入口；部分真实验收待做 | [SPEC](../SPEC.md)、[待验证](../pending-verification.md) |
 | REQ-003 | 来源／主题／实践／维护分类入库 | 已完成一次真实入库 | [进度台账](../progress/LEDGER.md) |
 | REQ-004 | 魔法书屋命名、通俗 README、公开 GitHub 仓库 | 已完成；本机目录改名仍待处理 | [决策台账](../decisions/LEDGER.md) |
-| REQ-005 | LEVEL 1、SPEC、历史与可执行优化计划 | 本轮完成文档，不改功能代码 | [本轮记录](../progress/PROG-001-level1-spec.md) |
+| REQ-005 | LEVEL 1、SPEC、历史与可执行优化计划 | 建档已完成；后续获准四项优化，见 PROG-002 | [本轮记录](../progress/PROG-001-level1-spec.md) |
 
-## 待确认的实施需求
+## 后续实施需求与状态
 
 | ID | 需求 | 状态 | 详细任务 |
 |---|---|---|---|
-| REQ-006 | 计划取消／替代、恢复诊断与任务状态可见性 | 方案待确认；未实施 | [OPT-02](../plans/OPTIMIZATION_PLAN.md) |
+| REQ-006 | 计划取消／替代、恢复诊断与任务状态可见性 | 源码与合成验收完成；真实恢复待核对 | [OPT-02](../plans/OPTIMIZATION_PLAN.md) |
 | REQ-007 | 真实问题检索验收集 | 后续准备，需用户真实问题 | [路线图](../ROADMAP.md) |
 | REQ-008 | 易读预览、增量刷新与书屋状态摘要 | 后续体验优化 | [路线图](../ROADMAP.md) |
 

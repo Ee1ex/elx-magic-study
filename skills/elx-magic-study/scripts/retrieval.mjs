@@ -1,4 +1,5 @@
 import { hash, links, safeLink } from './store.mjs';
+import { graphSummary } from './summaries.mjs';
 
 const segmenter = new Intl.Segmenter('zh', { granularity: 'word' });
 const stop = new Set(['的', '了', '是', '在', '和', '与', '及', '我', '你', '怎么', '什么', 'the', 'a', 'an', 'and', 'or', 'to', 'of', 'is']);
@@ -58,7 +59,7 @@ function matchURL(value) { try { const u = new URL(value); u.hash = ''; if (/\/w
 export function graphData(documents, { maxNodes = 300, title = '我的知识图谱', demo = false } = {}) {
   const docs = documents.filter(d => !d.unavailable && !d.outOfScope);
   const selected = docs.slice(0, maxNodes);
-  const nodes = selected.map(d => ({ id: d.id, title: d.title || d.id, kind: d.kind || 'document', url: safeLink(d.url), summary: (d.summary || '').slice(0, 400), fetchedAt: d.fetchedAt, coverage: d.coverage || 'unknown' }));
+  const nodes = selected.map(d => ({ id: d.id, title: d.title || d.id, kind: d.kind || 'document', url: safeLink(d.url), ...graphSummary(d), fetchedAt: d.fetchedAt, coverage: d.coverage || 'unknown' }));
   const map = new Map();
   for (const d of selected) { if (d.url) map.set(matchURL(d.url), d.id); for (const alias of d.aliases || []) map.set(matchURL(alias), d.id); }
   const ids = new Set(nodes.map(n => n.id)); const edges = []; const edgeKeys = new Set(); const unresolved = [];
