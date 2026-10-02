@@ -1,0 +1,96 @@
+{
+  "schema_version": "2.0",
+  "workflow_version": "2.1",
+  "project_id": "elx-library-333a1b57",
+  "level": 1,
+  "stage": "optimization-planning",
+  "gate": null,
+  "status": "in_progress",
+  "risk": "R1",
+  "execution_policy": "AUTO",
+  "permissions": {
+    "allow_push_own_branch": false,
+    "allow_create_draft_pr": false
+  },
+  "current_task": {
+    "next_step": "本轮仅建档；用户阅览后选择实施切片，并确认涉及数据语义与兼容的方案。",
+    "paths": [
+      "AGENTS.md",
+      "DOCUMENT_MAP.md",
+      "CHANGELOG.md",
+      ".gitignore",
+      ".elx-level",
+      "docs/SPEC.md",
+      "docs/ROADMAP.md",
+      "docs/bugs",
+      "docs/decisions",
+      "docs/requirements",
+      "docs/progress",
+      "docs/releases",
+      "docs/pending-verification.md",
+      "docs/plans",
+      "docs/elx-level"
+    ],
+    "id": "REQ-005",
+    "out_of_scope": "功能代码、个人资料迁移、飞书写入、调度注册、安装升级和远端发布",
+    "owner": "项目负责人（当前用户）",
+    "scope": "记录既有项目事实、历史与拓展方向，准备 OPT-01 至 OPT-04 的执行卡",
+    "summary": "LEVEL 1 建档、SPEC 与可执行优化计划"
+  },
+  "artifacts": [
+    {
+      "summary": "SPEC：当前目标、架构、数据与行为边界",
+      "path": "docs/SPEC.md"
+    },
+    {
+      "summary": "规则、文档地图及三类演进台账",
+      "path": "DOCUMENT_MAP.md"
+    },
+    {
+      "summary": "OPT-01—04 任务卡，明确未实施",
+      "path": "docs/plans/OPTIMIZATION_PLAN.md"
+    },
+    {
+      "summary": "三项体验优化、真实问题验收与六类拓展计划",
+      "path": "docs/ROADMAP.md"
+    },
+    {
+      "summary": "保留未验证和环境受阻事项",
+      "path": "docs/pending-verification.md"
+    }
+  ],
+  "verifications": [
+    {
+      "status": "passed",
+      "summary": "2026-10-03 实际重跑：24 项现有测试通过；功能代码未修改",
+      "command": "npm test"
+    }
+  ],
+  "git": {
+    "skill_created_branch": false,
+    "branch": "main",
+    "last_commit": "df42fae5707609c0557ade0c1a58bc04c6ff8f60",
+    "last_commit_note": "本轮文档开始前的基线；当前提交以 Git 历史为准",
+    "repository": true
+  },
+  "remote": {
+    "url": "https://github.com/Ee1ex/elx-magic-study.git",
+    "draft_pr": null,
+    "name": "origin"
+  },
+  "history": [
+    {
+      "event": "workflow_initialized",
+      "stage": "project-memory",
+      "at": "2026-10-02T19:34:26.433153Z"
+    },
+    {
+      "at": "2026-10-03T03:46:41.8917402+08:00",
+      "level": 1,
+      "event": "level_confirmed_and_scope_frozen",
+      "scope": "documentation-and-planning-only",
+      "approved_by": "user"
+    }
+  ],
+  "updated_at": "2026-10-03T03:46:41.8917402+08:00"
+}
