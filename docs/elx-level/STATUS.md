@@ -8,7 +8,7 @@
 
 ## 当前 LEVEL、阶段与任务
 
-LEVEL 1 / optimization-implementation / OPT-01—04 源码完成；按追加授权准备 GitHub 发布
+LEVEL 1 / release-verification / 0.2.0 四项优化与 README 文字已完成，准备发布并回读
 
 ## 本轮目标与不做范围
 
@@ -22,6 +22,8 @@ LEVEL 1 / optimization-implementation / OPT-01—04 源码完成；按追加授�
 ## 验证命令与结果摘要
 
 - 38 项合成行为测试通过；未触碰真实用户资料
+- Skill 格式有效
+- 9 个脚本语法通过；文档相对链接有效；README 图片、章节和排版标记未改
 
 
 ## 最近等级迁移

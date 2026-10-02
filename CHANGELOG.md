@@ -1,16 +1,6 @@
 # 变更记录
 
-## [0.2.0] - 2026-10-02
-
-- feat: add version-aware graph summaries and text excerpts
-- feat: add safe plan retirement and read-only diagnosis
-- feat: introduce Magic Study skill and beginner-friendly README
-- fix: resume catalog scans and refresh changed documents
-- fix: separate input sources from generated knowledge
-- docs: initialize level 1 spec and optimization roadmap
-- docs(readme): add visual illustrations across sections
-
-## 未发布
+## [0.2.0] - 2026-10-03
 
 - 建立 LEVEL 1 项目流程、SPEC、文档地图、需求／Bug／决策／进度台账。
 - 记录四项优化的可执行计划，以及后续功能路线图。
@@ -21,6 +11,7 @@
 - OPT-03：目录分页与正文读取分别续跑；修改时间未变跳过正文，支持强制刷新与显式重启扫描；保留离开范围缓存。
 
 - OPT-04：写入计划可提供短摘要并绑定核验正文版本；旧摘要失效时展示明确标注的正文摘录。38 项合成测试通过，浏览器新版交互仍待验收。
+- README 仅补充功能文字，原有图片、章节顺序和排版标记保持不变。
 
 ## 0.1.0
 

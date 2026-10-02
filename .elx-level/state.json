@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "optimization-implementation",
+  "stage": "release-verification",
   "gate": null,
   "status": "in_progress",
   "risk": "R2",
@@ -15,7 +15,7 @@
   "current_task": {
     "id": "OPT-01-04",
     "owner": "项目负责人（当前用户）",
-    "summary": "OPT-01—04 源码完成；按追加授权准备 GitHub 发布",
+    "summary": "0.2.0 四项优化与 README 文字已完成，准备发布并回读",
     "scope": "用户已确认实施防重复、任务恢复、同步断点与图谱摘要；合成测试和文档同步；用户追加授权 README 文字更新与 GitHub main、版本 Tag、Release 发布",
     "out_of_scope": "真实资料迁移、飞书写入、全局安装升级、调度注册、多平台功能、README 图片与设计修改",
     "paths": [
@@ -51,6 +51,16 @@
       "command": "npm test",
       "status": "passed",
       "summary": "38 项合成行为测试通过；未触碰真实用户资料"
+    },
+    {
+      "command": "quick_validate.py skills/elx-magic-study",
+      "status": "passed",
+      "summary": "Skill 格式有效"
+    },
+    {
+      "command": "static syntax, links and README preservation checks",
+      "status": "passed",
+      "summary": "9 个脚本语法通过；文档相对链接有效；README 图片、章节和排版标记未改"
     }
   ],
   "git": {
@@ -112,6 +122,10 @@
       "event": "publication_authorized",
       "scope": "Ee1ex/elx-magic-study main, version tag and release; README content only",
       "approved_by": "user"
+    },
+    {
+      "event": "release_limitation",
+      "summary": "浏览器 file URL 策略拒绝，桌面与窄屏新版交互未验证；已公开列为限制"
     }
   ],
   "updated_at": "2026-10-02T20:25:34.766Z"
