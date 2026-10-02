@@ -109,3 +109,24 @@ test('定时入口无变化静默，并且只做本地检查不写飞书', async
 test('检查报告不把缓存缺失引用认定为断链或删页依据', () => {const r=lint([{id:'a',title:'A',markdown:'[资料](https://example.feishu.cn/docx/missing)',coverage:'full_text'}]);assert.equal(r.mode,'local-cache-read-only');assert.ok(r.issues.some(i=>i.type==='unresolved-link'&&i.message.includes('不等于')));});
 test('相同状态目录的并发写被阻断，结束后锁自动释放', async () => {const dir=home();await locked(dir,async()=>{await assert.rejects(locked(dir,async()=>{}),e=>e.code==='BUSY')});await locked(dir,async()=>{});});
 test('CLI 无绑定时进入引导，不误称已注册计划', async () => {await assert.rejects(run(['status','--home',home()]),e=>e.code==='ONBOARDING_REQUIRED');const {dir}=await fixture();const output=path.join(dir,'schedule.json');const result=await run(['schedule-plan','--home',dir,'--library','test','--time','09:00','--timezone','Asia/Shanghai','--output',output]);assert.equal(result.state,'proposal-not-registered');assert.deepEqual((await loadLibrary(dir,'test')).schedules,[]);});
+
+test('OPT-01 输入整理为来源笔记后不重复入队，输入更新仅产生一个待办', async () => {
+  const {dir,lark}=await fixture();const src=await capture(dir,'test',{url:'https://example.com/input',title:'原始资料'});
+  await sourceContent(dir,'test',src.id,{markdown:'原始资料第一版',coverage:'full_text',sourceNote:'合成材料'});
+  const p=await makePlan(dir,'test',{sourceIds:[src.id],actions:[{kind:'create',title:'整理后的来源笔记',category:'source',content:'这是一份综合笔记'}]},lark);
+  await applyPlan(dir,'test',p.plan,p.digest,lark);
+  assert.deepEqual((await maintenance(dir,'test')).pending,[]);
+  assert.equal((await maintenance(dir,'test')).notify,false);
+  await sourceContent(dir,'test',src.id,{markdown:'原始资料第二版',coverage:'full_text',sourceNote:'合成材料更新'});
+  assert.deepEqual((await maintenance(dir,'test')).pending.map(d=>d.id),[src.id]);
+});
+test('OPT-01 旧版角色不明的远端记录列为待分类，不静默处理或丢失', async () => {
+  const {dir}=await fixture();const s=await loadLibrary(dir,'test');s.documents.push({id:'legacy',title:'来源笔记',kind:'source',remote:true,markdown:'旧版正文',hash:hash('旧版正文')});await saveLibrary(dir,s);
+  const result=await maintenance(dir,'test');assert.deepEqual(result.pending,[]);assert.deepEqual(result.needsClassification.map(d=>d.id),['legacy']);
+  assert.equal((await loadLibrary(dir,'test')).documents[0].recordRole,undefined);
+});
+test('OPT-01 单条角色分类需要确认，分类后输入正常入队且正文保持', async () => {
+  const {dir}=await fixture();const s=await loadLibrary(dir,'test');s.documents.push({id:'legacy',markdown:'保留正文',hash:hash('保留正文'),remote:true});await saveLibrary(dir,s);
+  await assert.rejects(run(['classify','--home',dir,'--library','test','--id','legacy','--role','input']),e=>e.code==='CONFIRM_REQUIRED');
+  await run(['classify','--home',dir,'--library','test','--id','legacy','--role','input','--confirm']);assert.equal((await maintenance(dir,'test')).pending[0].id,'legacy');assert.equal((await loadLibrary(dir,'test')).documents[0].markdown,'保留正文');
+});

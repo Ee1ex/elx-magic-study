@@ -16,6 +16,7 @@
 | 设计取舍 | [docs/decisions/LEDGER.md](docs/decisions/LEDGER.md) |
 | 历史过程与当前进度 | [docs/progress/LEDGER.md](docs/progress/LEDGER.md) |
 | 本轮建档 Change Record | [docs/progress/PROG-001-level1-spec.md](docs/progress/PROG-001-level1-spec.md) |
+| 四项优化实施记录 | [docs/progress/PROG-002-optimizations.md](docs/progress/PROG-002-optimizations.md) |
 | 下一批四项优化的执行卡 | [docs/plans/OPTIMIZATION_PLAN.md](docs/plans/OPTIMIZATION_PLAN.md) |
 | 拓展功能与后续体验优化 | [docs/ROADMAP.md](docs/ROADMAP.md) |
 | 尚未完成的验证 | [docs/pending-verification.md](docs/pending-verification.md) |

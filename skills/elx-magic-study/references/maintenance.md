@@ -24,7 +24,7 @@
 
 1. 读取本技能和本参考，不依赖上次对话的内存状态。
 2. 运行 `maintenance --refresh`，它有界同步飞书，保留失败与范围信息，计算稳定变化摘要。
-3. 检查 pending 与 plans。已有同 source id＋hash 的 preview/applying/incomplete 计划时复用，不重复生成。已完成并且来源版本未变化时跳过。
+3. 检查 pending、needsClassification 与 plans。只有明确为输入的资料进入 pending；生成知识页不因 kind=source 再次入队。旧记录角色不明时先核对并让用户确认单条 classify，不批量猜测回填。已有同 source id＋hash 的活动计划时复用；来源未变化时跳过。
 4. 只有链接的来源列为待获取；有足够正文时按 capture-ingest.md 生成来源笔记与主题计划。每次从少量变更开始，不无限扫描。
 5. 如需为计划读取基线，可以调用 plan；不会调用 apply。草稿存在本地，可由后续交互确认执行。
 6. 新发现的问题引用实际资料；“孤立”“长期未核对”“未索引引用”不等于错误，不按这些标签自动删页。

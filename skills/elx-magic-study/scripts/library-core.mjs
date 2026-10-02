@@ -6,6 +6,20 @@ import { Lark, feishuURL } from './lark.mjs';
 import { lint } from './retrieval.mjs';
 
 const client = (state, supplied) => supplied || new Lark(state.profile);
+export function recordRole(document) { return ['input', 'derived', 'navigation'].includes(document.recordRole) ? document.recordRole : (document.recordRole === undefined && document.remote === false ? 'input' : 'unknown'); }
+export function intakeQueue(documents) {
+  const active = documents.filter(d => !d.unavailable && !d.outOfScope);
+  const describe = d => ({ id: d.id, title: d.title, hash: d.hash, coverage: d.coverage });
+  return { pending: active.filter(d => recordRole(d) === 'input' && d.hash !== d.processedHash).map(describe), needsClassification: active.filter(d => recordRole(d) === 'unknown').map(describe) };
+}
+export async function classifyDocument(home, id, docId, role, confirmed) {
+  assert(confirmed, 'CONFIRM_REQUIRED', '先确认该条资料的角色，再使用 --confirm；不做全库自动回填');
+  assert(['input', 'derived', 'navigation'].includes(role), 'ROLE', '角色只能为 input、derived 或 navigation');
+  const state = await loadLibrary(home, id); const d = state.documents.find(d => d.id === docId);
+  assert(d, 'UNKNOWN_DOCUMENT', '资料不在当前索引中');
+  const previous = recordRole(d); d.recordRole = role; await saveLibrary(home, state);
+  return { id: docId, previous, role, remoteChanged: false };
+}
 export async function doctor(home, profile) {
   const lark = new Lark(profile); const result = { node: process.version, home: stateHome(home), configuredLibrary: (await readJSON(path.join(stateHome(home), 'config.json'), {})).defaultLibrary || null };
   try { result.cli = (await lark.call(['--version'])).version; const identity = await lark.identity(); result.auth = identity.status; result.userAvailable = true; result.next = result.configuredLibrary ? '运行 status，必要时 sync 验证在线文档读取' : '请用户提供飞书 Wiki 整理根链接和允许读取范围，再 bind'; }
@@ -98,7 +112,7 @@ export async function capture(home, id, { url, title, note = '' }) {
   const state = await loadLibrary(home, id); const sourceUrl = canonicalSource(url); const duplicate = state.documents.find(d => d.sourceUrl === sourceUrl);
   if (duplicate) return { existing: true, id: duplicate.id, status: 'local-record', note: '已有来源，未重复添加；此回执不代表飞书已写入' };
   assert(title && title.length <= 300, 'TITLE', '提供可确认的来源标题或清楚标记的用户暂定标题');
-  const d = { id: 'src-' + hash(sourceUrl).slice(0, 20), title, sourceUrl, url: sourceUrl, kind: 'source', coverage: 'link_only', markdown: `# ${title}\n\n来源：${sourceUrl}\n\n收藏备注：${note}\n\n状态：待获取正文。\n`, createdAt: now(), remote: false };
+  const d = { id: 'src-' + hash(sourceUrl).slice(0, 20), title, sourceUrl, url: sourceUrl, kind: 'source', recordRole: 'input', coverage: 'link_only', markdown: `# ${title}\n\n来源：${sourceUrl}\n\n收藏备注：${note}\n\n状态：待获取正文。\n`, createdAt: now(), remote: false };
   d.hash = hash(d.markdown); state.documents.push(d); await saveLibrary(home, state);
   return { id: d.id, status: 'local-draft', remoteSaved: false, next: '按 capture-ingest.md 生成飞书来源页计划；用户明确收藏且目标已确认时，可作为该单条写入的授权。' };
 }
@@ -193,6 +207,7 @@ async function finishPlan(home, state, plan, lark) {
   for (let i = 0; i < plan.steps.length; i++) { const step = plan.steps[i], a = plan.payload.actions[i]; const d = await lark.fetch(step.url); let record = state.documents.find(x => x.id === d.id);
     if (!record) { record = { id: d.id }; state.documents.push(record); }
     Object.assign(record, d, { url: step.url, title: a.title || record.title || d.id, kind: a.category, hash: hash(d.markdown), fetchedAt: now(), coverage: 'full_text', remote: true });
+    if (a.kind === 'create') Object.assign(record, { recordRole: ['index', 'log'].includes(a.category) ? 'navigation' : 'derived', producedBy: plan.payload.operation, inputVersions: plan.payload.sources });
   }
   for (const src of plan.payload.sources) { const d = state.documents.find(d => d.id === src.id); if (d?.hash === src.hash) d.processedHash = src.hash; }
   await saveLibrary(home, state); plan.state = 'complete'; plan.completedAt = now(); await writeJSON(planFile(home, state.id, plan.payload.operation), plan);
@@ -212,10 +227,10 @@ export async function recoverPlan(home, id, operation, index, url, supplied) {
 export async function maintenance(home, id, { refresh = false, supplied } = {}) {
   let state = await loadLibrary(home, id); let syncResult = null;
   if (refresh && state.provider === 'feishu') { syncResult = await sync(home, state.id, { supplied }); state = await loadLibrary(home, state.id); }
-  const report = lint(state.documents); const pending = state.documents.filter(d => !d.unavailable && !d.outOfScope && (d.kind === 'source' || (d.kind === 'document' && !d.markdown.includes('ELX记录 '))) && d.hash !== d.processedHash).map(d => ({ id: d.id, title: d.title, hash: d.hash, coverage: d.coverage }));
-  const signature = hash({ report: report.signature, pending, errors: syncResult?.failures || [], complete: syncResult?.catalogComplete });
+  const report = lint(state.documents); const { pending, needsClassification } = intakeQueue(state.documents);
+  const signature = hash({ report: report.signature, pending, needsClassification, errors: syncResult?.failures || [], complete: syncResult?.catalogComplete });
   const changed = state.maintenanceSignature !== signature; state.maintenanceSignature = signature; state.maintenanceAt = now(); await saveLibrary(home, state);
-  return { mode: 'draft-and-check-only', changed, notify: changed && (!!pending.length || !!report.issues.length || !!syncResult?.failures.length), pending, report, sync: syncResult, note: '脚本只更新本地状态；Agent 根据待整理清单生成草稿／计划，不调用 apply，不发送飞书消息。无变化时保持静默。' };
+  return { mode: 'draft-and-check-only', changed, notify: changed && (!!pending.length || !!needsClassification.length || !!report.issues.length || !!syncResult?.failures.length), pending, needsClassification, report, sync: syncResult, note: '脚本只更新本地状态；旧记录角色不明时列入待分类，不自动重整或回填。无变化时保持静默。' };
 }
 export function schedulePrompt(state, skillPath, home) {
   const context = JSON.stringify({ library: state.id, stateHome: stateHome(home), skillPath: path.resolve(skillPath) });

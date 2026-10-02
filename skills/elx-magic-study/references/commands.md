@@ -29,6 +29,8 @@ node CLI source-content --id <src编号> --file <正文UTF8文件> --coverage tr
 
 两个命令仅生成本地记录，来源正文快照按内容 hash 留存。source-content 不代表自动向飞书保存。获取失败时保持 link_only，不填写虚构全文。
 
+新输入记录使用 recordRole=input，生成知识页使用 derived，导航／维护页使用 navigation。旧远端记录没有角色时列为 needsClassification，不能自动把所有 source 都重新整理。确认单条角色后可执行 `classify --id <编号> --role input|derived|navigation --confirm`，只改本地角色，不修改正文或远端。
+
 ## 飞书写入计划
 
 Agent 写一个普通 UTF-8 JSON 文件，再 `plan --file <文件>`：
