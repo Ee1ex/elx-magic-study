@@ -20,7 +20,7 @@ class FakeLark {
   async identity() { return { account: this.account, available: true, status: 'valid' }; }
   async assertAccount(state) { if (state.account !== this.account) throw issue('ACCOUNT_CHANGED', 'account changed'); }
   async node(url) { if (url === root) return { node_token: 'ROOT12345678901234567890', space_id: this.rootSpace, title: '测试根', obj_type: 'folder' }; const d = [...this.docs.values()].find(d => d.url === url); if (!d) throw issue('UNKNOWN', 'unknown'); return { node_token: 'n' + d.id, parent_node_token: d.parent || 'ROOT12345678901234567890', space_id: '1', obj_token: d.id, obj_type: 'docx', title: d.title }; }
-  async inScope(url) { if (url !== root && ![...this.docs.values()].some(d => d.url === url)) throw issue('OUT_OF_SCOPE', 'out of scope'); return { allowed: true }; }
+  async inScope(url) { if (url !== root && ![...this.docs.values()].some(d => d.url === url.replace('/wiki/', '/docx/'))) throw issue('OUT_OF_SCOPE', 'out of scope'); return { allowed: true }; }
   async fetch(url) { const d = [...this.docs.values()].find(d => d.url === url || d.id === url); if (!d || d.fail) throw issue('FETCH', 'not readable'); return structuredClone(d); }
   async children() { return { items: this.nodePages, has_more: false }; }
   add(id, markdown, title = id) { const d = { id, markdown, title, url: `https://example.feishu.cn/docx/${id}`, revision: 1 }; this.docs.set(id, d); return d; }
@@ -149,4 +149,61 @@ test('OPT-02 失败诊断只读且不接受缺字；终态不会进入维护活�
   const result=await core.diagnosePlan(dir,'test',p.plan,1,d.url,lark);assert.equal(result.verified,false);assert.equal(result.code,'VERIFY_FAILED');assert.ok(result.comparison.expectedLength>0);assert.equal(lark.writes,1);
   const old=await makePlan(dir,'test',{actions:[{kind:'create',title:'未使用',content:'草稿'}]},lark);await run(['plan-cancel','--home',dir,'--library','test','--id',old.plan,'--approve',old.digest,'--reason','不需要']);
   const report=await maintenance(dir,'test');assert.ok(!report.plans.some(x=>x.id===old.plan));assert.ok(report.plans.some(x=>x.id===p.plan&&x.label==='待查证'));
+});
+async function pagedFixture() {
+  const f=await fixture();f.listCalls=[];f.fetchCalls=[];f.versions={a:'100',b:'100',c:'100',d:'100'};
+  for(const id of ['a','b','c','d','z'])f.lark.add(id,id+' 正文');
+  const fetch=f.lark.fetch.bind(f.lark);f.lark.fetch=async url=>{f.fetchCalls.push(url);return fetch(url.replace('/wiki/','/docx/'));};
+  const node=id=>({obj_type:'docx',obj_token:id,node_token:id,title:id,has_child:id==='a',obj_edit_time:f.versions[id]});
+  f.lark.children=async(parent,token)=>{f.listCalls.push(parent.node_token+':'+(token||'first'));if(f.failNext){f.failNext=false;throw issue('NETWORK','temporary failure');}if(parent.node_token==='a')return {items:[node('d')],has_more:false};return token?{items:[node('c')],has_more:false}:{items:[node('a'),node('b')],has_more:true,page_token:'next'};};
+  return f;
+}
+test('OPT-03 小预算能跨页、跨层继续扫描，并完成正文队列', async () => {
+  const f=await pagedFixture();let result;
+  for(let i=0;i<12;i++){result=await sync(f.dir,'test',{maxDocs:1,maxNodes:2,supplied:f.lark});if(result.catalogComplete&&result.remainingThisPass===0)break;}
+  const s=await loadLibrary(f.dir,'test');assert.deepEqual(s.documents.map(d=>d.id).sort(),['a','b','c','d']);assert.equal(result.catalogComplete,true);assert.equal(result.remainingThisPass,0);assert.equal(f.listCalls.filter(x=>x.endsWith(':first')&&x.startsWith('ROOT')).length,1);
+});
+test('OPT-03 列表中断可恢复，未完成时不把未见旧条目标出范围', async () => {
+  const f=await pagedFixture();const old=await loadLibrary(f.dir,'test');old.documents.push({id:'old',markdown:'历史',hash:hash('历史'),url:'https://example.feishu.cn/docx/old'});await saveLibrary(f.dir,old);
+  await sync(f.dir,'test',{maxDocs:1,maxNodes:2,supplied:f.lark});assert.notEqual((await loadLibrary(f.dir,'test')).documents.find(d=>d.id==='old').outOfScope,true);
+  f.failNext=true;await assert.rejects(sync(f.dir,'test',{maxDocs:1,maxNodes:2,supplied:f.lark}));
+  let result;for(let i=0;i<12;i++){result=await sync(f.dir,'test',{maxDocs:2,maxNodes:2,supplied:f.lark});if(result.catalogComplete&&result.remainingThisPass===0)break;}
+  const state=await loadLibrary(f.dir,'test');assert.equal(state.documents.find(d=>d.id==='old').outOfScope,true);assert.equal(state.documents.filter(d=>!d.outOfScope).length,4);
+});
+test('OPT-03 读取根变化重启扫描；修改时间不变可跳过正文，force 可重读', async () => {
+  const f=await pagedFixture();await sync(f.dir,'test',{maxDocs:10,maxNodes:50,supplied:f.lark});const calls=f.fetchCalls.length;
+  const second=await sync(f.dir,'test',{maxDocs:10,maxNodes:50,supplied:f.lark});assert.equal(second.skippedUnchanged,4);assert.equal(f.fetchCalls.length,calls);
+  f.versions.b='101';f.lark.docs.get('b').markdown='b 更新';await sync(f.dir,'test',{maxDocs:10,maxNodes:50,supplied:f.lark});assert.equal(f.fetchCalls.length,calls+1);
+  await sync(f.dir,'test',{maxDocs:10,maxNodes:50,force:true,supplied:f.lark});assert.equal(f.fetchCalls.length,calls+5);
+  await sync(f.dir,'test',{maxDocs:1,maxNodes:2,supplied:f.lark});const state=await loadLibrary(f.dir,'test');state.readRoots=[{kind:'docx',documentId:'z',url:'https://example.feishu.cn/docx/z',title:'z',origin:'https://example.feishu.cn'}];await saveLibrary(f.dir,state);
+  const changed=await sync(f.dir,'test',{maxDocs:10,maxNodes:50,supplied:f.lark});assert.equal(changed.scanReset,'binding_changed');assert.deepEqual((await loadLibrary(f.dir,'test')).documents.filter(d=>!d.outOfScope).map(d=>d.id),['z']);
+});
+
+
+test('OPT-03 三页游标失效可显式重启；账号改变拒绝，移动节点不读正文', async () => {
+  const f = await pagedFixture();
+  f.lark.children = async (_parent, token) => {
+    if (f.badCursor) return { items: [], has_more: true, page_token: token };
+    const index = Number(token || 0), id = ['a', 'b', 'c'][index];
+    return { items: [{ obj_type: 'docx', obj_token: id, node_token: id, title: id }], has_more: index < 2, page_token: String(index + 1) };
+  };
+  await sync(f.dir, 'test', { maxNodes: 2, maxDocs: 1, supplied: f.lark });
+  f.badCursor = true;
+  await assert.rejects(sync(f.dir, 'test', { supplied: f.lark }), e => e.code === 'PAGINATION');
+  const checkpoint = (await loadLibrary(f.dir, 'test')).scan.id;
+  f.lark.account = 'other';
+  await assert.rejects(sync(f.dir, 'test', { supplied: f.lark }), e => e.code === 'ACCOUNT_CHANGED');
+  assert.equal((await loadLibrary(f.dir, 'test')).scan.id, checkpoint);
+  f.lark.account = 'test-account'; f.badCursor = false;
+  const checkScope = f.lark.inScope.bind(f.lark);
+  f.lark.inScope = async url => { if (url.endsWith('/b')) throw issue('OUT_OF_SCOPE', 'moved'); return checkScope(url); };
+  f.fetchCalls.length = 0;
+  const result = await sync(f.dir, 'test', { restartScan: true, supplied: f.lark });
+  assert.equal(result.catalogComplete, true); assert.equal(result.discovered, 3);
+  assert.equal(result.scanReset, 'requested'); assert.equal(result.failures[0].code, 'OUT_OF_SCOPE');
+  assert.ok(!f.fetchCalls.some(url => url.endsWith('/b')));
+  const fetched = f.fetchCalls.length;
+  await sync(f.dir, 'test', { supplied: f.lark });
+  assert.equal(f.fetchCalls.length - fetched, 2, '缺修改时间时每轮重新读取正文');
+  assert.equal(f.lark.writes, 0);
 });

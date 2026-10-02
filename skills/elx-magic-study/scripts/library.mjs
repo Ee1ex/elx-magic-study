@@ -14,7 +14,7 @@ const HELP = {
     doctor: '只读检查 Node、飞书 CLI、用户授权和绑定；不登录或改权限',
     bind: '--id <编号> --root <Wiki/docx链接> [重复] --write-root <Wiki链接> --confirm；只保存已确认绑定',
     status: '显示当前库范围、索引覆盖和实际记录的调度任务',
-    sync: '[--max-docs 30] [--max-nodes 500]；有界、轮转地索引授权范围，零远端写入',
+    sync: '[--max-docs 30] [--max-nodes 500]；[--force] [--restart-scan]；目录与正文分别续扫授权范围，零远端写入',
     search: '--query <问题关键词> [重复] [--limit 8] [--offline]；本地 BM25 和引用邻居',
     fetch: '--id <已索引文档编号>；回远端核对后返回正文',
     capture: '--url <来源链接> --title <标题> [--note <备注>]；仅生成本地来源记录',
@@ -38,7 +38,7 @@ const HELP = {
 };
 function parse(argv) {
   const [command = 'help', ...args] = argv; const options = {};
-  const boolean = new Set(['confirm', 'offline', 'refresh']);
+  const boolean = new Set(['confirm', 'offline', 'refresh', 'force', 'restart-scan']);
   const allowed = new Set(['home', 'library', 'profile', 'id', 'root', 'write-root', 'name', 'query', 'limit', 'max-docs', 'max-nodes', 'url', 'title', 'note', 'file', 'coverage', 'approve', 'step', 'doc', 'stale-days', 'output', 'time', 'timezone', 'days', 'role', 'replacement', 'reason', ...boolean]);
   for (let i = 0; i < args.length; i++) { assert(args[i].startsWith('--'), 'ARGUMENT', '参数使用 --name value 形式'); const key = args[i].slice(2); assert(allowed.has(key), 'ARGUMENT', `未知参数 ${key}`); const value = boolean.has(key) ? true : args[++i]; assert(value !== undefined && !String(value).startsWith('--'), 'ARGUMENT', `参数 ${key} 缺少值`); if (['root', 'query'].includes(key)) (options[key] ||= []).push(value); else { assert(!(key in options), 'ARGUMENT', `参数 ${key} 不能重复`); options[key] = value; } }
   return { command, options };
@@ -55,7 +55,7 @@ export async function run(argv) {
     if (command === 'demo-import') return importManifest(home, o.id, await readJSON(o.file));
     const state = await loadLibrary(home, o.library); const id = state.id;
     if (command === 'status') { const queue = intakeQueue(state.documents); const plans = await planOverview(home, state); const tasks = {}; for (const p of plans) tasks[p.label] = (tasks[p.label] || 0) + 1; return { id, name: state.name, provider: state.provider, readRoots: state.readRoots, writeRoot: state.writeRoot, indexed: state.documents.length, pendingInputs: queue.pending.length, needsClassification: queue.needsClassification.length, tasks, lastSync: state.lastSync || null, schedules: state.schedules || [], next: state.documents.length ? '可 search、graph 或 maintenance；回答重要问题前 fetch 最新正文' : '先 sync 建立索引' }; }
-    if (command === 'sync') return sync(home, id, { maxDocs: number(o['max-docs'], 30, 1, 200), maxNodes: number(o['max-nodes'], 500, 1, 5000) });
+    if (command === 'sync') return sync(home, id, { maxDocs: number(o['max-docs'], 30, 1, 200), maxNodes: number(o['max-nodes'], 500, 1, 5000), force: !!o.force, restartScan: !!o['restart-scan'] });
     if (command === 'fetch') return fetchDocument(home, id, o.id);
     if (command === 'capture') return capture(home, id, { url: o.url, title: o.title, note: o.note });
     if (command === 'classify') return classifyDocument(home, id, o.id, o.role, !!o.confirm);

@@ -81,3 +81,9 @@ schedule-plan 只准备提示与时间配置；实际调用宿主调度工具后
 文件写入使用绝对或明确参数路径；图谱和调度方案拒绝覆盖已有文件。状态写入使用原子替换，单机同一状态目录由 OS 锁避免并发写。锁不跨设备，也不保护用户手动编辑飞书。
 
 演示入口 `demo-import --id <新id> --file <清单>` 只接受 `demo:true`，与飞书库分离，不能执行远端同步或写入。文件被成功导入不表示其语义真实。
+
+## 同步断点与刷新
+
+重复 sync 会续跑目录与正文队列；catalogComplete=true 且 remainingThisPass=0 表示本轮完成。下一次启动新一轮。directoryTasks 仅表示待办任务数，不是剩余文档数。
+
+相同非空修改时间可跳过正文，skippedUnchanged 给出数量，不更新 fetchedAt；缺元数据时照常读取。要整轮重读可 `sync --restart-scan --force`，之后继续 sync 直到完成；不要每次都 restart。游标失效时可显式 restart-scan，保留正文与旧记录。节点读取前再次核对范围；完整目录才标 outOfScope，绝不删除。

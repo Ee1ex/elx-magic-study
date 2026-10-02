@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { now, hash, assert, issue, identifier, stateHome, libraryPath, readJSON, writeJSON, loadLibrary, saveLibrary, canonicalSource } from './store.mjs';
 import { Lark, feishuURL } from './lark.mjs';
 import { lint } from './retrieval.mjs';
+import { scanCatalog } from './scan.mjs';
 
 const client = (state, supplied) => supplied || new Lark(state.profile);
 export function recordRole(document) { return ['input', 'derived', 'navigation'].includes(document.recordRole) ? document.recordRole : (document.recordRole === undefined && document.remote === false ? 'input' : 'unknown'); }
@@ -81,24 +82,34 @@ export async function enumerate(state, lark, maxNodes = 500) {
   const unique = [...new Map(catalog.map(c => [c.id, c])).values()];
   return { catalog: unique.slice(0, maxNodes), complete: complete && unique.length <= maxNodes, pages };
 }
-export async function sync(home, id, { maxDocs = 30, maxNodes = 500, supplied } = {}) {
-  assert(maxDocs >= 1 && maxDocs <= 200, 'LIMIT', '单次刷新数量为 1—200');
+export async function sync(home, id, { maxDocs = 30, maxNodes = 500, force = false, restartScan = false, supplied } = {}) {
+  assert(Number.isInteger(maxDocs) && maxDocs >= 1 && maxDocs <= 200 && Number.isInteger(maxNodes) && maxNodes >= 1 && maxNodes <= 5000, 'LIMIT', '正文预算为 1—200，目录预算为 1—5000');
   const state = await loadLibrary(home, id); assert(state.provider === 'feishu', 'DEMO_ONLY', '演示资料不能调用飞书同步');
   const lark = client(state, supplied); await lark.assertAccount(state);
-  const listing = await enumerate(state, lark, maxNodes); const catalog = listing.catalog.sort((a, b) => a.id.localeCompare(b.id));
-  const old = new Map(state.documents.map(d => [d.id, d])); const start = catalog.length ? state.syncCursor % catalog.length : 0;
-  const batch = [...catalog.slice(start), ...catalog.slice(0, start)].slice(0, maxDocs); const failures = []; const changed = [];
-  for (const item of batch) {
-    try { const d = await lark.fetch(item.url); assert(d.id === item.id, 'DOC_ID_CHANGED', '文档 ID 与目录不一致'); const previous = old.get(d.id); const contentHash = hash(d.markdown);
-      if (contentHash !== previous?.hash) changed.push(d.id);
-      old.set(d.id, { ...previous, ...item, ...d, url: item.url, aliases: [`${item.origin}/docx/${d.id}`], title: item.title, kind: previous?.kind || inferKind(item.title), coverage: 'full_text', fetchedAt: now(), hash: contentHash, unavailable: false, outOfScope: false });
-    } catch (e) { failures.push({ id: item.id, code: e.code }); if (old.has(item.id)) old.get(item.id).unavailable = true; }
+  const { scan, reset } = await scanCatalog(home, state, lark, { maxNodes, force, restartScan });
+  const old = new Map(state.documents.map(d => [d.id, d])); const failures = [], changed = [];
+  let refreshed = 0, skippedUnchanged = 0;
+  for (const docId of scan.pendingReads.slice(0, maxDocs)) {
+    const item = scan.catalog.find(d => d.id === docId), previous = old.get(docId);
+    try {
+      await lark.inScope(item.url, state.readRoots);
+      if (!scan.force && item.remoteEditTime && item.remoteEditTime === previous?.remoteEditTime && previous?.hash && !previous.unavailable && !previous.outOfScope) {
+        Object.assign(previous, item, { metadataCheckedAt: now() }); skippedUnchanged++;
+      } else {
+        const d = await lark.fetch(item.url); assert(d.id === item.id, 'DOC_ID_CHANGED', '文档 ID 与目录不一致'); const contentHash = hash(d.markdown);
+        if (contentHash !== previous?.hash) changed.push(d.id);
+        old.set(d.id, { ...previous, ...item, ...d, url: item.url, aliases: [`${item.origin}/docx/${d.id}`], title: item.title, kind: previous?.kind || inferKind(item.title), coverage: 'full_text', fetchedAt: now(), hash: contentHash, unavailable: false, outOfScope: false }); refreshed++;
+      }
+    } catch (e) { failures.push({ id: item.id, code: e.code || 'ERROR' }); if (previous) previous.unavailable = true; }
+    scan.pendingReads.shift(); state.documents = [...old.values()]; await saveLibrary(home, state);
   }
-  const currentIds = new Set(catalog.map(d => d.id));
-  if (listing.complete) for (const d of old.values()) if (!currentIds.has(d.id) && d.remote !== false) d.outOfScope = true;
-  state.documents = [...old.values()]; state.syncCursor = catalog.length ? (start + batch.length) % catalog.length : 0;
-  state.lastSync = { at: now(), catalogComplete: listing.complete, discovered: catalog.length, refreshed: batch.length - failures.length, remainingThisPass: Math.max(0, catalog.length - batch.length), failures, changed };
-  await saveLibrary(home, state); return { ...state.lastSync, nextCursor: state.syncCursor, note: '缓存可能包含不同时间的快照；remainingThisPass 非零时继续 sync 轮转读取。' };
+  if (scan.complete) {
+    const currentIds = new Set(scan.catalog.map(d => d.id));
+    for (const d of old.values()) if (!currentIds.has(d.id) && d.remote !== false) d.outOfScope = true;
+  }
+  state.documents = [...old.values()];
+  state.lastSync = { at: now(), cycleId: scan.id, catalogComplete: scan.complete, directoryTasks: scan.queue.length, discovered: scan.catalog.length, refreshed, skippedUnchanged, remainingThisPass: scan.pendingReads.length, failures, changed, scanReset: reset };
+  await saveLibrary(home, state); return { ...state.lastSync, note: '目录与正文分别续扫；目录未完整或正文队列非零时继续 sync。修改时间相同仅作为跳过依据，不代表刚读取正文；--force 强制重读。' };
 }
 function inferKind(title = '') { if (/来源|收藏/.test(title)) return 'source'; if (/实践|经验/.test(title)) return 'experience'; if (/主题|概念|方法/.test(title)) return 'topic'; return 'document'; }
 export async function fetchDocument(home, id, docId, supplied) {
