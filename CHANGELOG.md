@@ -1,5 +1,12 @@
 # 变更记录
 
+## [0.4.0] - 2026-10-03
+
+- feat: guide reader setup and host-native scheduled maintenance
+- feat: add terminal-native OpenCLI icon adapter and trial guide
+- feat: add browser-assisted native category icon workflow
+- docs: close v0.3.0 release and local installation
+
 ## 未发布
 
 - REQ-011：OpenCLI SDK 终端适配，提供 icon-inspect／icon-apply／icon-verify；icon-plan 可自行观察，无浏览器时明确 pending。无需 Codex Computer Use，仍需登录浏览器和桥接。
