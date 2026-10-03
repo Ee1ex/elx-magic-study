@@ -8,7 +8,7 @@ import { scanCatalog } from './scan.mjs';
 import { pendingCategoryIcons } from './icons.mjs';
 import { prepareClassification, classificationMarkdown, verifyClassification, pendingContentClassification } from './classification.mjs';
 export { classificationContext } from './classification.mjs';
-export { iconDecision, planCategoryIcon, recordCategoryIcon } from './icons.mjs';
+export { iconDecision, planCategoryIcon, recordCategoryIcon, inspectCategoryIcon, applyCategoryIcon } from './icons.mjs';
 
 const client = (state, supplied) => supplied || new Lark(state.profile);
 export function recordRole(document) { return ['input', 'derived', 'navigation'].includes(document.recordRole) ? document.recordRole : (document.recordRole === undefined && document.remote === false ? 'input' : 'unknown'); }

@@ -103,3 +103,7 @@ status／maintenance 的 pendingContentClassification 表示新来源笔记的�
 ## 分类页原生图标（浏览器辅助）
 
 `icon-plan --file <当前网页观察和建议JSON>` 核对分类身份、深度、正文版本并保存本地计划；不调用远端图标API。`icon-record --id <图标计划> --file <网页回执JSON>` 保存刷新后的实际结果或 pending；不是自动识图。具体JSON、手动选择保护和失败处理见 [category-icons.md](category-icons.md)。status／maintenance 输出 pendingCategoryIcons。
+
+## 无 Computer Use 的终端图标路径
+
+icon-inspect --id <分类文档ID> 只读打开网页核对；icon-plan --file <建议JSON> 不传 observation 时自动通过 OpenCLI SDK 观察，缺连接会保存 pending；icon-apply --id <图标计划> --approve <digest> 只在明确授权后设置并重新导航刷新核对；icon-verify 使用同样的 id/digest，只读核对未知结果。具体依赖与 WorkBuddy/harness 试用步骤见 [terminal-icons.md](terminal-icons.md)。不是无浏览器方案，也不需要 Codex 插件。

@@ -8,7 +8,7 @@ import { search, lint } from './retrieval.mjs';
 import { pendingCategoryIcons } from './icons.mjs';
 import { pendingContentClassification } from './classification.mjs';
 import { exportGraph } from './graph.mjs';
-import { doctor, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan, classificationContext, planCategoryIcon, recordCategoryIcon } from './library-core.mjs';
+import { doctor, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan, classificationContext, planCategoryIcon, recordCategoryIcon, inspectCategoryIcon, applyCategoryIcon } from './library-core.mjs';
 
 const HELP = {
   version: '0.3.0', usage: 'node <SKILL_ROOT>/scripts/library.mjs <command> [--home <个人状态目录>] [--library <编号>]',
@@ -22,6 +22,9 @@ const HELP = {
     capture: '--url <来源链接> --title <标题> [--note <备注>]；仅生成本地来源记录',
     'source-content': '--id <来源编号> --file <UTF8正文> --coverage partial|full_text|transcript --note <获取方式>；仅本地快照',
     'classification-context': '--id <输入来源编号> [--query <正文关键词>] [--limit 300]；只读分类位置、已有标签与主题候选',
+    'icon-inspect': '--id <分类文档ID>；通过OpenCLI只读读取原生图标，无需Computer Use',
+    'icon-apply': '--id <图标计划> --approve <digest>；终端浏览器设置、刷新、保存回执',
+    'icon-verify': '--id <图标计划> --approve <digest>；未知结果只读核对，不重发',
     'icon-plan': '--file <图标建议与网页观察JSON>；核对分类页并生成浏览器操作建议，不设置远端图标',
     'icon-record': '--id <图标计划编号> --file <网页回执JSON>；记录刷新核对或待设置结果',
     classify: '--id <文档编号> --role input|derived|navigation --confirm；确认后仅设置该条本地角色',
@@ -54,7 +57,7 @@ export async function run(argv) {
   const { command, options: o } = parse(argv), home = stateHome(o.home);
   if (command === 'help' || command === '--help') return HELP;
   if (command === 'doctor') return doctor(home, o.profile);
-  const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','plan-cancel','plan-supersede','apply','recover','maintenance','schedule-record','icon-plan','icon-record']);
+  const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','plan-cancel','plan-supersede','apply','recover','maintenance','schedule-record','icon-plan','icon-record','icon-apply','icon-verify']);
   const execute = async () => {
     if (command === 'bind') return bind(home, { id: o.id, name: o.name, profile: o.profile, readRoots: o.root, writeRoot: o['write-root'], confirmed: !!o.confirm });
     if (command === 'demo-import') return importManifest(home, o.id, await readJSON(o.file));
@@ -63,6 +66,8 @@ export async function run(argv) {
     if (command === 'sync') return sync(home, id, { maxDocs: number(o['max-docs'], 30, 1, 200), maxNodes: number(o['max-nodes'], 500, 1, 5000), force: !!o.force, restartScan: !!o['restart-scan'] });
     if (command === 'fetch') return fetchDocument(home, id, o.id);
     if (command === 'capture') return capture(home, id, { url: o.url, title: o.title, note: o.note });
+    if (command === 'icon-inspect') return inspectCategoryIcon(home,id,o.id);
+    if (command === 'icon-apply' || command === 'icon-verify') return applyCategoryIcon(home,id,o.id,o.approve,undefined,undefined,command==='icon-verify');
     if (command === 'icon-plan') return planCategoryIcon(home, id, await readJSON(o.file));
     if (command === 'icon-record') return recordCategoryIcon(home, id, o.id, await readJSON(o.file));
     if (command === 'classification-context') return classificationContext(home, id, o.id, { queries: o.query || [], limit: number(o.limit, 300, 1, 1000) });

@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "category-icons-completed",
+  "stage": "portable-icons-completed",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -13,48 +13,53 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-010",
+    "id": "REQ-011",
     "owner": "项目负责人（当前用户）",
-    "summary": "REQ-010 图标网页试点与本地源码工作流完成",
-    "scope": "分类页选图标、保护手动选择、浏览器设置与刷新核对、失败待设置；一篇主题知识真实试点已获本轮授权",
-    "out_of_scope": "正文／标题改写、批量改普通笔记、私有接口、权限调整、常驻监听、发布和全局安装",
+    "summary": "REQ-011终端图标适配与WorkBuddy/harness试用包完成",
+    "scope": "项目内OpenCLI SDK适配、无浏览器降级、证据回执、试用文档与本地打包；三篇分类的有界终端设置／恢复验收",
+    "out_of_scope": "私有接口、Cookie导出、修改OpenCLI全局代码、权限调整、自动安装扩展、批量图标修改、发布和全局安装",
     "paths": [
       ".elx-level",
       "AGENTS.md",
       "DOCUMENT_MAP.md",
-      "CHANGELOG.md",
       "README.md",
+      "CHANGELOG.md",
       "docs",
       "skills/elx-magic-study",
       "tests"
     ],
-    "next_step": "待后续安装／发布授权；其余图标与客户端仍需真实试用"
+    "next_step": "用户使用预览包在WorkBuddy/harness试用；根据实际日志处理兼容性，不自动发布或安装"
   },
   "artifacts": [
     {
-      "path": "docs/requirements/REQ-010-category-icons.md",
-      "summary": "范围与行为验收"
+      "path": "docs/requirements/REQ-011-portable-icons.md",
+      "summary": "便携终端图标方案与验收"
     },
     {
-      "path": "docs/progress/PROG-004-category-icons.md",
-      "summary": "试点与实现验收记录"
+      "path": "docs/progress/PROG-005-portable-icons.md",
+      "summary": "真实过程、失败边界与试用交付"
     }
   ],
   "verifications": [
     {
       "command": "npm test",
       "status": "passed",
-      "summary": "54 项合成测试通过，含4项新增图标决策与回执测试"
+      "summary": "58项测试通过；含缺浏览器、摘要授权、未知结果恢复及Shadow DOM用例"
     },
     {
       "command": "quick_validate.py and node --check",
       "status": "passed",
-      "summary": "Skill 格式有效，10 个脚本语法通过，文档链接和 README 设计检查通过"
+      "summary": "Skill格式有效，11个脚本语法通过，文档链接与README结构检查通过"
     },
     {
-      "command": "host browser selection, reload, CLI document readback",
+      "command": "terminal icon-plan / icon-apply / icon-verify",
       "status": "passed",
-      "summary": "一篇分类页原生书籍图标刷新保留，标题与正文未变；其余分类未批量修改"
+      "summary": "本机OpenCLI 1.8.6：实践经验和网页设计在诊断修正后核验；AI工具一次完整命令成功，重复执行幂等；WorkBuddy本体待用户试用"
+    },
+    {
+      "command": "preview archive SHA256 and packaged icon-inspect",
+      "status": "passed",
+      "summary": "27个Skill文件与源码一致，ZIP内容验证通过；从包内入口实测读取原生机器人图标"
     }
   ],
   "git": {
@@ -156,7 +161,22 @@
       "event": "category_icons_completed",
       "at": "2026-10-03T15:59:20.974045+00:00",
       "summary": "仅本地源码与一篇真实试点；未发布／安装新版"
+    },
+    {
+      "event": "portable_icons_authorized",
+      "at": "2026-10-03T16:24:32.304319+00:00",
+      "summary": "用户要求为无Computer Use的Agent准备可调用命令和试用材料"
+    },
+    {
+      "event": "portable_icons_verified",
+      "at": "2026-10-03T16:51:19.672666+00:00",
+      "summary": "58项测试，终端设置有真实证据；打包中"
+    },
+    {
+      "event": "portable_icons_trial_delivered",
+      "at": "2026-10-03T16:54:51.590395+00:00",
+      "summary": "通用预览包已生成；WorkBuddy本体尚待用户试用"
     }
   ],
-  "updated_at": "2026-10-03T15:59:20.974045+00:00"
+  "updated_at": "2026-10-03T16:54:51.590395+00:00"
 }

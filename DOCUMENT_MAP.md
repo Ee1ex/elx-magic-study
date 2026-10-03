@@ -45,3 +45,5 @@
 - [0.3.0 发布与安装记录](docs/releases/RELEASE-0.3.0.md)：远端回读、旧版备份、新版校验与恢复边界。
 
 - [分类原生图标需求](docs/requirements/REQ-010-category-icons.md) 与 [实现记录](docs/progress/PROG-004-category-icons.md)：浏览器试点和未发布工作流。
+
+- [终端图标需求](docs/requirements/REQ-011-portable-icons.md)、[实施与试用记录](docs/progress/PROG-005-portable-icons.md)、[WorkBuddy/harness 使用说明](skills/elx-magic-study/references/terminal-icons.md)。

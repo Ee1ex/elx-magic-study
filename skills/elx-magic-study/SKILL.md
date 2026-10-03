@@ -29,7 +29,7 @@ node <SKILL_ROOT>/scripts/library.mjs <command> [--library <编号>] [--home <�
 |---|---|
 | 先收藏、整理文章／视频、多来源综合、实践回写 | [capture-ingest.md](references/capture-ingest.md)：capture → source-content → 内容分类 → plan → 预览 → 确认 → apply |
 | 新资料入库分类、标签、关联已有主题、修改分类预览 | [classification.md](references/classification.md)：读取正文与现有位置 → Agent 判断 → classification 随 plan 核对 → 统一预览；不是旧页搬家 |
-| 分类页创建／改动后设置主题图标 | [category-icons.md](references/category-icons.md)：当前网页观察 → icon-plan → 原生选择器 → 刷新核对 → icon-record；保护手动图标 |
+| 分类页创建／改动后设置主题图标 | [category-icons.md](references/category-icons.md)：优先 [terminal-icons.md](references/terminal-icons.md) 的 OpenCLI 终端路径；icon-plan → 确认 → icon-apply；保留宿主浏览器备选，保护手动图标 |
 | 找以前的资料、结合当前项目给建议 | [query.md](references/query.md)：search → fetch → 依据与适用性；需要时有界 sync |
 | 给我看知识图谱、看看知识关联 | [graph.md](references/graph.md)：生成本地图谱 HTML，并打开供用户查看 |
 | 定时整理、每周检查、修改或停止维护任务 | [maintenance.md](references/maintenance.md)：宿主调度 + maintenance 入口 |

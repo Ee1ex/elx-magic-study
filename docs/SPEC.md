@@ -1,6 +1,6 @@
 # 魔法书屋 项目 SPEC
 
-更新日期：2026-10-03。产品版本：0.3.0（含 REQ-009），已发布并安装；源码新增未发布 REQ-010。责任模式：**LEVEL 1，用户明确指定**。
+更新日期：2026-10-03。产品版本：0.3.0（含 REQ-009），已发布并安装；源码新增未发布 REQ-010／REQ-011。责任模式：**LEVEL 1，用户明确指定**。
 
 本文件是当前产品与技术事实入口，兼任 LEVEL 1 Project Brief。历史演变见进度与决策台账；未来功能见路线图；方案不代表已实现。
 
@@ -16,7 +16,7 @@
 
 **当前范围已确认**：飞书单后端、首次授权引导、收藏整理与项目查询、本地增强检索、按需 HTML 图谱、定时整理检查接入。
 
-**当前轮次范围已确认**：REQ-010 分类页原生主题图标浏览器辅助流程。用户确认先真实试点再接入 Skill；保护手动选择，失败留待设置，不改标题正文，不新增监听、私有接口，不自动发布或安装。README 保留图片与版式。
+**当前轮次范围已确认**：REQ-011 为无 Computer Use 的 Agent 提供 OpenCLI SDK 终端图标适配及试用包。保留手动选择，失败留待设置，不改标题正文、不导出 Cookie、不调用私有接口、不修改全局 OpenCLI；不自动发布或安装。README 保留设计。
 
 ## 2. 已有能力与边界
 
@@ -64,6 +64,7 @@
   → scripts/library.mjs 命令入口
       ├── library-core.mjs：绑定、索引、收藏、计划、写入、维护
       ├── lark.mjs：官方 CLI 调用、用户身份、Wiki 范围与正文
+      ├── icon-browser.mjs：OpenCLI SDK发现、可见DOM／Shadow DOM读取、原生输入与刷新核对
       ├── icons.mjs：图标决策、只读目标核对、计划和宿主观察回执
       ├── classification.mjs：分类上下文、协议校验、目录／主题版本、正文分类段落
       ├── scan.mjs：分页和页内检查点，独立正文队列
@@ -113,9 +114,11 @@ OPT-04 新增可选 summary／summaryForHash。计划 action.summary 为 1—400
 
 ### 5.4 分类页图标（未发布）
 
-仅 index 分类导航页、写入根下两层。icon-plan 根据实际网页 observation 和 Agent 的稳定 theme／表情建议，给出 set／keep／preserve／pending；未知已有图标和手动变化包括移除一律保护。categoryIcons 是可选本地状态，icon-plans 独立存储，不改正文 operations 或 processedHash。
+仅 index 分类导航页、写入根下两层。icon-plan 省略 observation 时尝试 OpenCLI SDK 自行观察；缺浏览器时记录 observationAvailable=false 和 pending，不把未知当无图标。命令根据实际网页 observation 和 Agent 的稳定 theme／表情建议，给出 set／keep／preserve／pending；未知已有图标和手动变化包括移除一律保护。categoryIcons 是可选本地状态，icon-plans 独立存储，不改正文 operations 或 processedHash。
 
 icon-record 成功需刷新标记、图标及标题一致、证据文件和在线身份／路径／正文回读。证据内容由宿主浏览器实际观察，脚本不识图，不能把文件存在当作网页成功证明。失败保留 pending，可由 status／maintenance 看见；定时维护默认不执行网页写入。分类创建与内容改动后由 Skill 工作流触发，不是常驻事件监听。
+
+新增 icon-inspect 只读观察、icon-apply 按 digest 设置并自动取证、icon-verify 只读恢复。写前保存 execution.sending；未知结果不可重发。终端适配器只读 evaluate 获取实际可见控件与位置，使用公开 Page SDK 的 nativeClick/nativeType 操作 Shadow DOM；核对焦点、几何稳定、精确候选、保存稳定和重新导航后的多次一致结果。无 Codex 工具依赖，但需 OpenCLI 包、可用浏览器桥接和飞书登录；Windows＋OpenCLI 1.8.6 实测，WorkBuddy/harness 自身尚待用户验证。
 
 ### 5.5 写入约束
 
@@ -130,7 +133,7 @@ OPT-02 增加 plan-cancel、plan-supersede 和只读 diagnose。终态保留原 
 - Node.js 22+；脚本无 npm 运行依赖。
 - 飞书连接依赖官方 lark-cli；实现曾对本机 1.0.93 的帮助与内嵌参考做过核对，升级后仍要重新核验接口。
 - 主要验证环境是 Windows／Codex。不能据代码可运行就宣称其他平台已验收。
-- `npm test`：本轮实际重跑 54 项（分类图标新增 4 项；分类原有新增 12 项），通过；是合成和模拟行为测试。
+- `npm test`：本轮实际重跑 58 项（终端图标与 Shadow DOM新增 4 项），通过；是合成和模拟行为测试。
 - `npm run demo`：生成合成知识库图谱与检索结果，不连接真实飞书。
 - Skill 格式检查使用 Skill Creator 的 `quick_validate.py`；不是语义质量认证。
 - Git 远端：`https://github.com/Ee1ex/elx-magic-study.git`，0.3.0 已发布并回读，见 [Release Record](releases/RELEASE-0.3.0.md)。

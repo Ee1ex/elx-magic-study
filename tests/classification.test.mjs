@@ -227,3 +227,31 @@ test('图标只处理分类页，拒绝错页观察、无效图标和普通笔�
   await assert.rejects(core.planCategoryIcon(f.home,'test',{...f.iconSpec,observation:{url:wiki('AI'),title:'AI与Agent',icon:null}},f.lark),e=>e.code==='ICON_TARGET');
   await assert.rejects(core.planCategoryIcon(f.home,'test',{...f.iconSpec,icon:'hello'},f.lark),e=>e.code==='ICON_VALUE');
 });
+
+function fakeIconBrowser() {
+  return { icon:null, writes:0, async inspect(target) { return {url:target.url,title:target.title,documentId:target.documentId,icon:this.icon,backend:'opencli'}; }, async set(target,icon) { assert.equal(this.icon,target.expectedIcon); this.writes++; this.icon=icon; }, async close() {} };
+}
+test('终端图标：没有浏览器时生成待设置，不把未知误当空图标', async () => {
+  const f=await iconFixture();delete f.iconSpec.observation;
+  const browser={async inspect(){throw Object.assign(new Error('missing'),{code:'BROWSER_MISSING'});},async close(){}};
+  const p=await core.planCategoryIcon(f.home,'test',f.iconSpec,f.lark,browser);
+  assert.equal(p.decision.action,'pending');assert.equal(p.observationAvailable,false);
+  const s=await loadLibrary(f.home,'test');assert.equal(s.categoryIcons.Sources.status,'pending');assert.notEqual(s.categoryIcons.Sources.mode,'manual');
+});
+test('终端图标：命令独立读取、按digest设置、刷新取证，重复执行不重写', async () => {
+  const f=await iconFixture(),browser=fakeIconBrowser();delete f.iconSpec.observation;
+  const p=await core.planCategoryIcon(f.home,'test',f.iconSpec,f.lark,browser);
+  await assert.rejects(core.applyCategoryIcon(f.home,'test',p.plan,'wrong',f.lark,browser),e=>e.code==='ICON_APPROVAL');
+  const result=await core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser);
+  assert.equal(result.state,'verified');assert.equal(browser.writes,1);assert.equal(f.lark.writes,0);
+  assert.equal((await core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser)).alreadyApplied,true);assert.equal(browser.writes,1);
+});
+test('终端图标：人工改动阻断，未知写入只能只读核对而非重复点击', async () => {
+  const f=await iconFixture(),browser=fakeIconBrowser();delete f.iconSpec.observation;
+  const p=await core.planCategoryIcon(f.home,'test',f.iconSpec,f.lark,browser);
+  browser.icon='🌟';await assert.rejects(core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser),e=>e.code==='ICON_CHANGED');assert.equal(browser.writes,0);
+  browser.icon=null;browser.set=async function(_target,icon){this.writes++;this.icon=icon;throw new Error('response lost');};
+  await assert.rejects(core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser),e=>e.code==='ICON_WRITE_UNCERTAIN');
+  await assert.rejects(core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser),e=>e.code==='ICON_WRITE_UNCERTAIN');assert.equal(browser.writes,1);
+  assert.equal((await core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser,true)).state,'verified');assert.equal(browser.writes,1);
+});

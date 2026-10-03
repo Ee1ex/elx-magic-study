@@ -27,3 +27,7 @@
 ## REQ-010 分类页原生图标
 
 已确认浏览器辅助版：新建／内容改动后按主题选图标，保留手动选择，失败待设置。见 [需求](REQ-010-category-icons.md)；未授权新发布。
+
+## REQ-011 无 Computer Use 的终端图标
+
+已确认并完成本地实现：OpenCLI SDK适配、无浏览器降级、按digest设置、未知结果只读核对、试用包。见 [需求](REQ-011-portable-icons.md)；目标Agent本体验收待用户试用。
