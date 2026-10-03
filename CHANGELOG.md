@@ -1,13 +1,6 @@
 # 变更记录
 
-## [0.5.0] - 2026-10-03
-
-- feat: add first-use feature tour and contextual opt-in guidance
-- docs: record README publication verification
-- docs(readme): explain recent onboarding scheduling and icon updates
-- docs: record verified v0.4.1 release and installation
-
-## 未发布
+## [0.5.0] - 2026-10-04
 
 - REQ-014：首次介绍基本功能、可选功能和初始化步骤，后续按场景与明确偏好少量提示。
 - 新增onboarding／onboarding-record，未绑定也可查看介绍状态；偏好增量合并，不当作安装或任务启用。

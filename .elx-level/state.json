@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "feature-tour-completed",
+  "stage": "release-0.5.0",
   "gate": null,
-  "status": "completed",
+  "status": "in_progress",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,9 +15,9 @@
   "current_task": {
     "id": "REQ-014",
     "owner": "项目负责人（当前用户）",
-    "summary": "REQ-014首次导览、本地偏好与场景提示完成",
-    "scope": "Skill导览指引、本地介绍记录和明确偏好、命令及合成验证",
-    "out_of_scope": "真实安装、自动注册任务、图标写入、发布、全局安装更新、读取无关历史",
+    "summary": "0.5.0发布与本机安装准备",
+    "scope": "用户确认main/Tag/Release/ZIP发布和Codex安装，回读与记录",
+    "out_of_scope": "真实用户偏好回填、飞书修改、实际工具安装或任务启用",
     "paths": [
       ".elx-level",
       "AGENTS.md",
@@ -26,9 +26,10 @@
       "CHANGELOG.md",
       "docs",
       "skills/elx-magic-study",
-      "tests"
+      "tests",
+      "package.json"
     ],
-    "next_step": "本轮本地实现完成；不同宿主实际引导体验及发布安装待后续授权"
+    "next_step": "打包安装发布"
   },
   "artifacts": [
     {
@@ -220,6 +221,10 @@
       "event": "feature_tour_completed",
       "at": "2026-10-03T18:49:59.643564+00:00",
       "summary": "本地实现与合成验收完成；未改真实引导记录、未发布或安装"
+    },
+    {
+      "event": "v0.5.0_publish_install_authorized",
+      "at": "2026-10-03T18:52:47.401130+00:00"
     }
   ],
   "updated_at": "2026-10-03T18:49:59.643564+00:00"

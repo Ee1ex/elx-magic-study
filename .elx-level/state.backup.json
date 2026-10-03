@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "feature-tour",
+  "stage": "feature-tour-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,7 +15,7 @@
   "current_task": {
     "id": "REQ-014",
     "owner": "项目负责人（当前用户）",
-    "summary": "首次功能导览、可选功能初始化和场景化提示",
+    "summary": "REQ-014首次导览、本地偏好与场景提示完成",
     "scope": "Skill导览指引、本地介绍记录和明确偏好、命令及合成验证",
     "out_of_scope": "真实安装、自动注册任务、图标写入、发布、全局安装更新、读取无关历史",
     "paths": [
@@ -28,7 +28,7 @@
       "skills/elx-magic-study",
       "tests"
     ],
-    "next_step": "补测试，实现引导记录并接入各流程"
+    "next_step": "本轮本地实现完成；不同宿主实际引导体验及发布安装待后续授权"
   },
   "artifacts": [
     {
@@ -36,7 +36,18 @@
       "summary": "功能导览与触发规则"
     }
   ],
-  "verifications": [],
+  "verifications": [
+    {
+      "command": "node --test --test-concurrency=1 tests/*.test.mjs",
+      "status": "passed",
+      "summary": "52项回归通过，新增首次导览状态与偏好合并行为验收"
+    },
+    {
+      "command": "quick_validate.py / node --check / documentation checks",
+      "status": "passed",
+      "summary": "Skill格式、脚本语法、文档链接有效；README设计保留；场景走查非真实用户验收"
+    }
+  ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
@@ -204,7 +215,12 @@
     {
       "event": "feature_tour_authorized",
       "at": "2026-10-03T18:45:22.219091+00:00"
+    },
+    {
+      "event": "feature_tour_completed",
+      "at": "2026-10-03T18:49:59.643564+00:00",
+      "summary": "本地实现与合成验收完成；未改真实引导记录、未发布或安装"
     }
   ],
-  "updated_at": "2026-10-03T18:10:33.722756+00:00"
+  "updated_at": "2026-10-03T18:49:59.643564+00:00"
 }

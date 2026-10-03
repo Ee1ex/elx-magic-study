@@ -1,6 +1,6 @@
 # 魔法书屋 项目 SPEC
 
-更新日期：2026-10-04。当前版本：0.4.1，包含REQ-013可选图标指引；已发布并安装，见发布记录。责任模式：**LEVEL 1，用户明确指定**。
+更新日期：2026-10-04。当前版本：0.5.0，包含REQ-014首次导览与场景提示；发布安装结果见本轮记录。责任模式：**LEVEL 1，用户明确指定**。
 
 本文件是当前产品与技术事实入口，兼任 LEVEL 1 Project Brief。历史演变见进度与决策台账；未来功能见路线图；方案不代表已实现。
 
@@ -162,8 +162,10 @@ schedule-plan输出通用host-automation方案；当前Agent可调用自身工�
 
 0.4.1发布与安装已回读，见 [Release Record](releases/RELEASE-0.4.1.md)。本轮没有实际修改飞书图标。
 
-## REQ-014 首次导览与场景提示（未发布源码）
+## REQ-014 首次导览与场景提示
 
 onboarding只读读取个人状态目录的onboarding.json，无记录则needsIntroduction=true，不要求已有库。onboarding-record接受introduced:true与readingTools/opencli/schedule/icons/graph明确choices，增量合并；ask/later/never/interested只表示提醒偏好，不允许enabled。文件独立于单库状态，不写远端或公开仓库；当前用户指令优先，不静默回填既有用户。
 
 Skill按feature-tour.md在首次介绍核心功能、可选项、初始化步骤；后续每轮最多一个相关可选提示，拒绝／暂缓后不按调用次数重问。手动维护、外部读取缺口、多文档关系、新增／改名分类等按具体条件触发。无人值守任务不询问可选功能，不自动安装或写入。仅在调用Skill时提示，不后台监听。
+
+2026-10-04：用户要求发布并更新本机，授权0.5.0发布和Codex安装；不改用户偏好，不创建实际任务。
