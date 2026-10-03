@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-completed",
+  "stage": "readme-publication",
   "gate": null,
-  "status": "completed",
+  "status": "in_progress",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -13,49 +13,30 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-013",
+    "id": "DOC-README-0.4.1",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.4.1发布与Codex安装完成",
-    "scope": "0.4.1打包、Codex安装、GitHub main/Tag/Release/ZIP及回读",
-    "out_of_scope": "实际飞书图标或正文修改、额外工具安装、权限调整",
+    "summary": "README补充近期功能用法并发布main",
+    "scope": "只补README内容并保留设计，同步必要项目记录，按当次授权推送main",
+    "out_of_scope": "功能代码、图片设计、版本递增、新Tag/Release、全局安装和飞书写入",
     "paths": [
-      ".elx-level",
-      "AGENTS.md",
-      "DOCUMENT_MAP.md",
       "README.md",
-      "CHANGELOG.md",
-      "docs",
-      "skills/elx-magic-study",
-      "package.json"
+      ".elx-level",
+      "docs/elx-level",
+      "docs/progress"
     ],
-    "next_step": "本轮收尾完成；未来分类变化时按实际界面能力和用户选择处理"
+    "next_step": "检查文案依据、链接与设计保留，提交发布并回读"
   },
   "artifacts": [
     {
-      "path": "docs/releases/RELEASE-0.4.1.md",
-      "summary": "发布安装与回读证据"
+      "path": "README.md",
+      "summary": "近期能力与简单使用方法"
     }
   ],
   "verifications": [
     {
-      "command": "quick_validate.py skills/elx-magic-study",
+      "command": "README content and design validation",
       "status": "passed",
-      "summary": "Skill格式有效"
-    },
-    {
-      "command": "documentation links and diff inspection",
-      "status": "passed",
-      "summary": "相对链接有效；README设计保留；运行脚本及测试未改；11个场景完成规则走查，不等于宿主实测"
-    },
-    {
-      "command": "node --test --test-concurrency=1 tests/*.test.mjs",
-      "status": "passed",
-      "summary": "51项回归通过"
-    },
-    {
-      "command": "installation SHA256 and remote readback",
-      "status": "passed",
-      "summary": "25文件一致；Tag与发布提交一致；ZIP digest、Release正文、README一致；远端无私人产物"
+      "summary": "图片文件/引用、标题顺序、HTML结构、代码围栏保持；本地链接与导航锚点有效，功能承诺对照Skill"
     }
   ],
   "git": {
@@ -211,7 +192,12 @@
       "event": "v0.4.1_release_install_verified",
       "at": "2026-10-03T18:06:12.655806+00:00",
       "commit": "41bc9477729efdacc60b7df847e41b74e43fb44c"
+    },
+    {
+      "event": "readme_publish_authorized",
+      "at": "2026-10-03T18:09:25.665234+00:00",
+      "summary": "用户要求补充近期更新到README并发布"
     }
   ],
-  "updated_at": "2026-10-03T18:06:12.655806+00:00"
+  "updated_at": "2026-10-03T18:09:25.665234+00:00"
 }
