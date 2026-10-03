@@ -10,7 +10,7 @@ import { exportGraph } from './graph.mjs';
 import { doctor, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan, classificationContext } from './library-core.mjs';
 
 const HELP = {
-  version: '0.2.0', usage: 'node <SKILL_ROOT>/scripts/library.mjs <command> [--home <个人状态目录>] [--library <编号>]',
+  version: '0.3.0', usage: 'node <SKILL_ROOT>/scripts/library.mjs <command> [--home <个人状态目录>] [--library <编号>]',
   commands: {
     doctor: '只读检查 Node、飞书 CLI、用户授权和绑定；不登录或改权限',
     bind: '--id <编号> --root <Wiki/docx链接> [重复] --write-root <Wiki链接> --confirm；只保存已确认绑定',

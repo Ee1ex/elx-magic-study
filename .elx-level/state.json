@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "classification-completed",
+  "stage": "classification-release",
   "gate": null,
-  "status": "completed",
+  "status": "in_progress",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,9 +15,9 @@
   "current_task": {
     "id": "REQ-009",
     "owner": "项目负责人（当前用户）",
-    "summary": "REQ-009 新资料分类、标签、主题匹配与可修改预览完成本地实现",
-    "scope": "仅新来源入库流程、验证脚本、合成测试和项目文档；README 只改文字",
-    "out_of_scope": "旧资料搬家、批量重分类、自动创建新目录、偏好学习、额外模型、远端写入、发布与全局安装",
+    "summary": "0.3.0 测试与本机升级完成，准备 GitHub 发布回读",
+    "scope": "用户当次授权发布 REQ-009 到 GitHub main、v0.3.0 Tag 和 Release，备份并更新 Codex 本机 Skill，完成记录和回读",
+    "out_of_scope": "真实知识库迁移、飞书写入、批量删除、额外功能、README 图片或布局修改",
     "paths": [
       ".elx-level",
       "AGENTS.md",
@@ -26,9 +26,10 @@
       "CHANGELOG.md",
       "skills/elx-magic-study",
       "tests",
-      "docs"
+      "docs",
+      "package.json"
     ],
-    "next_step": "本轮源码完成；安装／发布按后续授权处理，真实语义分类和飞书显示待验证"
+    "next_step": "版本同步、发布与安装校验、收尾回读"
   },
   "artifacts": [
     {
@@ -55,6 +56,11 @@
       "command": "node --check and local documentation checks",
       "status": "passed",
       "summary": "9 个脚本语法通过；文档链接有效；README 图片和结构未变"
+    },
+    {
+      "command": "install.mjs --apply and installed CLI help",
+      "status": "passed",
+      "summary": "旧版完整备份；新版 23 个文件 SHA256 一致，CLI 0.3.0 与分类命令有效，已安装 Skill 格式检查通过"
     }
   ],
   "git": {
@@ -135,6 +141,11 @@
       "event": "classification_completed",
       "at": "2026-10-03T15:20:26.511956+00:00",
       "summary": "50 项合成测试通过；未发布、未安装、未触碰真实资料"
+    },
+    {
+      "event": "classification_release_authorized",
+      "at": "2026-10-03T15:22:00.689385+00:00",
+      "summary": "用户明确要求发布并更新，然后完成收尾"
     }
   ],
   "updated_at": "2026-10-03T15:20:26.511956+00:00"

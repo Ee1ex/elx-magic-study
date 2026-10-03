@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "classification-implementation",
+  "stage": "classification-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,7 +15,7 @@
   "current_task": {
     "id": "REQ-009",
     "owner": "项目负责人（当前用户）",
-    "summary": "新资料按内容分类、少量标签、已有主题匹配与可修改预览",
+    "summary": "REQ-009 新资料分类、标签、主题匹配与可修改预览完成本地实现",
     "scope": "仅新来源入库流程、验证脚本、合成测试和项目文档；README 只改文字",
     "out_of_scope": "旧资料搬家、批量重分类、自动创建新目录、偏好学习、额外模型、远端写入、发布与全局安装",
     "paths": [
@@ -28,19 +28,33 @@
       "tests",
       "docs"
     ],
-    "next_step": "基线 38 项通过；补分类流程失败用例，再实现与验收"
+    "next_step": "本轮源码完成；安装／发布按后续授权处理，真实语义分类和飞书显示待验证"
   },
   "artifacts": [
     {
       "path": "docs/requirements/REQ-009-classification.md",
       "summary": "本轮范围、行为与验收"
+    },
+    {
+      "path": "docs/progress/PROG-003-classification.md",
+      "summary": "分类实施与验收记录"
     }
   ],
   "verifications": [
     {
       "command": "npm test",
       "status": "passed",
-      "summary": "修改前基线 38 项通过"
+      "summary": "50 项通过，其中新增分类测试 12 项；仅合成资料"
+    },
+    {
+      "command": "quick_validate.py skills/elx-magic-study",
+      "status": "passed",
+      "summary": "Skill 格式有效"
+    },
+    {
+      "command": "node --check and local documentation checks",
+      "status": "passed",
+      "summary": "9 个脚本语法通过；文档链接有效；README 图片和结构未变"
     }
   ],
   "git": {
@@ -116,7 +130,12 @@
       "event": "classification_authorized",
       "at": "2026-10-03T15:03:16.134757+00:00",
       "summary": "用户确认首批四项；未授权真实迁移与新发布"
+    },
+    {
+      "event": "classification_completed",
+      "at": "2026-10-03T15:20:26.511956+00:00",
+      "summary": "50 项合成测试通过；未发布、未安装、未触碰真实资料"
     }
   ],
-  "updated_at": "2026-10-02T20:25:34.766Z"
+  "updated_at": "2026-10-03T15:20:26.511956+00:00"
 }
