@@ -1,20 +1,12 @@
 # 变更记录
 
-## [0.4.0] - 2026-10-03
+## [0.4.0] - 2026-10-04（本地打包，未发布）
 
-- feat: guide reader setup and host-native scheduled maintenance
-- feat: add terminal-native OpenCLI icon adapter and trial guide
-- feat: add browser-assisted native category icon workflow
-- docs: close v0.3.0 release and local installation
-
-## 未发布
-
-- REQ-011：OpenCLI SDK 终端适配，提供 icon-inspect／icon-apply／icon-verify；icon-plan 可自行观察，无浏览器时明确 pending。无需 Codex Computer Use，仍需登录浏览器和桥接。
-- 修正 Shadow DOM 控件定位、动画稳定、输入焦点和异步保存后的刷新核对；58 项测试通过，真实终端设置与恢复已有证据，WorkBuddy/harness 本体待用户试用。
-
-- REQ-010：分类页原生主题图标的浏览器辅助流程，提供 icon-plan／icon-record 与待设置状态。
-- 保留已有和手动修改的图标，同主题不频繁更换；图标结果依赖真实网页刷新观察，脚本不调用私有接口或伪造识图能力。
-- 主题知识原生书籍图标真实试点已刷新保留，标题与正文不变；未批量设置其他分类、未发布或升级安装副本。
+- 缺读取工具时提供Agent Reach官方来源并询问安装授权，OpenCLI单独询问，按平台引导配置和只读验收。
+- 首次主动询问定时整理，按当前Agent自动化能力配置；通用host-automation方案和跨provider任务回执。
+- 修复schedule-record缺少saveLibrary导入，回执要求真实回读后verified:true。
+- 自动图标实验从正式包移出并保留归档；不更改用户已设置图标。
+- 正式范围51项测试通过；README只改文字，图片与排版保持。
 
 ## [0.3.0] - 2026-10-03
 

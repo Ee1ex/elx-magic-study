@@ -1,6 +1,6 @@
 # 魔法书屋 项目 SPEC
 
-更新日期：2026-10-03。产品版本：0.3.0（含 REQ-009），已发布并安装；源码新增未发布 REQ-010／REQ-011。责任模式：**LEVEL 1，用户明确指定**。
+更新日期：2026-10-04。打包目标：0.4.0，包含REQ-012；已发布和本机已安装版本仍为0.3.0。责任模式：**LEVEL 1，用户明确指定**。
 
 本文件是当前产品与技术事实入口，兼任 LEVEL 1 Project Brief。历史演变见进度与决策台账；未来功能见路线图；方案不代表已实现。
 
@@ -26,7 +26,6 @@
 | 资料收藏 | 保存来源、标题、备注和内容覆盖 | capture 是本地记录，不代表飞书已保存 |
 | 整理入库 | 来源笔记、主题、实践；生成具体计划后按授权写入 | 创建、追加、唯一行内替换；复杂富文本另按官方流程 |
 | 新资料分类 | Agent 读正文及已有目录后选主位置、0—5 标签、0—3 已有主题；脚本核对并随预览保存 | 最多两层；仅新来源笔记；不足时 pending；不自动建目录或迁移旧页 |
-| 分类图标（暂停实验） | Agent 选择主题表情，浏览器原生选择器设置及刷新；脚本保存规则与回执 | 有登录网页及编辑权限时可执行；保留用户选择；无公开写接口保证，不常驻监听 |
 | 检索 | 中文分词／双字组合、BM25、多查询、引用邻居 | 没有独立向量模型；Agent 阅读正文判断语义和适用性 |
 | 本地索引 | 目录分页与正文读取分别保存断点；元数据未变时跳过正文 | 修改时间仅是近似依据，可 force；缺时间时重读 |
 | 知识图谱 | 离线 HTML，拖动、缩放、搜索、筛选、邻居与原文 | 连线依据是引用；有效摘要或标注正文摘录；浏览器新版交互待验 |
@@ -64,8 +63,6 @@
   → scripts/library.mjs 命令入口
       ├── library-core.mjs：绑定、索引、收藏、计划、写入、维护
       ├── lark.mjs：官方 CLI 调用、用户身份、Wiki 范围与正文
-      ├── icon-browser.mjs：OpenCLI SDK发现、可见DOM／Shadow DOM读取、原生输入与刷新核对
-      ├── icons.mjs：图标决策、只读目标核对、计划和宿主观察回执
       ├── classification.mjs：分类上下文、协议校验、目录／主题版本、正文分类段落
       ├── scan.mjs：分页和页内检查点，独立正文队列
       ├── summaries.mjs：版本匹配摘要与干净正文摘录
@@ -112,13 +109,9 @@ OPT-04 新增可选 summary／summaryForHash。计划 action.summary 为 1—400
 - 写入的来源笔记追加分类段落、标签和真实主题引用；本地保存 classification、tags、classificationForHash。主题不顺带改写，同来源不重复创建；旧页补充仍走独立增改计划。pendingContentClassification 与旧版 needsClassification 角色分类分开显示。
 - 新分类只是建议：需有正文、完整两层目录、一级暂存位置，已有同名节点则拒绝建议；创建新分类仍须另行明确范围。语义分类质量不能由字符串校验保证。
 
-### 5.4 分类页图标（暂停实验，不触发）
+### 5.4 暂停实验
 
-仅 index 分类导航页、写入根下两层。icon-plan 省略 observation 时尝试 OpenCLI SDK 自行观察；缺浏览器时记录 observationAvailable=false 和 pending，不把未知当无图标。命令根据实际网页 observation 和 Agent 的稳定 theme／表情建议，给出 set／keep／preserve／pending；未知已有图标和手动变化包括移除一律保护。categoryIcons 是可选本地状态，icon-plans 独立存储，不改正文 operations 或 processedHash。
-
-icon-record 成功需刷新标记、图标及标题一致、证据文件和在线身份／路径／正文回读。证据内容由宿主浏览器实际观察，脚本不识图，不能把文件存在当作网页成功证明。失败保留 pending，可由 status／maintenance 看见；定时维护默认不执行网页写入。分类创建与内容改动后由 Skill 工作流触发，不是常驻事件监听。
-
-新增 icon-inspect 只读观察、icon-apply 按 digest 设置并自动取证、icon-verify 只读恢复。写前保存 execution.sending；未知结果不可重发。终端适配器只读 evaluate 获取实际可见控件与位置，使用公开 Page SDK 的 nativeClick/nativeType 操作 Shadow DOM；核对焦点、几何稳定、精确候选、保存稳定和重新导航后的多次一致结果。无 Codex 工具依赖，但需 OpenCLI 包、可用浏览器桥接和飞书登录；Windows＋OpenCLI 1.8.6 实测，WorkBuddy/harness 自身尚待用户验证。
+REQ-010／011图标功能已移至 experiments/category-icons，不随正式Skill打包，也不参与正常测试。个人状态中的历史字段与已设置的飞书图标保持，不自动迁移或清除。
 
 ### 5.5 写入约束
 
@@ -133,7 +126,7 @@ OPT-02 增加 plan-cancel、plan-supersede 和只读 diagnose。终态保留原 
 - Node.js 22+；脚本无 npm 运行依赖。
 - 飞书连接依赖官方 lark-cli；实现曾对本机 1.0.93 的帮助与内嵌参考做过核对，升级后仍要重新核验接口。
 - 主要验证环境是 Windows／Codex。不能据代码可运行就宣称其他平台已验收。
-- `npm test`：本轮实际重跑 58 项（终端图标与 Shadow DOM新增 4 项），通过；是合成和模拟行为测试。
+- `npm test`：本轮正式范围实际重跑 51 项（包含通用宿主回执测试），通过；是合成和模拟行为测试。
 - `npm run demo`：生成合成知识库图谱与检索结果，不连接真实飞书。
 - Skill 格式检查使用 Skill Creator 的 `quick_validate.py`；不是语义质量认证。
 - Git 远端：`https://github.com/Ee1ex/elx-magic-study.git`，0.3.0 已发布并回读，见 [Release Record](releases/RELEASE-0.3.0.md)。

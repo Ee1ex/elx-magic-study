@@ -100,16 +100,8 @@ plan 的新建 source 动作可附 classification，其来源版本、标签、�
 
 status／maintenance 的 pendingContentClassification 表示新来源笔记的待内容分类项；不自动重新分类旧页。
 
-## 分类页原生图标（浏览器辅助）
-
-`icon-plan --file <当前网页观察和建议JSON>` 核对分类身份、深度、正文版本并保存本地计划；不调用远端图标API。`icon-record --id <图标计划> --file <网页回执JSON>` 保存刷新后的实际结果或 pending；不是自动识图。具体JSON、手动选择保护和失败处理见 [category-icons.md](category-icons.md)。status／maintenance 输出 pendingCategoryIcons。
-
-## 无 Computer Use 的终端图标路径
-
-icon-inspect --id <分类文档ID> 只读打开网页核对；icon-plan --file <建议JSON> 不传 observation 时自动通过 OpenCLI SDK 观察，缺连接会保存 pending；icon-apply --id <图标计划> --approve <digest> 只在明确授权后设置并重新导航刷新核对；icon-verify 使用同样的 id/digest，只读核对未知结果。具体依赖与 WorkBuddy/harness 试用步骤见 [terminal-icons.md](terminal-icons.md)。不是无浏览器方案，也不需要 Codex 插件。
-
 ## 当前宿主的定时任务
 
 schedule-plan 输出 kind=host-automation 的未注册方案，交给当前Agent自身自动化功能执行。schedule-record 接受实际 provider 标识、automationId、status、time、timezone 和 verified:true，按 provider＋automationId 去重；verified 只表示Agent确实已回读任务，不代表脚本验证了自动唤醒。旧记录仍可读取，新的回执必须明确验证。
 
-图标相关命令仅保留为暂停实验，不在入库和维护流程中推荐或自动调用。
+正式包不提供图标命令；暂停实验保存在项目 experiments/category-icons，不随 Skill 安装。

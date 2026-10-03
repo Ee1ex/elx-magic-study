@@ -177,3 +177,81 @@ test('目录超出有界扫描时不提出新分类，主题数和动作类型�
   await assert.rejects(core.makePlan(f.home, 'test', f.spec, f.lark), e => e.code === 'CLASSIFICATION_CATALOG');
   assert.equal(f.lark.writes, 0);
 });
+
+test('图标规则：默认可设置，已有和手动改变的图标受保护，同主题不乱换', () => {
+  assert.equal(core.iconDecision(null, null, { icon:'📥', theme:'收件箱' }).action, 'set');
+  assert.equal(core.iconDecision(null, '🌟', { icon:'📥', theme:'收件箱' }).action, 'preserve');
+  const previous = { mode:'auto', icon:'📥', theme:'收件箱' };
+  assert.equal(core.iconDecision(previous, '📥', { icon:'📚', theme:'收件箱' }).action, 'keep');
+  assert.equal(core.iconDecision(previous, '📥', { icon:'📚', theme:'主题知识' }).action, 'set');
+  assert.equal(core.iconDecision(previous, null, { icon:'📥', theme:'收件箱' }).action, 'preserve');
+  assert.equal(core.iconDecision(previous, 'custom:blue', { icon:'📥', theme:'收件箱' }).action, 'preserve');
+  assert.equal(core.iconDecision(null, null, { icon:null, theme:'' }).action, 'pending');
+});
+
+async function iconFixture() {
+  const f=await fixture(),s=await loadLibrary(f.home,'test'),d=await f.lark.fetch(wiki('Sources'));
+  s.documents.push({...d,kind:'index',recordRole:'navigation',hash:hash(d.markdown)});await saveLibrary(f.home,s);
+  f.iconSpec={documentId:d.id,observation:{url:d.url,title:d.title,icon:null},icon:'📥',theme:'收件箱',reason:'保存来源资料'};
+  return f;
+}
+
+test('图标计划不写飞书，成功回执要刷新证据并保留自动设置来源', async () => {
+  const f=await iconFixture(),p=await core.planCategoryIcon(f.home,'test',f.iconSpec,f.lark);
+  assert.equal(p.decision.action,'set'); assert.equal(f.lark.writes,0);
+  const receipt={outcome:'verified',url:wiki('Sources'),title:'收件箱与来源',icon:'📥',reloaded:true,evidence:path.join(f.home,'synthetic-proof.txt')};
+  await fs.writeFile(receipt.evidence,'synthetic test evidence, not a browser screenshot');
+  await assert.rejects(core.recordCategoryIcon(f.home,'test',p.plan,{...receipt,reloaded:false},f.lark),e=>e.code==='ICON_EVIDENCE');
+  await assert.rejects(core.recordCategoryIcon(f.home,'test',p.plan,{...receipt,icon:'🌟'},f.lark),e=>e.code==='ICON_EVIDENCE');
+  const result=await core.recordCategoryIcon(f.home,'test',p.plan,receipt,f.lark);
+  assert.equal(result.state,'verified');
+  const s=await loadLibrary(f.home,'test');assert.equal(s.categoryIcons.Sources.mode,'auto');assert.equal(s.categoryIcons.Sources.icon,'📥');assert.equal(f.lark.writes,0);
+});
+
+test('图标失败回执保留待设置；计划失效和文档变化不能标成功', async () => {
+  const f=await iconFixture(),p=await core.planCategoryIcon(f.home,'test',f.iconSpec,f.lark);
+  await core.recordCategoryIcon(f.home,'test',p.plan,{outcome:'pending',reason:'浏览器未登录'},f.lark);
+  const s=await loadLibrary(f.home,'test');assert.equal(s.categoryIcons.Sources.status,'pending');assert.notEqual(s.categoryIcons.Sources.mode,'auto');
+  const report=await core.maintenance(f.home,'test');assert.equal(report.pendingCategoryIcons.length,1);assert.equal(report.pendingCategoryIcons[0].reason,'浏览器未登录');assert.equal((await core.maintenance(f.home,'test')).changed,false);
+  const second=await core.planCategoryIcon(f.home,'test',f.iconSpec,f.lark);
+  const proof=path.join(f.home,'synthetic-proof.txt');await fs.writeFile(proof,'synthetic');
+  const r={outcome:'verified',url:wiki('Sources'),title:'收件箱与来源',icon:'📥',reloaded:true,evidence:proof};
+  await assert.rejects(core.recordCategoryIcon(f.home,'test',p.plan,r,f.lark),e=>e.code==='ICON_PLAN_STALE');
+  f.lark.docs.get('Sources').markdown+='新说明';
+  await assert.rejects(core.recordCategoryIcon(f.home,'test',second.plan,r,f.lark),e=>e.code==='ICON_DOCUMENT_CHANGED');
+});
+
+test('图标只处理分类页，拒绝错页观察、无效图标和普通笔记', async () => {
+  const f=await iconFixture();
+  await assert.rejects(core.planCategoryIcon(f.home,'test',{...f.iconSpec,documentId:'Context'},f.lark),e=>e.code==='ICON_CATEGORY');
+  await assert.rejects(core.planCategoryIcon(f.home,'test',{...f.iconSpec,observation:{url:wiki('AI'),title:'AI与Agent',icon:null}},f.lark),e=>e.code==='ICON_TARGET');
+  await assert.rejects(core.planCategoryIcon(f.home,'test',{...f.iconSpec,icon:'hello'},f.lark),e=>e.code==='ICON_VALUE');
+});
+
+function fakeIconBrowser() {
+  return { icon:null, writes:0, async inspect(target) { return {url:target.url,title:target.title,documentId:target.documentId,icon:this.icon,backend:'opencli'}; }, async set(target,icon) { assert.equal(this.icon,target.expectedIcon); this.writes++; this.icon=icon; }, async close() {} };
+}
+test('终端图标：没有浏览器时生成待设置，不把未知误当空图标', async () => {
+  const f=await iconFixture();delete f.iconSpec.observation;
+  const browser={async inspect(){throw Object.assign(new Error('missing'),{code:'BROWSER_MISSING'});},async close(){}};
+  const p=await core.planCategoryIcon(f.home,'test',f.iconSpec,f.lark,browser);
+  assert.equal(p.decision.action,'pending');assert.equal(p.observationAvailable,false);
+  const s=await loadLibrary(f.home,'test');assert.equal(s.categoryIcons.Sources.status,'pending');assert.notEqual(s.categoryIcons.Sources.mode,'manual');
+});
+test('终端图标：命令独立读取、按digest设置、刷新取证，重复执行不重写', async () => {
+  const f=await iconFixture(),browser=fakeIconBrowser();delete f.iconSpec.observation;
+  const p=await core.planCategoryIcon(f.home,'test',f.iconSpec,f.lark,browser);
+  await assert.rejects(core.applyCategoryIcon(f.home,'test',p.plan,'wrong',f.lark,browser),e=>e.code==='ICON_APPROVAL');
+  const result=await core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser);
+  assert.equal(result.state,'verified');assert.equal(browser.writes,1);assert.equal(f.lark.writes,0);
+  assert.equal((await core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser)).alreadyApplied,true);assert.equal(browser.writes,1);
+});
+test('终端图标：人工改动阻断，未知写入只能只读核对而非重复点击', async () => {
+  const f=await iconFixture(),browser=fakeIconBrowser();delete f.iconSpec.observation;
+  const p=await core.planCategoryIcon(f.home,'test',f.iconSpec,f.lark,browser);
+  browser.icon='🌟';await assert.rejects(core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser),e=>e.code==='ICON_CHANGED');assert.equal(browser.writes,0);
+  browser.icon=null;browser.set=async function(_target,icon){this.writes++;this.icon=icon;throw new Error('response lost');};
+  await assert.rejects(core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser),e=>e.code==='ICON_WRITE_UNCERTAIN');
+  await assert.rejects(core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser),e=>e.code==='ICON_WRITE_UNCERTAIN');assert.equal(browser.writes,1);
+  assert.equal((await core.applyCategoryIcon(f.home,'test',p.plan,p.digest,f.lark,browser,true)).state,'verified');assert.equal(browser.writes,1);
+});
