@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "readme-publication",
+  "stage": "readme-publication-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -24,7 +24,7 @@
       "docs/elx-level",
       "docs/progress"
     ],
-    "next_step": "检查文案依据、链接与设计保留，提交发布并回读"
+    "next_step": "本轮README发布完成"
   },
   "artifacts": [
     {
@@ -37,6 +37,11 @@
       "command": "README content and design validation",
       "status": "passed",
       "summary": "图片文件/引用、标题顺序、HTML结构、代码围栏保持；本地链接与导航锚点有效，功能承诺对照Skill"
+    },
+    {
+      "command": "GitHub README readback",
+      "status": "passed",
+      "summary": "远端main README与提交90c048088f7579ff4000f721497e581de60f65e6逐字节一致"
     }
   ],
   "git": {
@@ -197,7 +202,12 @@
       "event": "readme_publish_authorized",
       "at": "2026-10-03T18:09:25.665234+00:00",
       "summary": "用户要求补充近期更新到README并发布"
+    },
+    {
+      "event": "readme_published_verified",
+      "at": "2026-10-03T18:10:33.722756+00:00",
+      "commit": "90c048088f7579ff4000f721497e581de60f65e6"
     }
   ],
-  "updated_at": "2026-10-03T18:09:25.665234+00:00"
+  "updated_at": "2026-10-03T18:10:33.722756+00:00"
 }
