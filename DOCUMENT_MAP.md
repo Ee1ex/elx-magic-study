@@ -61,3 +61,5 @@
 - [0.4.1发布与安装记录](docs/releases/RELEASE-0.4.1.md)。
 
 - [首次导览与场景提示记录](docs/progress/PROG-008-feature-tour.md)（REQ-014）；[Skill导览](skills/elx-magic-study/references/feature-tour.md)。
+
+- [0.5.0发布与安装记录](docs/releases/RELEASE-0.5.0.md)。

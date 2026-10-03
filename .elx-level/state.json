@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-0.5.0",
+  "stage": "release-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,7 +15,7 @@
   "current_task": {
     "id": "REQ-014",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.5.0发布与本机安装准备",
+    "summary": "0.5.0发布与Codex安装完成",
     "scope": "用户确认main/Tag/Release/ZIP发布和Codex安装，回读与记录",
     "out_of_scope": "真实用户偏好回填、飞书修改、实际工具安装或任务启用",
     "paths": [
@@ -29,12 +29,12 @@
       "tests",
       "package.json"
     ],
-    "next_step": "打包安装发布"
+    "next_step": "发布收尾完成；用户新增图标请求按独立Skill操作处理"
   },
   "artifacts": [
     {
-      "path": "docs/progress/PROG-008-feature-tour.md",
-      "summary": "功能导览与触发规则"
+      "path": "docs/releases/RELEASE-0.5.0.md",
+      "summary": "发布安装证据"
     }
   ],
   "verifications": [
@@ -47,13 +47,18 @@
       "command": "quick_validate.py / node --check / documentation checks",
       "status": "passed",
       "summary": "Skill格式、脚本语法、文档链接有效；README设计保留；场景走查非真实用户验收"
+    },
+    {
+      "command": "install and remote readback",
+      "status": "passed",
+      "summary": "27文件一致；main/Tag、Release正文、README、ZIP digest回读一致"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "41bc9477729efdacc60b7df847e41b74e43fb44c",
-    "last_commit_note": "v0.4.1发布提交，后续仅收尾记录",
+    "last_commit": "39cab59346f2408b9054221022cd07099140b004",
+    "last_commit_note": "v0.5.0发布提交，后续仅收尾文档",
     "repository": true
   },
   "remote": {
@@ -225,7 +230,12 @@
     {
       "event": "v0.5.0_publish_install_authorized",
       "at": "2026-10-03T18:52:47.401130+00:00"
+    },
+    {
+      "event": "v0.5.0_release_install_verified",
+      "at": "2026-10-03T18:55:11.471802+00:00",
+      "commit": "39cab59346f2408b9054221022cd07099140b004"
     }
   ],
-  "updated_at": "2026-10-03T18:49:59.643564+00:00"
+  "updated_at": "2026-10-03T18:55:11.471802+00:00"
 }
