@@ -30,6 +30,7 @@ node <SKILL_ROOT>/scripts/library.mjs <command> [--library <编号>] [--home <�
 | 先收藏、整理文章／视频、多来源综合、实践回写 | [capture-ingest.md](references/capture-ingest.md)：capture → source-content → 内容分类 → plan → 预览 → 确认 → apply |
 | 新资料入库分类、标签、关联已有主题、修改分类预览 | [classification.md](references/classification.md)：读取正文与现有位置 → Agent 判断 → classification 随 plan 核对 → 统一预览；不是旧页搬家 |
 | 外部资料缺少读取工具、配置自媒体读取 | [reading-tools.md](references/reading-tools.md)：检查已有能力 → 提供 Agent Reach 源链接并询问安装授权 → 单独询问 OpenCLI → 按所需平台引导配置和只读验收 |
+| 本轮新增／改名分类后的可选图标优化 | [optional-icons.md](references/optional-icons.md)：检测当前会话实际界面能力 → 按目标询问用户 → 同意后操作原生图标并核对；无能力跳过 |
 | 找以前的资料、结合当前项目给建议 | [query.md](references/query.md)：search → fetch → 依据与适用性；需要时有界 sync |
 | 给我看知识图谱、看看知识关联 | [graph.md](references/graph.md)：生成本地图谱 HTML，并打开供用户查看 |
 | 定时整理、每周检查、修改或停止维护任务 | [maintenance.md](references/maintenance.md)：宿主调度 + maintenance 入口 |
@@ -67,4 +68,4 @@ node <SKILL_ROOT>/scripts/library.mjs <command> [--library <编号>] [--home <�
 
 简短给出实际产物或飞书链接、内容覆盖、执行成功／部分成功／待确认、必要下一步。用户要图谱时直接提供 HTML 并打开，不只输出生成命令。不要把本地草稿、缓存更新或调度配置文件冒充远端保存或实际定时执行。
 
-分类原生图标为已暂停实验，不在日常入库／维护流程中调用；不因读取工具配置而恢复。
+图标脚本实验仍暂停；仅在本轮实际新增分类或分类名变化后，按 optional-icons.md 检测宿主实际 Computer Use／浏览器能力并询问是否优化。用户同意才操作；无能力跳过，不能按Agent品牌推定。普通内容更新不触发，无人值守维护不自动改图标。

@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-0.4.0",
+  "stage": "optional-icons-guidance",
   "gate": null,
   "status": "in_progress",
   "risk": "R2",
@@ -13,11 +13,11 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-012",
+    "id": "REQ-013",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.4.0本机安装完成，准备GitHub发布",
-    "scope": "用户确认安装到Codex并发布GitHub main、v0.4.0 Tag、Release及已校验ZIP附件",
-    "out_of_scope": "飞书数据迁移、工具安装授权、实际任务注册、权限调整",
+    "summary": "具备界面能力时可选分类图标优化引导",
+    "scope": "Skill指引、触发路由、能力检查及确认规则；不增加脚本依赖",
+    "out_of_scope": "恢复实验适配器、实际图标写入、安装工具、发布或升级本机副本、自动分类改名",
     "paths": [
       ".elx-level",
       "AGENTS.md",
@@ -25,36 +25,22 @@
       "README.md",
       "CHANGELOG.md",
       "docs",
-      "skills/elx-magic-study",
-      "tests",
-      "experiments",
-      "package.json"
+      "skills/elx-magic-study"
     ],
-    "next_step": "发布与远端回读"
+    "next_step": "补齐日常入口与维护边界，检查文档一致性并本地提交"
   },
   "artifacts": [
     {
-      "path": "docs/releases/PACKAGE-0.4.0.md",
-      "summary": "本地打包记录，未发布未安装"
+      "path": "docs/progress/PROG-007-optional-icons.md",
+      "summary": "需求及规则验收"
     }
   ],
-  "verifications": [
-    {
-      "command": "node --test --test-concurrency=1 tests/*.test.mjs",
-      "status": "passed",
-      "summary": "51项通过；并行重跑曾出现两次Windows EPERM，未修改存储逻辑"
-    },
-    {
-      "command": "install and archive SHA256",
-      "status": "passed",
-      "summary": "旧版23文件备份一致，新版24文件与源码一致；正式包无图标实验，Skill格式通过"
-    }
-  ],
+  "verifications": [],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "fdcf7086c171c0b17fc857f226a146cca6b1417e",
-    "last_commit_note": "v0.3.0 发布提交；后续收尾仅文档与状态",
+    "last_commit": "58b0ac6880b98ff66417f336cf90f385f6ad465e",
+    "last_commit_note": "v0.4.0 Tag目标；后续收尾只修改文档状态",
     "repository": true
   },
   "remote": {
@@ -179,7 +165,17 @@
       "event": "release_install_authorized",
       "at": "2026-10-03T17:41:20.115109+00:00",
       "summary": "用户要求安装本地并发布GitHub"
+    },
+    {
+      "event": "v0.4.0_release_install_verified",
+      "at": "2026-10-03T17:43:09.774855+00:00",
+      "commit": "58b0ac6880b98ff66417f336cf90f385f6ad465e"
+    },
+    {
+      "event": "optional_icons_authorized",
+      "at": "2026-10-03T17:58:17.132777+00:00",
+      "summary": "仅宿主具备能力时，在新增／改名分类后询问图标优化；不恢复OpenCLI图标依赖"
     }
   ],
-  "updated_at": "2026-10-03T17:35:05.194157+00:00"
+  "updated_at": "2026-10-03T17:58:17.132777+00:00"
 }

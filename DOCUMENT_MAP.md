@@ -55,3 +55,5 @@
 - [0.4.0本地包记录](docs/releases/PACKAGE-0.4.0.md)。
 
 - [0.4.0发布与安装记录](docs/releases/RELEASE-0.4.0.md)：远端附件与安装校验。
+
+- [可选界面图标引导记录](docs/progress/PROG-007-optional-icons.md)（REQ-013）；[Skill流程](skills/elx-magic-study/references/optional-icons.md)。
