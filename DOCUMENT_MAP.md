@@ -53,3 +53,5 @@
 - [暂停图标实验归档](experiments/category-icons/README.md)：不随正式Skill安装。
 
 - [0.4.0本地包记录](docs/releases/PACKAGE-0.4.0.md)。
+
+- [0.4.0发布与安装记录](docs/releases/RELEASE-0.4.0.md)：远端附件与安装校验。

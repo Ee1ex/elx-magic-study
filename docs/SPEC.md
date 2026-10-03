@@ -1,6 +1,6 @@
 # 魔法书屋 项目 SPEC
 
-更新日期：2026-10-04。打包目标：0.4.0，包含REQ-012；已发布和本机已安装版本仍为0.3.0。责任模式：**LEVEL 1，用户明确指定**。
+更新日期：2026-10-04。当前版本：0.4.0，包含REQ-012；已发布并安装到本机Codex。责任模式：**LEVEL 1，用户明确指定**。
 
 本文件是当前产品与技术事实入口，兼任 LEVEL 1 Project Brief。历史演变见进度与决策台账；未来功能见路线图；方案不代表已实现。
 
@@ -152,3 +152,5 @@ Skill、安装目录与 GitHub 仓库已使用 `elx-magic-study`。本机项目�
 首次使用主动询问是否需要定时整理，即使已绑定飞书；已有选择不重复询问，拒绝不阻断使用。缺外部读取工具时先提供 Agent Reach 官方 GitHub 来源和安装范围，等授权；OpenCLI单独选择，平台按实际Skill/reference按需配置，不要求一次全部开通。
 
 schedule-plan输出通用host-automation方案；当前Agent可调用自身工具时执行并回读，否则提供任务提示与准确手动配置步骤，不编造WorkBuddy菜单。schedule-record需要provider、真实ID、status、时间／时区与verified:true，按provider＋ID更新；既有记录不迁移。回执保存不等于唤醒验证。
+
+0.4.0发布与安装已完成，见 [发布记录](releases/RELEASE-0.4.0.md)；历史版本、试验和打包阶段的“尚未安装”不代表当前状态。
