@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "onboarding-completed",
+  "stage": "onboarding-package-completed",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -15,9 +15,9 @@
   "current_task": {
     "id": "REQ-012",
     "owner": "项目负责人（当前用户）",
-    "summary": "读取工具分层安装授权、平台引导、首次定时询问与通用宿主回执完成",
-    "scope": "Skill引导文档、宿主回执兼容与测试；暂停图标日常路由",
-    "out_of_scope": "实际工具安装、平台登录、任务注册、发布、全局安装、图标操作或删除",
+    "summary": "最新引导打包，图标实验移出正式包",
+    "scope": "源码整理、实验保留归档、版本递增、本地打包与验收",
+    "out_of_scope": "GitHub发布、全局安装升级、实际依赖安装、定时任务注册、真实资料变更",
     "paths": [
       ".elx-level",
       "AGENTS.md",
@@ -26,26 +26,28 @@
       "CHANGELOG.md",
       "docs",
       "skills/elx-magic-study",
-      "tests"
+      "tests",
+      "experiments",
+      "package.json"
     ],
-    "next_step": "本地实现完成；真实新用户及不同宿主配置待试用，发布安装按后续授权处理"
+    "next_step": "0.4.0本地包完成；用户另行决定发布与安装"
   },
   "artifacts": [
     {
-      "path": "docs/progress/PROG-006-onboarding.md",
-      "summary": "引导与回执验证记录"
+      "path": "docs/releases/PACKAGE-0.4.0.md",
+      "summary": "本地打包记录，未发布未安装"
     }
   ],
   "verifications": [
     {
       "command": "npm test",
       "status": "passed",
-      "summary": "59项回归通过，新增跨宿主回执与去重验证"
+      "summary": "正式范围51项通过；8项图标实验测试移出正常入口并保留归档"
     },
     {
-      "command": "quick_validate.py",
+      "command": "package and documentation validation",
       "status": "passed",
-      "summary": "Skill格式有效"
+      "summary": "24个Skill文件ZIP哈希一致；无图标实验；语法、相对链接、README结构通过"
     }
   ],
   "git": {
@@ -167,7 +169,12 @@
       "event": "onboarding_completed_icons_paused",
       "at": "2026-10-03T17:28:31.629923+00:00",
       "summary": "用户要求读取工具安装选择与首次定时引导；不执行真实安装注册"
+    },
+    {
+      "event": "package_authorized",
+      "at": "2026-10-03T17:33:03.351451+00:00",
+      "summary": "用户确认增加最新引导并打包新版本"
     }
   ],
-  "updated_at": "2026-10-03T17:28:31.629923+00:00"
+  "updated_at": "2026-10-03T17:35:05.194157+00:00"
 }
