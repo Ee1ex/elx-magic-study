@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "optional-icons-guidance",
+  "stage": "optional-icons-guidance-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,7 +15,7 @@
   "current_task": {
     "id": "REQ-013",
     "owner": "项目负责人（当前用户）",
-    "summary": "具备界面能力时可选分类图标优化引导",
+    "summary": "REQ-013可选宿主界面图标引导完成",
     "scope": "Skill指引、触发路由、能力检查及确认规则；不增加脚本依赖",
     "out_of_scope": "恢复实验适配器、实际图标写入、安装工具、发布或升级本机副本、自动分类改名",
     "paths": [
@@ -27,7 +27,7 @@
       "docs",
       "skills/elx-magic-study"
     ],
-    "next_step": "补齐日常入口与维护边界，检查文档一致性并本地提交"
+    "next_step": "本地文档完成；发布与安装按后续授权，其他宿主端到端待验证"
   },
   "artifacts": [
     {
@@ -35,7 +35,18 @@
       "summary": "需求及规则验收"
     }
   ],
-  "verifications": [],
+  "verifications": [
+    {
+      "command": "quick_validate.py skills/elx-magic-study",
+      "status": "passed",
+      "summary": "Skill格式有效"
+    },
+    {
+      "command": "documentation links and diff inspection",
+      "status": "passed",
+      "summary": "相对链接有效；README设计保留；运行脚本及测试未改；11个场景完成规则走查，不等于宿主实测"
+    }
+  ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
@@ -175,7 +186,12 @@
       "event": "optional_icons_authorized",
       "at": "2026-10-03T17:58:17.132777+00:00",
       "summary": "仅宿主具备能力时，在新增／改名分类后询问图标优化；不恢复OpenCLI图标依赖"
+    },
+    {
+      "event": "optional_icons_guidance_completed",
+      "at": "2026-10-03T18:00:29.064929+00:00",
+      "summary": "纯指引；无工具安装、实际图标写入、发布或全局升级"
     }
   ],
-  "updated_at": "2026-10-03T17:58:17.132777+00:00"
+  "updated_at": "2026-10-03T18:00:29.064929+00:00"
 }

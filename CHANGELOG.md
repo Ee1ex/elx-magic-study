@@ -1,15 +1,10 @@
 # 变更记录
 
-## [0.4.1] - 2026-10-03
-
-- docs: add capability-gated optional category icon workflow
-- docs: record verified v0.4.0 release and installation
-
-## 未发布
+## [0.4.1] - 2026-10-04
 
 - REQ-013：增加宿主可选界面图标流程，仅在新增分类或分类名变化时检测实际Computer Use／浏览器能力，询问用户后设置原生图标。
 - 无能力跳过，保留手动选择，刷新核对，定时任务不自动操作；不按Agent品牌保证兼容，不恢复OpenCLI图标适配器。
-- 本次仅文档引导，未修改脚本或实际图标。
+- 本次为工作流指引更新；不恢复实验脚本或新增依赖，不修改实际图标。
 
 ## [0.4.0] - 2026-10-04
 

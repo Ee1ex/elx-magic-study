@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "optional-icons-guidance-completed",
+  "stage": "release-0.4.1",
   "gate": null,
-  "status": "completed",
+  "status": "in_progress",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -16,8 +16,8 @@
     "id": "REQ-013",
     "owner": "项目负责人（当前用户）",
     "summary": "REQ-013可选宿主界面图标引导完成",
-    "scope": "Skill指引、触发路由、能力检查及确认规则；不增加脚本依赖",
-    "out_of_scope": "恢复实验适配器、实际图标写入、安装工具、发布或升级本机副本、自动分类改名",
+    "scope": "0.4.1打包、Codex安装、GitHub main/Tag/Release/ZIP及回读",
+    "out_of_scope": "实际飞书图标或正文修改、额外工具安装、权限调整",
     "paths": [
       ".elx-level",
       "AGENTS.md",
@@ -25,9 +25,10 @@
       "README.md",
       "CHANGELOG.md",
       "docs",
-      "skills/elx-magic-study"
+      "skills/elx-magic-study",
+      "package.json"
     ],
-    "next_step": "本地文档完成；发布与安装按后续授权，其他宿主端到端待验证"
+    "next_step": "安装发布并回读"
   },
   "artifacts": [
     {
@@ -45,6 +46,11 @@
       "command": "documentation links and diff inspection",
       "status": "passed",
       "summary": "相对链接有效；README设计保留；运行脚本及测试未改；11个场景完成规则走查，不等于宿主实测"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/*.test.mjs",
+      "status": "passed",
+      "summary": "51项回归通过"
     }
   ],
   "git": {
@@ -191,6 +197,10 @@
       "event": "optional_icons_guidance_completed",
       "at": "2026-10-03T18:00:29.064929+00:00",
       "summary": "纯指引；无工具安装、实际图标写入、发布或全局升级"
+    },
+    {
+      "event": "v0.4.1_update_authorized",
+      "at": "2026-10-03T18:03:34.617857+00:00"
     }
   ],
   "updated_at": "2026-10-03T18:00:29.064929+00:00"

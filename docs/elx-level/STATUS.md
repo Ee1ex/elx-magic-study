@@ -1,6 +1,6 @@
 # 项目流程状态
 
-- 状态：completed
+- 状态：in_progress
 - 负责人：项目负责人（当前用户）
 - 执行策略：AUTO
 
@@ -8,12 +8,12 @@
 
 ## 当前 LEVEL、阶段与任务
 
-LEVEL 1 / optional-icons-guidance-completed / REQ-013可选宿主界面图标引导完成
+LEVEL 1 / release-0.4.1 / REQ-013可选宿主界面图标引导完成
 
 ## 本轮目标与不做范围
 
-- 范围：Skill指引、触发路由、能力检查及确认规则；不增加脚本依赖
-- 本次不做：恢复实验适配器、实际图标写入、安装工具、发布或升级本机副本、自动分类改名
+- 范围：0.4.1打包、Codex安装、GitHub main/Tag/Release/ZIP及回读
+- 本次不做：实际飞书图标或正文修改、额外工具安装、权限调整
 
 ## 已完成内容
 
@@ -23,6 +23,7 @@ LEVEL 1 / optional-icons-guidance-completed / REQ-013可选宿主界面图标引
 
 - Skill格式有效
 - 相对链接有效；README设计保留；运行脚本及测试未改；11个场景完成规则走查，不等于宿主实测
+- 51项回归通过
 
 
 ## 最近等级迁移
@@ -31,4 +32,4 @@ LEVEL 1 / optional-icons-guidance-completed / REQ-013可选宿主界面图标引
 
 ## 推荐选择与下一步
 
-本地文档完成；发布与安装按后续授权，其他宿主端到端待验证
+安装发布并回读
