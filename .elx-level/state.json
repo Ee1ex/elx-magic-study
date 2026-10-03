@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-0.4.1",
+  "stage": "release-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,7 +15,7 @@
   "current_task": {
     "id": "REQ-013",
     "owner": "项目负责人（当前用户）",
-    "summary": "REQ-013可选宿主界面图标引导完成",
+    "summary": "0.4.1发布与Codex安装完成",
     "scope": "0.4.1打包、Codex安装、GitHub main/Tag/Release/ZIP及回读",
     "out_of_scope": "实际飞书图标或正文修改、额外工具安装、权限调整",
     "paths": [
@@ -28,12 +28,12 @@
       "skills/elx-magic-study",
       "package.json"
     ],
-    "next_step": "安装发布并回读"
+    "next_step": "本轮收尾完成；未来分类变化时按实际界面能力和用户选择处理"
   },
   "artifacts": [
     {
-      "path": "docs/progress/PROG-007-optional-icons.md",
-      "summary": "需求及规则验收"
+      "path": "docs/releases/RELEASE-0.4.1.md",
+      "summary": "发布安装与回读证据"
     }
   ],
   "verifications": [
@@ -51,13 +51,18 @@
       "command": "node --test --test-concurrency=1 tests/*.test.mjs",
       "status": "passed",
       "summary": "51项回归通过"
+    },
+    {
+      "command": "installation SHA256 and remote readback",
+      "status": "passed",
+      "summary": "25文件一致；Tag与发布提交一致；ZIP digest、Release正文、README一致；远端无私人产物"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "58b0ac6880b98ff66417f336cf90f385f6ad465e",
-    "last_commit_note": "v0.4.0 Tag目标；后续收尾只修改文档状态",
+    "last_commit": "41bc9477729efdacc60b7df847e41b74e43fb44c",
+    "last_commit_note": "v0.4.1发布提交，后续仅收尾记录",
     "repository": true
   },
   "remote": {
@@ -201,7 +206,12 @@
     {
       "event": "v0.4.1_update_authorized",
       "at": "2026-10-03T18:03:34.617857+00:00"
+    },
+    {
+      "event": "v0.4.1_release_install_verified",
+      "at": "2026-10-03T18:06:12.655806+00:00",
+      "commit": "41bc9477729efdacc60b7df847e41b74e43fb44c"
     }
   ],
-  "updated_at": "2026-10-03T18:00:29.064929+00:00"
+  "updated_at": "2026-10-03T18:06:12.655806+00:00"
 }
