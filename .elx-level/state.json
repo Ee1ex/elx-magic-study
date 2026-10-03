@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "readme-publication-completed",
+  "stage": "feature-tour-completed",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -13,35 +13,39 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "DOC-README-0.4.1",
+    "id": "REQ-014",
     "owner": "项目负责人（当前用户）",
-    "summary": "README补充近期功能用法并发布main",
-    "scope": "只补README内容并保留设计，同步必要项目记录，按当次授权推送main",
-    "out_of_scope": "功能代码、图片设计、版本递增、新Tag/Release、全局安装和飞书写入",
+    "summary": "REQ-014首次导览、本地偏好与场景提示完成",
+    "scope": "Skill导览指引、本地介绍记录和明确偏好、命令及合成验证",
+    "out_of_scope": "真实安装、自动注册任务、图标写入、发布、全局安装更新、读取无关历史",
     "paths": [
-      "README.md",
       ".elx-level",
-      "docs/elx-level",
-      "docs/progress"
+      "AGENTS.md",
+      "DOCUMENT_MAP.md",
+      "README.md",
+      "CHANGELOG.md",
+      "docs",
+      "skills/elx-magic-study",
+      "tests"
     ],
-    "next_step": "本轮README发布完成"
+    "next_step": "本轮本地实现完成；不同宿主实际引导体验及发布安装待后续授权"
   },
   "artifacts": [
     {
-      "path": "README.md",
-      "summary": "近期能力与简单使用方法"
+      "path": "docs/progress/PROG-008-feature-tour.md",
+      "summary": "功能导览与触发规则"
     }
   ],
   "verifications": [
     {
-      "command": "README content and design validation",
+      "command": "node --test --test-concurrency=1 tests/*.test.mjs",
       "status": "passed",
-      "summary": "图片文件/引用、标题顺序、HTML结构、代码围栏保持；本地链接与导航锚点有效，功能承诺对照Skill"
+      "summary": "52项回归通过，新增首次导览状态与偏好合并行为验收"
     },
     {
-      "command": "GitHub README readback",
+      "command": "quick_validate.py / node --check / documentation checks",
       "status": "passed",
-      "summary": "远端main README与提交90c048088f7579ff4000f721497e581de60f65e6逐字节一致"
+      "summary": "Skill格式、脚本语法、文档链接有效；README设计保留；场景走查非真实用户验收"
     }
   ],
   "git": {
@@ -207,7 +211,16 @@
       "event": "readme_published_verified",
       "at": "2026-10-03T18:10:33.722756+00:00",
       "commit": "90c048088f7579ff4000f721497e581de60f65e6"
+    },
+    {
+      "event": "feature_tour_authorized",
+      "at": "2026-10-03T18:45:22.219091+00:00"
+    },
+    {
+      "event": "feature_tour_completed",
+      "at": "2026-10-03T18:49:59.643564+00:00",
+      "summary": "本地实现与合成验收完成；未改真实引导记录、未发布或安装"
     }
   ],
-  "updated_at": "2026-10-03T18:10:33.722756+00:00"
+  "updated_at": "2026-10-03T18:49:59.643564+00:00"
 }

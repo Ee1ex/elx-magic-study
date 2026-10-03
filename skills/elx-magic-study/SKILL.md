@@ -19,7 +19,9 @@ metadata:
 node <SKILL_ROOT>/scripts/library.mjs <command> [--library <编号>] [--home <状态目录>]
 ```
 
-首次使用必须读取 [setup.md](references/setup.md)，运行 `doctor`，主动介绍并询问是否开启定时整理（不能因已有绑定而跳过）；已明确拒绝或已有任务则沿用选择，不反复询问。未绑定、用户要求连接或身份异常时读 [setup.md](references/setup.md)，按“说明范围 → 用户确认 → 授权链接和二维码 → 等用户完成 → Agent 收尾验证 → 绑定目标”引导。不要让用户研究命令或把 secret/token 发到聊天。现成有效连接可复用，不重复索要授权。
+每次调用先运行 `onboarding`，并按 [feature-tour.md](references/feature-tour.md) 判断是否需要首次功能导览、沿用哪些明确偏好。首次用简短文字介绍核心功能、可选功能与初始化步骤；后续只在相关场景且用户偏好允许时少量提示，不反复介绍、不自动启用。记录已展示介绍和用户明确选择，不记录未回答的猜测。
+
+首次连接或连接异常时读取 [setup.md](references/setup.md)，运行 `doctor`，按“说明范围 → 用户确认 → 必要授权 → 验证 → 绑定目标”引导。首次主动询问定时整理，已有选择或任务则沿用；已有绑定不跳过尚未做过的功能介绍。已有授权复用，不索取聊天中的密钥。
 
 需要确切参数时运行 `help`，再按 [commands.md](references/commands.md) 使用。工具缺失、命令不可识别或远端失败都要说明真实原因；不把安装完成当作已连通。
 

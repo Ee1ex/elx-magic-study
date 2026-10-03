@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "readme-publication",
+  "stage": "feature-tour",
   "gate": null,
   "status": "in_progress",
   "risk": "R2",
@@ -13,32 +13,30 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "DOC-README-0.4.1",
+    "id": "REQ-014",
     "owner": "项目负责人（当前用户）",
-    "summary": "README补充近期功能用法并发布main",
-    "scope": "只补README内容并保留设计，同步必要项目记录，按当次授权推送main",
-    "out_of_scope": "功能代码、图片设计、版本递增、新Tag/Release、全局安装和飞书写入",
+    "summary": "首次功能导览、可选功能初始化和场景化提示",
+    "scope": "Skill导览指引、本地介绍记录和明确偏好、命令及合成验证",
+    "out_of_scope": "真实安装、自动注册任务、图标写入、发布、全局安装更新、读取无关历史",
     "paths": [
-      "README.md",
       ".elx-level",
-      "docs/elx-level",
-      "docs/progress"
+      "AGENTS.md",
+      "DOCUMENT_MAP.md",
+      "README.md",
+      "CHANGELOG.md",
+      "docs",
+      "skills/elx-magic-study",
+      "tests"
     ],
-    "next_step": "检查文案依据、链接与设计保留，提交发布并回读"
+    "next_step": "补测试，实现引导记录并接入各流程"
   },
   "artifacts": [
     {
-      "path": "README.md",
-      "summary": "近期能力与简单使用方法"
+      "path": "docs/progress/PROG-008-feature-tour.md",
+      "summary": "功能导览与触发规则"
     }
   ],
-  "verifications": [
-    {
-      "command": "README content and design validation",
-      "status": "passed",
-      "summary": "图片文件/引用、标题顺序、HTML结构、代码围栏保持；本地链接与导航锚点有效，功能承诺对照Skill"
-    }
-  ],
+  "verifications": [],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
@@ -197,7 +195,16 @@
       "event": "readme_publish_authorized",
       "at": "2026-10-03T18:09:25.665234+00:00",
       "summary": "用户要求补充近期更新到README并发布"
+    },
+    {
+      "event": "readme_published_verified",
+      "at": "2026-10-03T18:10:33.722756+00:00",
+      "commit": "90c048088f7579ff4000f721497e581de60f65e6"
+    },
+    {
+      "event": "feature_tour_authorized",
+      "at": "2026-10-03T18:45:22.219091+00:00"
     }
   ],
-  "updated_at": "2026-10-03T18:09:25.665234+00:00"
+  "updated_at": "2026-10-03T18:10:33.722756+00:00"
 }

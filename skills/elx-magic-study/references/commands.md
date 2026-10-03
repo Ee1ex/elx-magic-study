@@ -105,3 +105,7 @@ status／maintenance 的 pendingContentClassification 表示新来源笔记的�
 schedule-plan 输出 kind=host-automation 的未注册方案，交给当前Agent自身自动化功能执行。schedule-record 接受实际 provider 标识、automationId、status、time、timezone 和 verified:true，按 provider＋automationId 去重；verified 只表示Agent确实已回读任务，不代表脚本验证了自动唤醒。旧记录仍可读取，新的回执必须明确验证。
 
 正式包不提供图标命令；暂停实验保存在项目 experiments/category-icons，不随 Skill 安装。新增／改名分类时可使用宿主已有界面工具按 [optional-icons.md](optional-icons.md) 执行用户确认的原生图标优化，不需要实验脚本。
+
+## 功能导览与提醒偏好
+
+`onboarding` 未绑定也可只读查看首次介绍状态与偏好，不创建文件。`onboarding-record --file <JSON>` 记录introduced:true或明确choices，增量合并；只写个人状态目录onboarding.json，不创建绑定、安装工具或启用功能。可用键和值及触发规则见 [feature-tour.md](feature-tour.md)。当前用户指令优先，偏好不代表真实任务状态。

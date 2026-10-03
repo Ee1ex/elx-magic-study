@@ -16,7 +16,7 @@
 
 **当前范围已确认**：飞书单后端、首次授权引导、收藏整理与项目查询、本地增强检索、按需 HTML 图谱、定时整理检查接入。
 
-**当前轮次范围已确认**：REQ-013 可选的宿主界面图标优化指引：当前会话实际具备Computer Use／浏览器操控能力，且整理中新增分类或分类名变化时，询问用户是否优化；同意后才操作。只改工作流文档，不恢复实验脚本或增加依赖，不实际改图标、不发布或升级安装。
+**当前轮次范围已确认**：REQ-014 首次功能导览、可选功能初始化说明和后续场景提示。本地记录已介绍状态与用户明确提醒偏好，不把意向当作启用。只改源码和文档，不安装工具、注册任务、修改飞书、发布或更新安装副本。
 
 ## 2. 已有能力与边界
 
@@ -61,6 +61,7 @@
   → SKILL.md 选择工作流
   → 当前 Agent 阅读按需 references／templates
   → scripts/library.mjs 命令入口
+      ├── onboarding.mjs：未绑定可用的本地介绍状态与明确偏好
       ├── library-core.mjs：绑定、索引、收藏、计划、写入、维护
       ├── lark.mjs：官方 CLI 调用、用户身份、Wiki 范围与正文
       ├── classification.mjs：分类上下文、协议校验、目录／主题版本、正文分类段落
@@ -160,3 +161,9 @@ schedule-plan输出通用host-automation方案；当前Agent可调用自身工�
 2026-10-04：用户要求开始更新，批准本轮0.4.1打包、本机安装和GitHub发布；不实际修改知识库图标。
 
 0.4.1发布与安装已回读，见 [Release Record](releases/RELEASE-0.4.1.md)。本轮没有实际修改飞书图标。
+
+## REQ-014 首次导览与场景提示（未发布源码）
+
+onboarding只读读取个人状态目录的onboarding.json，无记录则needsIntroduction=true，不要求已有库。onboarding-record接受introduced:true与readingTools/opencli/schedule/icons/graph明确choices，增量合并；ask/later/never/interested只表示提醒偏好，不允许enabled。文件独立于单库状态，不写远端或公开仓库；当前用户指令优先，不静默回填既有用户。
+
+Skill按feature-tour.md在首次介绍核心功能、可选项、初始化步骤；后续每轮最多一个相关可选提示，拒绝／暂缓后不按调用次数重问。手动维护、外部读取缺口、多文档关系、新增／改名分类等按具体条件触发。无人值守任务不询问可选功能，不自动安装或写入。仅在调用Skill时提示，不后台监听。

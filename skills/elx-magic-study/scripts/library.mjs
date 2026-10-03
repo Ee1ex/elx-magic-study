@@ -7,11 +7,14 @@ import { Lark } from './lark.mjs';
 import { search, lint } from './retrieval.mjs';
 import { pendingContentClassification } from './classification.mjs';
 import { exportGraph } from './graph.mjs';
+import { onboardingStatus, recordOnboarding } from './onboarding.mjs';
 import { doctor, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan, classificationContext } from './library-core.mjs';
 
 const HELP = {
   version: '0.4.1', usage: 'node <SKILL_ROOT>/scripts/library.mjs <command> [--home <个人状态目录>] [--library <编号>]',
   commands: {
+    onboarding: '只读查看是否已介绍功能及用户提醒偏好；未绑定也可用',
+    'onboarding-record': '--file <介绍及明确偏好JSON>；只保存本地引导记录，不启用功能',
     doctor: '只读检查 Node、飞书 CLI、用户授权和绑定；不登录或改权限',
     bind: '--id <编号> --root <Wiki/docx链接> [重复] --write-root <Wiki链接> --confirm；只保存已确认绑定',
     status: '显示当前库范围、索引覆盖和实际记录的调度任务',
@@ -51,6 +54,8 @@ export async function run(argv) {
   const { command, options: o } = parse(argv), home = stateHome(o.home);
   if (command === 'help' || command === '--help') return HELP;
   if (command === 'doctor') return doctor(home, o.profile);
+  if (command === 'onboarding') return onboardingStatus(home);
+  if (command === 'onboarding-record') return locked(home, async () => recordOnboarding(home, await readJSON(o.file)));
   const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','plan-cancel','plan-supersede','apply','recover','maintenance','schedule-record']);
   const execute = async () => {
     if (command === 'bind') return bind(home, { id: o.id, name: o.name, profile: o.profile, readRoots: o.root, writeRoot: o['write-root'], confirmed: !!o.confirm });

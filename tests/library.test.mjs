@@ -263,3 +263,17 @@ test('定时方案不绑定Codex；宿主回执按provider和任务ID去重，�
   const s=await loadLibrary(dir,'test');assert.equal(s.schedules.length,2);
   await writeJSON(file,{...receipt,provider:'codex-heartbeat'});await run(['schedule-record','--home',dir,'--file',file]);assert.equal((await loadLibrary(dir,'test')).schedules.length,3);
 });
+
+
+test('首次导览在未绑定时可读，记录后不重复介绍，偏好合并且不等于功能启用', async () => {
+  const dir=home();const first=await run(['onboarding','--home',dir]);assert.equal(first.needsIntroduction,true);
+  await assert.rejects(fs.stat(path.join(dir,'onboarding.json')),e=>e.code==='ENOENT');
+  const file=path.join(dir,'choices.json');await writeJSON(file,{introduced:true,choices:{schedule:'later',icons:'never'}});
+  await run(['onboarding-record','--home',dir,'--file',file]);
+  const second=await run(['onboarding','--home',dir]);assert.equal(second.needsIntroduction,false);assert.equal(second.choices.icons,'never');
+  await writeJSON(file,{choices:{schedule:'interested'}});await run(['onboarding-record','--home',dir,'--file',file]);
+  const third=await run(['onboarding','--home',dir]);assert.equal(third.choices.icons,'never');assert.equal(third.choices.schedule,'interested');
+  await assert.rejects(fs.stat(path.join(dir,'config.json')),e=>e.code==='ENOENT');
+  await writeJSON(file,{choices:{schedule:'enabled'}});await assert.rejects(run(['onboarding-record','--home',dir,'--file',file]),e=>e.code==='ONBOARDING_CHOICE');
+  assert.deepEqual((await run(['onboarding','--home',dir])).choices,third.choices);
+});
