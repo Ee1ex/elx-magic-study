@@ -41,3 +41,5 @@
 - [0.2.0 发布记录](docs/releases/RELEASE-0.2.0.md)：提交、Tag、Release 和回读证据。
 
 - [新资料分类需求](docs/requirements/REQ-009-classification.md) 与 [实施验收](docs/progress/PROG-003-classification.md)：未发布源码范围和证据。
+
+- [0.3.0 发布与安装记录](docs/releases/RELEASE-0.3.0.md)：远端回读、旧版备份、新版校验与恢复边界。

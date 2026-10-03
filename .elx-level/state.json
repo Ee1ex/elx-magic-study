@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "classification-release",
+  "stage": "release-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,7 +15,7 @@
   "current_task": {
     "id": "REQ-009",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.3.0 测试与本机升级完成，准备 GitHub 发布回读",
+    "summary": "0.3.0 发布、本机升级与回读完成",
     "scope": "用户当次授权发布 REQ-009 到 GitHub main、v0.3.0 Tag 和 Release，备份并更新 Codex 本机 Skill，完成记录和回读",
     "out_of_scope": "真实知识库迁移、飞书写入、批量删除、额外功能、README 图片或布局修改",
     "paths": [
@@ -29,7 +29,7 @@
       "docs",
       "package.json"
     ],
-    "next_step": "版本同步、发布与安装校验、收尾回读"
+    "next_step": "本轮收尾完成；下轮可使用新版，真实资料试用按明确范围执行"
   },
   "artifacts": [
     {
@@ -39,6 +39,10 @@
     {
       "path": "docs/progress/PROG-003-classification.md",
       "summary": "分类实施与验收记录"
+    },
+    {
+      "path": "docs/releases/RELEASE-0.3.0.md",
+      "summary": "发布与安装收尾证据"
     }
   ],
   "verifications": [
@@ -61,13 +65,18 @@
       "command": "install.mjs --apply and installed CLI help",
       "status": "passed",
       "summary": "旧版完整备份；新版 23 个文件 SHA256 一致，CLI 0.3.0 与分类命令有效，已安装 Skill 格式检查通过"
+    },
+    {
+      "command": "GitHub readback and installed file comparison",
+      "status": "passed",
+      "summary": "Tag／main 指向批准提交；README／Release 正文一致；远端无私人产物；安装 23 文件哈希一致"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "eb270369af81908af2b6611090e00e626ecd95d4",
-    "last_commit_note": "0.2.0 Tag 对应提交；后续仅发布记录收尾",
+    "last_commit": "fdcf7086c171c0b17fc857f226a146cca6b1417e",
+    "last_commit_note": "v0.3.0 发布提交；后续收尾仅文档与状态",
     "repository": true
   },
   "remote": {
@@ -146,7 +155,13 @@
       "event": "classification_release_authorized",
       "at": "2026-10-03T15:22:00.689385+00:00",
       "summary": "用户明确要求发布并更新，然后完成收尾"
+    },
+    {
+      "event": "classification_release_and_install_verified",
+      "version": "0.3.0",
+      "commit": "fdcf7086c171c0b17fc857f226a146cca6b1417e",
+      "at": "2026-10-03T15:26:58.925653+00:00"
     }
   ],
-  "updated_at": "2026-10-03T15:20:26.511956+00:00"
+  "updated_at": "2026-10-03T15:26:58.925653+00:00"
 }

@@ -1,6 +1,6 @@
 # 魔法书屋 项目 SPEC
 
-更新日期：2026-10-03。产品版本：0.3.0（含 REQ-009）；发布／安装结果见本轮记录。责任模式：**LEVEL 1，用户明确指定**。
+更新日期：2026-10-03。产品版本：0.3.0（含 REQ-009），已发布并安装。责任模式：**LEVEL 1，用户明确指定**。
 
 本文件是当前产品与技术事实入口，兼任 LEVEL 1 Project Brief。历史演变见进度与决策台账；未来功能见路线图；方案不代表已实现。
 
@@ -125,7 +125,7 @@ OPT-02 增加 plan-cancel、plan-supersede 和只读 diagnose。终态保留原 
 - `npm test`：本轮实际重跑 50 项（其中分类新增 12 项），通过；是合成和模拟行为测试。
 - `npm run demo`：生成合成知识库图谱与检索结果，不连接真实飞书。
 - Skill 格式检查使用 Skill Creator 的 `quick_validate.py`；不是语义质量认证。
-- Git 远端：`https://github.com/Ee1ex/elx-magic-study.git`，0.2.0 已发布并回读，见 [Release Record](releases/RELEASE-0.2.0.md)。
+- Git 远端：`https://github.com/Ee1ex/elx-magic-study.git`，0.3.0 已发布并回读，见 [Release Record](releases/RELEASE-0.3.0.md)。
 
 当前版本来自 `package.json`。本轮版本工具已将 0.2.0 演进为 0.3.0；历史交付证据与真实飞书入库记录分开保存，见进度和发布台账。
 
@@ -133,7 +133,7 @@ OPT-02 增加 plan-cancel、plan-supersede 和只读 diagnose。终态保留原 
 
 四项优化源码已完成：防重复入队、计划生命周期与只读诊断、目录断点、版本化图谱摘要。38 项合成测试通过；浏览器拒绝本地 file 协议，故新版交互仍待验收。本机已备份旧版并安装 0.3.0，23 个文件与源码校验一致；真实资料不迁移。GitHub 0.2.0 已发布，结果见 [Release Record](releases/RELEASE-0.2.0.md)。任务与验收边界见 [可执行优化计划](plans/OPTIMIZATION_PLAN.md)。
 
-新资料自动分类已在本地实现，见 [REQ-009](requirements/REQ-009-classification.md) 和 [PROG-003](progress/PROG-003-classification.md)；本轮已获发布及安装授权。后续体验与功能设想见 [路线图](ROADMAP.md)。本 SPEC 不把候选设计写成已具备的能力。
+新资料自动分类已在本地实现，见 [REQ-009](requirements/REQ-009-classification.md) 和 [PROG-003](progress/PROG-003-classification.md)；本轮已完成 0.3.0 发布及本机安装，见 [发布记录](releases/RELEASE-0.3.0.md)。后续体验与功能设想见 [路线图](ROADMAP.md)。本 SPEC 不把候选设计写成已具备的能力。
 
 ## 8. 工作区与恢复注意事项
 

@@ -28,3 +28,5 @@
 - 2026-10-03：0.2.0 已发布 GitHub，main／Tag／Release 已回读，README 设计保持。见 [发布记录](../releases/RELEASE-0.2.0.md)。
 
 - 2026-10-03：REQ-009 新资料分类的本地源码、Skill 工作流和验收完成；50 项合成测试通过。未发布、未更新本机安装、未修改真实资料。见 [PROG-003](PROG-003-classification.md)。
+
+- 2026-10-03：用户当次授权后，REQ-009 以 0.3.0 发布并更新 Codex 安装；50 项测试与远端／安装回读通过，见 [发布记录](../releases/RELEASE-0.3.0.md)。
