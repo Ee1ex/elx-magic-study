@@ -99,3 +99,7 @@ actions 中可添加 `"summary":"讲什么、何时有用及依据边界。"`（
 plan 的新建 source 动作可附 classification，其来源版本、标签、依据与主题引用进入同一 digest；脚本将这些信息附到来源正文。语义判断、JSON 协议及用户修改预览流程见 [classification.md](classification.md)。旧动作不带该字段仍保持兼容。`classify --role` 是另一项输入／输出角色设置，不是内容分类。
 
 status／maintenance 的 pendingContentClassification 表示新来源笔记的待内容分类项；不自动重新分类旧页。
+
+## 分类页原生图标（浏览器辅助）
+
+`icon-plan --file <当前网页观察和建议JSON>` 核对分类身份、深度、正文版本并保存本地计划；不调用远端图标API。`icon-record --id <图标计划> --file <网页回执JSON>` 保存刷新后的实际结果或 pending；不是自动识图。具体JSON、手动选择保护和失败处理见 [category-icons.md](category-icons.md)。status／maintenance 输出 pendingCategoryIcons。

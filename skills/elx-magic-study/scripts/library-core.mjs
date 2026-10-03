@@ -5,8 +5,10 @@ import { now, hash, assert, issue, identifier, stateHome, libraryPath, readJSON,
 import { Lark, feishuURL } from './lark.mjs';
 import { lint } from './retrieval.mjs';
 import { scanCatalog } from './scan.mjs';
+import { pendingCategoryIcons } from './icons.mjs';
 import { prepareClassification, classificationMarkdown, verifyClassification, pendingContentClassification } from './classification.mjs';
 export { classificationContext } from './classification.mjs';
+export { iconDecision, planCategoryIcon, recordCategoryIcon } from './icons.mjs';
 
 const client = (state, supplied) => supplied || new Lark(state.profile);
 export function recordRole(document) { return ['input', 'derived', 'navigation'].includes(document.recordRole) ? document.recordRole : (document.recordRole === undefined && document.remote === false ? 'input' : 'unknown'); }
@@ -299,11 +301,11 @@ export async function maintenance(home, id, { refresh = false, supplied } = {}) 
   let state = await loadLibrary(home, id); let syncResult = null;
   if (refresh && state.provider === 'feishu') { syncResult = await sync(home, state.id, { supplied }); state = await loadLibrary(home, state.id); }
   const report = lint(state.documents); const { pending, needsClassification } = intakeQueue(state.documents);
-  const pendingClassification = pendingContentClassification(state.documents);
+  const pendingClassification = pendingContentClassification(state.documents); const pendingIcons = pendingCategoryIcons(state);
   const plans = (await planOverview(home, state)).filter(p => p.active);
-  const signature = hash({ report: report.signature, pending, needsClassification, pendingClassification, plans: plans.map(p => ({ id: p.id, state: p.state, steps: p.results.map(s => s.state) })), errors: syncResult?.failures || [], complete: syncResult?.catalogComplete });
+  const signature = hash({ report: report.signature, pending, needsClassification, pendingClassification, pendingIcons, plans: plans.map(p => ({ id: p.id, state: p.state, steps: p.results.map(s => s.state) })), errors: syncResult?.failures || [], complete: syncResult?.catalogComplete });
   const changed = state.maintenanceSignature !== signature; state.maintenanceSignature = signature; state.maintenanceAt = now(); await saveLibrary(home, state);
-  return { mode: 'draft-and-check-only', changed, notify: changed && (!!pending.length || !!needsClassification.length || !!pendingClassification.length || !!plans.length || !!report.issues.length || !!syncResult?.failures.length), pending, needsClassification, pendingContentClassification: pendingClassification, plans, report, sync: syncResult, note: '脚本只更新本地状态；已取消／替代计划不再作为活动任务，未知结果仍需查证。无变化时保持静默。' };
+  return { mode: 'draft-and-check-only', changed, notify: changed && (!!pending.length || !!needsClassification.length || !!pendingClassification.length || !!pendingIcons.length || !!plans.length || !!report.issues.length || !!syncResult?.failures.length), pending, needsClassification, pendingContentClassification: pendingClassification, pendingCategoryIcons: pendingIcons, plans, report, sync: syncResult, note: '脚本只更新本地状态；已取消／替代计划不再作为活动任务，未知结果仍需查证。无变化时保持静默。' };
 }
 export function schedulePrompt(state, skillPath, home) {
   const context = JSON.stringify({ library: state.id, stateHome: stateHome(home), skillPath: path.resolve(skillPath) });

@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-completed",
+  "stage": "category-icons-completed",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -13,63 +13,48 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-009",
+    "id": "REQ-010",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.3.0 发布、本机升级与回读完成",
-    "scope": "用户当次授权发布 REQ-009 到 GitHub main、v0.3.0 Tag 和 Release，备份并更新 Codex 本机 Skill，完成记录和回读",
-    "out_of_scope": "真实知识库迁移、飞书写入、批量删除、额外功能、README 图片或布局修改",
+    "summary": "REQ-010 图标网页试点与本地源码工作流完成",
+    "scope": "分类页选图标、保护手动选择、浏览器设置与刷新核对、失败待设置；一篇主题知识真实试点已获本轮授权",
+    "out_of_scope": "正文／标题改写、批量改普通笔记、私有接口、权限调整、常驻监听、发布和全局安装",
     "paths": [
       ".elx-level",
       "AGENTS.md",
       "DOCUMENT_MAP.md",
-      "README.md",
       "CHANGELOG.md",
-      "skills/elx-magic-study",
-      "tests",
+      "README.md",
       "docs",
-      "package.json"
+      "skills/elx-magic-study",
+      "tests"
     ],
-    "next_step": "本轮收尾完成；下轮可使用新版，真实资料试用按明确范围执行"
+    "next_step": "待后续安装／发布授权；其余图标与客户端仍需真实试用"
   },
   "artifacts": [
     {
-      "path": "docs/requirements/REQ-009-classification.md",
-      "summary": "本轮范围、行为与验收"
+      "path": "docs/requirements/REQ-010-category-icons.md",
+      "summary": "范围与行为验收"
     },
     {
-      "path": "docs/progress/PROG-003-classification.md",
-      "summary": "分类实施与验收记录"
-    },
-    {
-      "path": "docs/releases/RELEASE-0.3.0.md",
-      "summary": "发布与安装收尾证据"
+      "path": "docs/progress/PROG-004-category-icons.md",
+      "summary": "试点与实现验收记录"
     }
   ],
   "verifications": [
     {
       "command": "npm test",
       "status": "passed",
-      "summary": "50 项通过，其中新增分类测试 12 项；仅合成资料"
+      "summary": "54 项合成测试通过，含4项新增图标决策与回执测试"
     },
     {
-      "command": "quick_validate.py skills/elx-magic-study",
+      "command": "quick_validate.py and node --check",
       "status": "passed",
-      "summary": "Skill 格式有效"
+      "summary": "Skill 格式有效，10 个脚本语法通过，文档链接和 README 设计检查通过"
     },
     {
-      "command": "node --check and local documentation checks",
+      "command": "host browser selection, reload, CLI document readback",
       "status": "passed",
-      "summary": "9 个脚本语法通过；文档链接有效；README 图片和结构未变"
-    },
-    {
-      "command": "install.mjs --apply and installed CLI help",
-      "status": "passed",
-      "summary": "旧版完整备份；新版 23 个文件 SHA256 一致，CLI 0.3.0 与分类命令有效，已安装 Skill 格式检查通过"
-    },
-    {
-      "command": "GitHub readback and installed file comparison",
-      "status": "passed",
-      "summary": "Tag／main 指向批准提交；README／Release 正文一致；远端无私人产物；安装 23 文件哈希一致"
+      "summary": "一篇分类页原生书籍图标刷新保留，标题与正文未变；其余分类未批量修改"
     }
   ],
   "git": {
@@ -161,7 +146,17 @@
       "version": "0.3.0",
       "commit": "fdcf7086c171c0b17fc857f226a146cca6b1417e",
       "at": "2026-10-03T15:26:58.925653+00:00"
+    },
+    {
+      "event": "category_icons_authorized",
+      "at": "2026-10-03T15:49:32.552833+00:00",
+      "summary": "用户确认浏览器辅助版；主题知识原生书籍图标刷新后已保留"
+    },
+    {
+      "event": "category_icons_completed",
+      "at": "2026-10-03T15:59:20.974045+00:00",
+      "summary": "仅本地源码与一篇真实试点；未发布／安装新版"
     }
   ],
-  "updated_at": "2026-10-03T15:26:58.925653+00:00"
+  "updated_at": "2026-10-03T15:59:20.974045+00:00"
 }
