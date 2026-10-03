@@ -1,6 +1,6 @@
 # 定时整理与知识检查
 
-第一版包含可运行的维护入口和宿主调度接入流程。Skill 不运行独立后台进程；没有实际注册到宿主调度器，就不能说定时任务已开启。
+首次使用按 setup.md 主动询问是否开启定时整理；用户同意后才配置。第一版包含可运行的维护入口和宿主调度接入流程。Skill 不运行独立后台进程；没有实际注册到宿主调度器，就不能说定时任务已开启。
 
 ## 用户手动检查
 
@@ -11,12 +11,12 @@
 1. 先确认库已绑定。问清用户希望何时运行、时区、哪些天和处理范围。可建议“每天整理新增资料、每周检查”，但不能把建议当用户选择。
 2. 默认任务模式为“增量刷新＋本地草稿＋只读检查”，不执行 apply，不自动删除、公开发布、发飞书消息或改权限。用户要求自动落库时，另行形成具体的持续授权方案；本版本定时模板不提供自动远端写入。
 3. 使用 `schedule-plan --time ... --timezone ... --days ... --output ...` 生成明确提示。提示固定 library、状态目录、Skill 绝对路径；检查这些路径在实际运行宿主可访问。
-4. 在 Codex 桌面，发现并使用 `automation_update` 工具。优先 heartbeat 接到当前聊天；用户明确要求每次独立任务时才使用 cron，并先查询项目。不得写系统计划任务、手填 automation.toml 或假装注册成功。
-5. 注册前检查已有配置：status 的 schedules，以及宿主 `$CODEX_HOME/automations/*/automation.toml` 中相关任务的名称与提示。找到相同知识库／职责的任务时优先更新，不重复创建。读取时只提取相关任务信息，不回显其他私人任务。
+4. 先识别当前 Agent／harness 是否有自己的自动化功能，读取它的实际工具帮助或官方说明。能调用原生工具时直接使用；只有用户界面入口时，交付可复制提示并逐步引导用户在该 Agent 的自动化／定时任务界面创建，不猜菜单或命令。Codex 可用 automation_update 时优先 heartbeat；其他宿主不强套 Codex 工具或字段。不得擅自安装第三方调度器、写系统计划任务或假装注册成功。
+5. 注册前检查 status 的 schedules，并通过当前宿主的任务列表核对相关任务；仅 Codex 本地任务可按其支持的方式读取 `$CODEX_HOME/automations/*/automation.toml`。找到相同知识库／职责的任务时优先更新，不重复创建。读取时只提取相关任务信息，不回显其他私人任务。
 6. 把已确认的时间和时区转换为宿主支持的计划字段；若宿主没有显式时区字段，核对宿主的调度语义，不把本机时区当用户时区。用户只看到自然语言时间，不展示原始规则串。
-7. 使用生成的 prompt 原文，保持“无变化或无须处理时静默；仅在新草稿、重要问题、失败或需要用户行动时通知”的意图。
-8. 工具返回成功后，用 view 回读实际 ID、提示、时间与 ACTIVE 状态。只有回读一致才能告知启用；这仍不等于执行过一次完整定时任务。
-9. 写真实回执 JSON，再 schedule-record。provider 为 codex-heartbeat（仅当实际使用 heartbeat），记录 automationId、status、time、timezone 和 days。不能为方便补一个虚构 ID。
+7. 检查定时执行环境能读取 Skill 和个人状态绝对路径、运行 Node 与飞书 CLI，并可使用对应飞书身份；云端任务若无法访问本地路径，先解决执行位置，不上传本机凭据。使用生成的 prompt 原文，保持“无变化或无须处理时静默；仅在新草稿、重要问题、失败或需要用户行动时通知”的意图。
+8. 创建后通过当前宿主支持的查看入口回读实际任务 ID、提示、时间／时区与启用状态。用户手动配置时让其确认并提供非敏感任务信息，无法独立回读需标注“用户报告，未独立验证”，不要填写 verified:true。只有回读一致才能告知启用；这仍不等于执行过一次完整定时任务。
+9. 实际回读确认后写真实回执 JSON，再 schedule-record。provider 使用当前实际宿主标识（如 workbuddy、custom-harness；Codex heartbeat 使用 codex-heartbeat），记录 automationId、status、time、timezone、days 和 verified:true。ID必须来自真实任务，不可编造；脚本仅记录回执，不能独立证明调度器运行。相同 provider＋automationId 更新原记录，不同宿主同名ID不混淆。
 
 宿主没有调度能力时，交付已保存的运行提示和手动 maintenance 命令，清楚说明“维护入口可用，定时尚未注册”，不自行安装额外调度服务。
 
@@ -24,7 +24,7 @@
 
 1. 读取本技能和本参考，不依赖上次对话的内存状态。
 2. 运行 `maintenance --refresh`，它有界同步飞书，保留失败与范围信息，计算稳定变化摘要。
-3. 检查 pending、needsClassification、pendingContentClassification、pendingCategoryIcons 与 plans。pendingCategoryIcons 是待网页设置或刷新核对的图标任务；默认维护只报告，实际操作遵循 [category-icons.md](category-icons.md) 和当次授权。pendingContentClassification 是已入库但仍待内容分类的笔记，只提示原因；不要因此复制来源页或迁移旧页。只有明确为输入的资料进入 pending；生成知识页不因 kind=source 再次入队。旧记录角色不明时先核对并让用户确认单条 classify，不批量猜测回填。已有同 source id＋hash 的活动计划时复用；来源未变化时跳过。
+3. 检查 pending、needsClassification、pendingContentClassification 与 plans。图标实验已暂停，不自动调用其任务。pendingContentClassification 是已入库但仍待内容分类的笔记，只提示原因；不要因此复制来源页或迁移旧页。只有明确为输入的资料进入 pending；生成知识页不因 kind=source 再次入队。旧记录角色不明时先核对并让用户确认单条 classify，不批量猜测回填。已有同 source id＋hash 的活动计划时复用；来源未变化时跳过。
 4. 只有链接的来源列为待获取；有足够正文时按 capture-ingest.md 生成来源笔记与主题计划。每次从少量变更开始，不无限扫描。
 5. 如需为计划读取基线，可以调用 plan；不会调用 apply。草稿存在本地，可由后续交互确认执行。
 6. 新发现的问题引用实际资料；“孤立”“长期未核对”“未索引引用”不等于错误，不按这些标签自动删页。
@@ -39,3 +39,11 @@
 ## 参考边界
 
 Codex 计划任务官方说明：[Scheduled tasks](https://learn.chatgpt.com/docs/automations?surface=app)。具体工具字段以当前宿主的 automation_update schema 为准，本文不包含版本相关的硬编码模型名称。
+
+## 可复制给当前 Agent 的任务内容
+
+优先使用 schedule-plan 生成的 prompt，包含真实库编号、Skill绝对路径和状态目录。用户可在自己Agent的自动化功能中填写：
+
+> 按指定时间调用魔法书屋 Skill。先读取其 SKILL.md 和 references/maintenance.md，使用固定知识库与状态目录运行 maintenance --refresh。仅检查新增／变化资料、检索已有主题、生成本地整理草稿和问题清单。没有变化时保持静默；仅新草稿、重要问题、失败或需要用户处理时提醒。不自动 apply、移动、删除、设置图标、安装工具或扩大权限。授权失效时停止远端操作，说明需要用户处理。
+
+首次注册后可用宿主“立即运行”或已确认的只读试运行检查一次，分别记录注册／回读／实际唤醒结果；没有实际运行证据不能宣称定时整理已端到端通过。

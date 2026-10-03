@@ -2,7 +2,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { stateHome, loadLibrary, libraryPath, readJSON, writeJSON, writeNew, locked, assert, identifier, now } from './store.mjs';
+import { stateHome, loadLibrary, saveLibrary, libraryPath, readJSON, writeJSON, writeNew, locked, assert, identifier, now } from './store.mjs';
 import { Lark } from './lark.mjs';
 import { search, lint } from './retrieval.mjs';
 import { pendingCategoryIcons } from './icons.mjs';
@@ -90,12 +90,12 @@ export async function run(argv) {
       try { new Intl.DateTimeFormat('zh-CN', { timeZone: o.timezone }).format(); } catch { throw new Error('请提供有效 IANA 时区'); }
       assert(o.timezone && o.output, 'SCHEDULE', '需要明确时区与输出文件');
       const days = (o.days || 'MO,TU,WE,TH,FR,SA,SU').split(','); assert(days.every(d => ['MO','TU','WE','TH','FR','SA','SU'].includes(d)), 'DAYS', '使用 MO,TU,WE,TH,FR,SA,SU');
-      const spec = { state: 'proposal-not-registered', library: id, timezone: o.timezone, time: o.time, days: [...new Set(days)], name: `魔法书屋维护 ${state.name}`, kind: 'heartbeat', prompt: schedulePrompt(state, fileURLToPath(new URL('..', import.meta.url)), home), existing: state.schedules, next: '读取 maintenance.md，通过宿主 automation_update 实际注册并回读；不要把此文件称为已启用任务' };
+      const spec = { state: 'proposal-not-registered', library: id, timezone: o.timezone, time: o.time, days: [...new Set(days)], name: `魔法书屋维护 ${state.name}`, kind: 'host-automation', prompt: schedulePrompt(state, fileURLToPath(new URL('..', import.meta.url)), home), existing: state.schedules, next: '读取 maintenance.md，通过当前 Agent 的自动化能力实际注册并回读；不要把此文件称为已启用任务' };
       await writeNew(o.output, JSON.stringify(spec, null, 2)); return { file: path.resolve(o.output), ...spec };
     }
     if (command === 'schedule-record') {
-      const receipt = await readJSON(o.file); assert(receipt.provider === 'codex-heartbeat' && typeof receipt.automationId === 'string' && receipt.automationId && receipt.status && receipt.timezone && receipt.time, 'RECEIPT', '回执必须来自已成功的宿主调度注册，包含 provider、automationId、status、timezone、time');
-      state.schedules = (state.schedules || []).filter(s => s.automationId !== receipt.automationId); state.schedules.push({ ...receipt, recordedAt: now() }); await saveLibrary(home, state); return { recorded: receipt.automationId, note: '这是宿主回执记录；本脚本未创建或验证调度器执行。' };
+      const receipt = await readJSON(o.file); assert(typeof receipt.provider === 'string' && /^[a-z][a-z0-9-]{0,63}$/.test(receipt.provider) && receipt.verified === true && typeof receipt.automationId === 'string' && receipt.automationId && receipt.status && receipt.timezone && receipt.time, 'RECEIPT', '回执必须来自已成功的宿主调度注册，包含 provider、automationId、status、timezone、time、verified:true（仅实际回读后）');
+      state.schedules = (state.schedules || []).filter(s => s.provider !== receipt.provider || s.automationId !== receipt.automationId); state.schedules.push({ ...receipt, recordedAt: now() }); await saveLibrary(home, state); return { recorded: receipt.automationId, note: '这是宿主回执记录；本脚本未创建或验证调度器执行。' };
     }
     throw new Error('未知命令；运行 help 查看入口');
   };

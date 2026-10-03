@@ -251,3 +251,15 @@ test('OPT-04 回读后正文再次变化不会把旧摘要绑定新正文，过�
   const d = (await loadLibrary(dir, 'test')).documents[0];
   assert.notEqual(d.hash, d.summaryForHash); assert.equal(graphData([d]).nodes[0].summaryStale, true);
 });
+
+
+test('定时方案不绑定Codex；宿主回执按provider和任务ID去重，未回读拒绝', async () => {
+  const {dir}=await fixture();const plan=await run(['schedule-plan','--home',dir,'--library','test','--time','09:00','--timezone','Asia/Shanghai','--output',path.join(dir,'host-plan.json')]);
+  assert.equal(plan.kind,'host-automation');
+  const file=path.join(dir,'receipt.json');
+  const receipt={provider:'workbuddy',automationId:'task-1',status:'ACTIVE',timezone:'Asia/Shanghai',time:'09:00',verified:true};
+  await writeJSON(file,{...receipt,verified:false});await assert.rejects(run(['schedule-record','--home',dir,'--file',file]),e=>e.code==='RECEIPT');
+  for(const provider of ['workbuddy','custom-harness','workbuddy']) {await writeJSON(file,{...receipt,provider});await run(['schedule-record','--home',dir,'--file',file]);}
+  const s=await loadLibrary(dir,'test');assert.equal(s.schedules.length,2);
+  await writeJSON(file,{...receipt,provider:'codex-heartbeat'});await run(['schedule-record','--home',dir,'--file',file]);assert.equal((await loadLibrary(dir,'test')).schedules.length,3);
+});

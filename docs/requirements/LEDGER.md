@@ -31,3 +31,7 @@
 ## REQ-011 无 Computer Use 的终端图标
 
 已确认并完成本地实现：OpenCLI SDK适配、无浏览器降级、按digest设置、未知结果只读核对、试用包。见 [需求](REQ-011-portable-icons.md)；目标Agent本体验收待用户试用。
+
+## REQ-012 读取工具与定时引导
+
+已确认：缺读取工具时提供Agent Reach源链接并询问授权，单独询问OpenCLI，按需引导平台配置；首次主动询问定时整理并使用当前Agent自己的自动化能力。实现记录见 [PROG-006](../progress/PROG-006-onboarding.md)。

@@ -47,3 +47,5 @@
 - [分类原生图标需求](docs/requirements/REQ-010-category-icons.md) 与 [实现记录](docs/progress/PROG-004-category-icons.md)：浏览器试点和未发布工作流。
 
 - [终端图标需求](docs/requirements/REQ-011-portable-icons.md)、[实施与试用记录](docs/progress/PROG-005-portable-icons.md)、[WorkBuddy/harness 使用说明](skills/elx-magic-study/references/terminal-icons.md)。
+
+- [读取工具与首次定时引导记录](docs/progress/PROG-006-onboarding.md)（REQ-012）。

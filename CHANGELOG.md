@@ -37,3 +37,10 @@
 - 仓库公开与后续 README 插图更新见[进度台账](docs/progress/LEDGER.md)。
 
 未创建对应版本 Tag 或 GitHub Release；这里记录产品包版本，不暗示存在发布资产。
+
+## 2026-10-04 引导改进（未发布）
+
+- 缺少读取工具时提供 Agent Reach 官方仓库并询问安装授权，单独询问 OpenCLI；按实际平台Skill引导配置和只读验收。
+- 首次使用主动询问定时整理，使用当前Agent的自动化能力；方案改为host-automation，回执支持不同provider并要求实际回读。
+- 修复schedule-record缺少saveLibrary导入；跨宿主同ID不再覆盖。
+- 暂停图标实验日常路由，保留历史代码与资料，不删除用户图标。

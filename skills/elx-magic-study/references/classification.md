@@ -78,5 +78,3 @@
 来源、关联主题、父路径变化时重新读取和预览，不通过放宽核验继续写入。已发送或结果未知的计划先 diagnose／recover，不能为了改分类重新建一篇。回读成功后才报告飞书保存完成。
 
 `status` 和 `maintenance` 的 pendingContentClassification 单独列出待内容分类笔记；needsClassification 仍表示旧记录的输入／输出角色不明，两者不可混用。只检查不会自动重新分类或搬家。
-
-分类导航页创建或修改后，按 [category-icons.md](category-icons.md) 检查原生主题图标。先确保正文操作已回读成功，再处理已获范围授权的图标；普通资料入库不因此修改所属分类的手动图标。浏览器不可用时记录待设置，正文保存结果单独报告。

@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "portable-icons-completed",
+  "stage": "onboarding-completed",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -13,11 +13,11 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-011",
+    "id": "REQ-012",
     "owner": "项目负责人（当前用户）",
-    "summary": "REQ-011终端图标适配与WorkBuddy/harness试用包完成",
-    "scope": "项目内OpenCLI SDK适配、无浏览器降级、证据回执、试用文档与本地打包；三篇分类的有界终端设置／恢复验收",
-    "out_of_scope": "私有接口、Cookie导出、修改OpenCLI全局代码、权限调整、自动安装扩展、批量图标修改、发布和全局安装",
+    "summary": "读取工具分层安装授权、平台引导、首次定时询问与通用宿主回执完成",
+    "scope": "Skill引导文档、宿主回执兼容与测试；暂停图标日常路由",
+    "out_of_scope": "实际工具安装、平台登录、任务注册、发布、全局安装、图标操作或删除",
     "paths": [
       ".elx-level",
       "AGENTS.md",
@@ -28,38 +28,24 @@
       "skills/elx-magic-study",
       "tests"
     ],
-    "next_step": "用户使用预览包在WorkBuddy/harness试用；根据实际日志处理兼容性，不自动发布或安装"
+    "next_step": "本地实现完成；真实新用户及不同宿主配置待试用，发布安装按后续授权处理"
   },
   "artifacts": [
     {
-      "path": "docs/requirements/REQ-011-portable-icons.md",
-      "summary": "便携终端图标方案与验收"
-    },
-    {
-      "path": "docs/progress/PROG-005-portable-icons.md",
-      "summary": "真实过程、失败边界与试用交付"
+      "path": "docs/progress/PROG-006-onboarding.md",
+      "summary": "引导与回执验证记录"
     }
   ],
   "verifications": [
     {
       "command": "npm test",
       "status": "passed",
-      "summary": "58项测试通过；含缺浏览器、摘要授权、未知结果恢复及Shadow DOM用例"
+      "summary": "59项回归通过，新增跨宿主回执与去重验证"
     },
     {
-      "command": "quick_validate.py and node --check",
+      "command": "quick_validate.py",
       "status": "passed",
-      "summary": "Skill格式有效，11个脚本语法通过，文档链接与README结构检查通过"
-    },
-    {
-      "command": "terminal icon-plan / icon-apply / icon-verify",
-      "status": "passed",
-      "summary": "本机OpenCLI 1.8.6：实践经验和网页设计在诊断修正后核验；AI工具一次完整命令成功，重复执行幂等；WorkBuddy本体待用户试用"
-    },
-    {
-      "command": "preview archive SHA256 and packaged icon-inspect",
-      "status": "passed",
-      "summary": "27个Skill文件与源码一致，ZIP内容验证通过；从包内入口实测读取原生机器人图标"
+      "summary": "Skill格式有效"
     }
   ],
   "git": {
@@ -176,7 +162,12 @@
       "event": "portable_icons_trial_delivered",
       "at": "2026-10-03T16:54:51.590395+00:00",
       "summary": "通用预览包已生成；WorkBuddy本体尚待用户试用"
+    },
+    {
+      "event": "onboarding_completed_icons_paused",
+      "at": "2026-10-03T17:28:31.629923+00:00",
+      "summary": "用户要求读取工具安装选择与首次定时引导；不执行真实安装注册"
     }
   ],
-  "updated_at": "2026-10-03T16:54:51.590395+00:00"
+  "updated_at": "2026-10-03T17:28:31.629923+00:00"
 }

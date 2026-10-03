@@ -107,3 +107,9 @@ status／maintenance 的 pendingContentClassification 表示新来源笔记的�
 ## 无 Computer Use 的终端图标路径
 
 icon-inspect --id <分类文档ID> 只读打开网页核对；icon-plan --file <建议JSON> 不传 observation 时自动通过 OpenCLI SDK 观察，缺连接会保存 pending；icon-apply --id <图标计划> --approve <digest> 只在明确授权后设置并重新导航刷新核对；icon-verify 使用同样的 id/digest，只读核对未知结果。具体依赖与 WorkBuddy/harness 试用步骤见 [terminal-icons.md](terminal-icons.md)。不是无浏览器方案，也不需要 Codex 插件。
+
+## 当前宿主的定时任务
+
+schedule-plan 输出 kind=host-automation 的未注册方案，交给当前Agent自身自动化功能执行。schedule-record 接受实际 provider 标识、automationId、status、time、timezone 和 verified:true，按 provider＋automationId 去重；verified 只表示Agent确实已回读任务，不代表脚本验证了自动唤醒。旧记录仍可读取，新的回执必须明确验证。
+
+图标相关命令仅保留为暂停实验，不在入库和维护流程中推荐或自动调用。
