@@ -1,5 +1,10 @@
 # 变更记录
 
+## [0.3.0] - 2026-10-03
+
+- feat: classify new sources with tags and verified topic links
+- docs: record verified v0.2.0 publication
+
 ## 未发布
 
 - REQ-009：新资料入库由 Agent 根据正文选择已有位置、少量标签和已有主题；classification-context 提供只读候选。
