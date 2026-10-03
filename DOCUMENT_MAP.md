@@ -39,3 +39,5 @@
 长期事实已经提炼到上述可版本化文档中；不要把私人文件强制加入 Git。
 
 - [0.2.0 发布记录](docs/releases/RELEASE-0.2.0.md)：提交、Tag、Release 和回读证据。
+
+- [新资料分类需求](docs/requirements/REQ-009-classification.md) 与 [实施验收](docs/progress/PROG-003-classification.md)：未发布源码范围和证据。

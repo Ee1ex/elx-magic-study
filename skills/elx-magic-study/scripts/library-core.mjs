@@ -5,6 +5,8 @@ import { now, hash, assert, issue, identifier, stateHome, libraryPath, readJSON,
 import { Lark, feishuURL } from './lark.mjs';
 import { lint } from './retrieval.mjs';
 import { scanCatalog } from './scan.mjs';
+import { prepareClassification, classificationMarkdown, verifyClassification, pendingContentClassification } from './classification.mjs';
+export { classificationContext } from './classification.mjs';
 
 const client = (state, supplied) => supplied || new Lark(state.profile);
 export function recordRole(document) { return ['input', 'derived', 'navigation'].includes(document.recordRole) ? document.recordRole : (document.recordRole === undefined && document.remote === false ? 'input' : 'unknown'); }
@@ -183,7 +185,7 @@ export async function makePlan(home, id, spec, supplied) {
     assert(listing.complete, 'DEDUP_INCOMPLETE', '写入根目录尚未完整枚举，不能可靠查重；请缩小整理根范围');
     remoteTitles = new Set(listing.catalog.map(d => d.title));
   }
-  const operation = randomUUID(); const actions = []; const targets = new Set(); const titles = new Set();
+  const operation = randomUUID(); const actions = []; const targets = new Set(); const titles = new Set(); const classifiedSources = new Set();
   for (let i = 0; i < spec.actions.length; i++) {
     const a = spec.actions[i]; assert(['create', 'append', 'str_replace'].includes(a.kind), 'WRITE_KIND', '只支持创建、追加和精确行内替换'); validContent(a.content);
     const action = { kind: a.kind, title: a.title, content: a.content, category: a.category || 'document' };
@@ -196,11 +198,17 @@ export async function makePlan(home, id, spec, supplied) {
       Object.assign(action, { doc: parsed.url, documentId: d.id, baseHash: hash(d.markdown), baseRevision: d.revision });
       if (a.kind === 'str_replace') { assert(typeof a.pattern === 'string' && a.pattern.trim() && !a.pattern.includes('\n') && !a.content.includes('\n'), 'PATTERN', '精确替换只用于非空单行；多段内容用追加或官方块编辑流程'); assert(d.markdown.split(a.pattern).length === 2, 'PATTERN_AMBIGUOUS', '旧文本必须在新读取的正文中唯一出现'); action.pattern = a.pattern; action.expectedTextHash = hash(normalizeText(d.markdown.replace(a.pattern, a.content))); }
     }
+    if (a.classification !== undefined) {
+      action.classification = await prepareClassification(state, lark, action, a.classification);
+      assert(!classifiedSources.has(action.classification.sourceId), 'CLASSIFICATION_DUPLICATE', '同一来源在一份计划中只创建一篇主笔记'); classifiedSources.add(action.classification.sourceId);
+      action.content += '\n\n' + classificationMarkdown(action.classification); validContent(action.content);
+    }
     if (a.kind !== 'str_replace') { action.marker = `ELX记录 ${operation}-${i + 1}`; action.content += '\n\n' + action.marker; }
     actions.push(action);
   }
   const sources = [];
-  for (const sourceId of spec.sourceIds || []) { const d = state.documents.find(d => d.id === sourceId); assert(d && !d.unavailable && !d.outOfScope, 'SOURCE', '引用的来源不存在或不可用'); sources.push({ id: d.id, hash: d.hash }); }
+  for (const sourceId of new Set([...(spec.sourceIds || []), ...classifiedSources])) { const d = state.documents.find(d => d.id === sourceId); assert(d && !d.unavailable && !d.outOfScope, 'SOURCE', '引用的来源不存在或不可用'); sources.push({ id: d.id, hash: d.hash }); }
+  for (const action of actions) for (const topic of action.classification?.relatedTopics || []) assert(!targets.has(topic.id), 'CLASSIFICATION_TOPIC_WRITE', '关联主题若需更新，另作计划；本次分类只建立引用');
   const payload = { schemaVersion: 1, operation, library: state.id, account: state.account, writeRoot: state.writeRoot, createdAt: now(), purpose: spec.purpose || '知识整理', sources, actions };
   const plan = { payload, digest: planDigest(payload), state: 'preview', steps: actions.map(() => ({ state: 'pending' })) };
   await writeJSON(planFile(home, state.id, operation), plan);
@@ -217,11 +225,13 @@ export async function applyPlan(home, id, operation, approval, supplied) {
   if (plan.state === 'complete') return { plan: operation, state: 'complete', alreadyApplied: true };
   assert(!plan.steps.some(s => ['sending', 'unknown', 'needs_review'].includes(s.state)), 'UNKNOWN_WRITE', '存在未核实的写入，先 recover，不允许重复发送');
   for (const src of p.sources) { const d = state.documents.find(d => d.id === src.id); assert(d?.hash === src.hash, 'SOURCE_CHANGED', '来源内容已改变，请重新整理与预览'); if (d.remote !== false) { await lark.inScope(d.url, state.readRoots); const fresh = await lark.fetch(d.url); assert(hash(fresh.markdown) === src.hash, 'SOURCE_CHANGED', '远端来源已更新，请重新整理与预览'); } }
+  for (let i = 0; i < p.actions.length; i++) if (plan.steps[i].state !== 'verified') await verifyClassification(state, lark, p.actions[i]);
   plan.state = 'applying'; await writeJSON(file, plan);
   for (let i = 0; i < p.actions.length; i++) {
     const a = p.actions[i], step = plan.steps[i]; if (step.state === 'verified') continue;
     if (a.kind === 'create') { assert(!state.documents.some(d => !d.outOfScope && d.title === a.title), 'DUPLICATE_TITLE', '计划创建的标题已经存在，请重新核对'); await lark.inScope(a.parent, [state.writeRoot]); const listing = await enumerate({ ...state, readRoots: [state.writeRoot] }, lark, 2000); assert(listing.complete, 'DEDUP_INCOMPLETE', '创建前查重范围不完整'); assert(!listing.catalog.some(d => d.title === a.title), 'DUPLICATE_TITLE', '预览后远端出现同名文档，请核对后重新制定计划'); }
     else { await lark.inScope(a.doc, [state.writeRoot]); const current = await lark.fetch(a.doc); assert(current.id === a.documentId && hash(current.markdown) === a.baseHash, 'CONCURRENT_EDIT', '文档已变化，保留用户修改；请重新生成预览'); }
+    await verifyClassification(state, lark, a);
     step.state = 'sending'; step.startedAt = now(); await writeJSON(file, plan);
     try {
       let parent;
@@ -255,6 +265,7 @@ async function finishPlan(home, state, plan, lark) {
     if (!record) { record = { id: d.id }; state.documents.push(record); }
     Object.assign(record, d, { url: step.url, title: a.title || record.title || d.id, kind: a.category, hash: hash(d.markdown), fetchedAt: now(), coverage: 'full_text', remote: true });
     if (a.kind === 'create') Object.assign(record, { recordRole: ['index', 'log'].includes(a.category) ? 'navigation' : 'derived', producedBy: plan.payload.operation, inputVersions: plan.payload.sources });
+    if (a.classification) Object.assign(record, { classification: a.classification, tags: a.classification.tags, classificationForHash: step.verifiedHash });
     if (a.summary) Object.assign(record, { summary: a.summary, summaryForHash: step.verifiedHash });
   }
   for (const src of plan.payload.sources) { const d = state.documents.find(d => d.id === src.id); if (d?.hash === src.hash) d.processedHash = src.hash; }
@@ -288,10 +299,11 @@ export async function maintenance(home, id, { refresh = false, supplied } = {}) 
   let state = await loadLibrary(home, id); let syncResult = null;
   if (refresh && state.provider === 'feishu') { syncResult = await sync(home, state.id, { supplied }); state = await loadLibrary(home, state.id); }
   const report = lint(state.documents); const { pending, needsClassification } = intakeQueue(state.documents);
+  const pendingClassification = pendingContentClassification(state.documents);
   const plans = (await planOverview(home, state)).filter(p => p.active);
-  const signature = hash({ report: report.signature, pending, needsClassification, plans: plans.map(p => ({ id: p.id, state: p.state, steps: p.results.map(s => s.state) })), errors: syncResult?.failures || [], complete: syncResult?.catalogComplete });
+  const signature = hash({ report: report.signature, pending, needsClassification, pendingClassification, plans: plans.map(p => ({ id: p.id, state: p.state, steps: p.results.map(s => s.state) })), errors: syncResult?.failures || [], complete: syncResult?.catalogComplete });
   const changed = state.maintenanceSignature !== signature; state.maintenanceSignature = signature; state.maintenanceAt = now(); await saveLibrary(home, state);
-  return { mode: 'draft-and-check-only', changed, notify: changed && (!!pending.length || !!needsClassification.length || !!plans.length || !!report.issues.length || !!syncResult?.failures.length), pending, needsClassification, plans, report, sync: syncResult, note: '脚本只更新本地状态；已取消／替代计划不再作为活动任务，未知结果仍需查证。无变化时保持静默。' };
+  return { mode: 'draft-and-check-only', changed, notify: changed && (!!pending.length || !!needsClassification.length || !!pendingClassification.length || !!plans.length || !!report.issues.length || !!syncResult?.failures.length), pending, needsClassification, pendingContentClassification: pendingClassification, plans, report, sync: syncResult, note: '脚本只更新本地状态；已取消／替代计划不再作为活动任务，未知结果仍需查证。无变化时保持静默。' };
 }
 export function schedulePrompt(state, skillPath, home) {
   const context = JSON.stringify({ library: state.id, stateHome: stateHome(home), skillPath: path.resolve(skillPath) });

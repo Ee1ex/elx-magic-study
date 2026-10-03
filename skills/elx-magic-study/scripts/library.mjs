@@ -5,8 +5,9 @@ import { fileURLToPath } from 'node:url';
 import { stateHome, loadLibrary, libraryPath, readJSON, writeJSON, writeNew, locked, assert, identifier, now } from './store.mjs';
 import { Lark } from './lark.mjs';
 import { search, lint } from './retrieval.mjs';
+import { pendingContentClassification } from './classification.mjs';
 import { exportGraph } from './graph.mjs';
-import { doctor, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan } from './library-core.mjs';
+import { doctor, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan, classificationContext } from './library-core.mjs';
 
 const HELP = {
   version: '0.2.0', usage: 'node <SKILL_ROOT>/scripts/library.mjs <command> [--home <个人状态目录>] [--library <编号>]',
@@ -19,6 +20,7 @@ const HELP = {
     fetch: '--id <已索引文档编号>；回远端核对后返回正文',
     capture: '--url <来源链接> --title <标题> [--note <备注>]；仅生成本地来源记录',
     'source-content': '--id <来源编号> --file <UTF8正文> --coverage partial|full_text|transcript --note <获取方式>；仅本地快照',
+    'classification-context': '--id <输入来源编号> [--query <正文关键词>] [--limit 300]；只读分类位置、已有标签与主题候选',
     classify: '--id <文档编号> --role input|derived|navigation --confirm；确认后仅设置该条本地角色',
     plan: '--file <动作JSON>；读取基线并生成可审核的飞书增改计划',
     plans: '列出操作状态、来源版本和结果链接，供定时任务去重',
@@ -54,10 +56,11 @@ export async function run(argv) {
     if (command === 'bind') return bind(home, { id: o.id, name: o.name, profile: o.profile, readRoots: o.root, writeRoot: o['write-root'], confirmed: !!o.confirm });
     if (command === 'demo-import') return importManifest(home, o.id, await readJSON(o.file));
     const state = await loadLibrary(home, o.library); const id = state.id;
-    if (command === 'status') { const queue = intakeQueue(state.documents); const plans = await planOverview(home, state); const tasks = {}; for (const p of plans) tasks[p.label] = (tasks[p.label] || 0) + 1; return { id, name: state.name, provider: state.provider, readRoots: state.readRoots, writeRoot: state.writeRoot, indexed: state.documents.length, pendingInputs: queue.pending.length, needsClassification: queue.needsClassification.length, tasks, lastSync: state.lastSync || null, schedules: state.schedules || [], next: state.documents.length ? '可 search、graph 或 maintenance；回答重要问题前 fetch 最新正文' : '先 sync 建立索引' }; }
+    if (command === 'status') { const queue = intakeQueue(state.documents); const plans = await planOverview(home, state); const tasks = {}; for (const p of plans) tasks[p.label] = (tasks[p.label] || 0) + 1; return { id, name: state.name, provider: state.provider, readRoots: state.readRoots, writeRoot: state.writeRoot, indexed: state.documents.length, pendingInputs: queue.pending.length, needsClassification: queue.needsClassification.length, pendingContentClassification: pendingContentClassification(state.documents).length, tasks, lastSync: state.lastSync || null, schedules: state.schedules || [], next: state.documents.length ? '可 search、graph 或 maintenance；回答重要问题前 fetch 最新正文' : '先 sync 建立索引' }; }
     if (command === 'sync') return sync(home, id, { maxDocs: number(o['max-docs'], 30, 1, 200), maxNodes: number(o['max-nodes'], 500, 1, 5000), force: !!o.force, restartScan: !!o['restart-scan'] });
     if (command === 'fetch') return fetchDocument(home, id, o.id);
     if (command === 'capture') return capture(home, id, { url: o.url, title: o.title, note: o.note });
+    if (command === 'classification-context') return classificationContext(home, id, o.id, { queries: o.query || [], limit: number(o.limit, 300, 1, 1000) });
     if (command === 'classify') return classifyDocument(home, id, o.id, o.role, !!o.confirm);
     if (command === 'source-content') return sourceContent(home, id, o.id, { markdown: await fs.readFile(o.file, 'utf8'), coverage: o.coverage, sourceNote: o.note });
     if (command === 'plan') return makePlan(home, id, await readJSON(o.file));

@@ -91,3 +91,11 @@ schedule-plan 只准备提示与时间配置；实际调用宿主调度工具后
 ## 可选的图谱摘要
 
 actions 中可添加 `"summary":"讲什么、何时有用及依据边界。"`（1—400 字符）。摘要描述动作执行后的整篇页面，纳入计划 digest。回读成功后保存 summaryForHash；图谱只接受与当前 hash 一致的摘要，否则使用明确标注的正文摘录。不要为旧数据批量伪造版本。
+
+## 新资料内容分类
+
+`classification-context --id <输入来源编号> --query "正文关键词" [--query "另一组词"] [--limit 300]` 只读返回两层节点、已有标签和主题候选，最多列 1000 个目录节点。locations.complete=false 不能当全目录；source.truncated=true 需继续分段读正文；topicCandidates 为缓存 BM25 候选，不代表已确认语义关联。
+
+plan 的新建 source 动作可附 classification，其来源版本、标签、依据与主题引用进入同一 digest；脚本将这些信息附到来源正文。语义判断、JSON 协议及用户修改预览流程见 [classification.md](classification.md)。旧动作不带该字段仍保持兼容。`classify --role` 是另一项输入／输出角色设置，不是内容分类。
+
+status／maintenance 的 pendingContentClassification 表示新来源笔记的待内容分类项；不自动重新分类旧页。
