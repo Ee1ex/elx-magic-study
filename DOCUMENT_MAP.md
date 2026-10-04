@@ -1,6 +1,6 @@
 # 文档地图
 
-- 当前未发布：[REQ-016精细短标题与首页说明书](docs/requirements/REQ-016-note-titles-home.md)、[实现与真实验收](docs/progress/PROG-011-note-titles-home.md)。
+- 0.7.0功能：[REQ-016精细短标题与首页说明书](docs/requirements/REQ-016-note-titles-home.md)、[实现与真实验收](docs/progress/PROG-011-note-titles-home.md)。
 
 这里只负责导航；当前产品与技术事实统一在 SPEC，执行状态由 ELX Level 状态文件记录。
 
@@ -70,3 +70,5 @@
 - [0.6.0发布与安装记录](docs/releases/RELEASE-0.6.0.md)：main／Tag／Release／ZIP及本机28文件核验。
 
 - [0.6.0真实使用验收](docs/progress/PROG-010-live-acceptance.md)：授权、读取、建库与首次入库；兼容绕行及未测边界。
+
+- [0.7.0发布与安装记录](docs/releases/RELEASE-0.7.0.md)：精细标题、表格化首页与本机30文件校验。

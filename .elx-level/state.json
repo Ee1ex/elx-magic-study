@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-0.7.0",
+  "stage": "release-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,7 +15,7 @@
   "current_task": {
     "id": "REQ-016",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.7.0打包发布与Codex升级",
+    "summary": "0.7.0发布与Codex安装完成",
     "scope": "用户授权main/Tag/Release/ZIP与本机安装，逐项回读",
     "out_of_scope": "额外真实知识库修改、批量迁移及个人状态变更",
     "paths": [
@@ -28,7 +28,7 @@
       "DOCUMENT_MAP.md",
       ".elx-level"
     ],
-    "next_step": "打包校验、备份安装、发布核验"
+    "next_step": "本轮发布安装收尾完成"
   },
   "artifacts": [
     {
@@ -38,6 +38,10 @@
     {
       "path": "docs/progress/PROG-011-note-titles-home.md",
       "summary": "实现和脱敏真实验收记录"
+    },
+    {
+      "path": "docs/releases/RELEASE-0.7.0.md",
+      "summary": "发布安装回读证据"
     }
   ],
   "verifications": [
@@ -60,13 +64,18 @@
       "command": "homepage readback after tabular layout",
       "status": "passed",
       "summary": "2张原生表格含11项功能提示词；13个旧链接、导航与历史尾部保留；模板同步，无运行代码变更"
+    },
+    {
+      "command": "release readback and local install SHA256",
+      "status": "passed",
+      "summary": "30文件校验；main/Tag发布提交一致，Release正文、README与ZIP digest回读一致"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "44422f86e0d872d984acbf08dba2766bc61e6bb7",
-    "last_commit_note": "REQ-016实施前基线；本轮本地提交见Git日志，未推送",
+    "last_commit": "061f881970b6dac01d02ea58b77514f252ef89d7",
+    "last_commit_note": "0.7.0不可变发布提交，后续仅收尾记录",
     "repository": true
   },
   "remote": {
@@ -274,7 +283,12 @@
     {
       "event": "v0.7.0_publish_install_authorized",
       "at": "2026-10-04T16:23:28.289733+00:00"
+    },
+    {
+      "event": "v0.7.0_release_install_verified",
+      "at": "2026-10-04T16:25:31.432368+00:00",
+      "commit": "061f881970b6dac01d02ea58b77514f252ef89d7"
     }
   ],
-  "updated_at": "2026-10-04T16:23:28.289733+00:00"
+  "updated_at": "2026-10-04T16:25:31.432368+00:00"
 }
