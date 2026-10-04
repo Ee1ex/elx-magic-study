@@ -184,3 +184,5 @@ space-discover 未绑定可用且只读：默认搜索「魔法书屋知识库�
 本轮合成验收与实际未验证边界见 [PROG-009](progress/PROG-009-first-use-library.md)。
 
 2026-10-04：REQ-015已随0.6.0发布并安装，61项合成回归通过；真实平台测试待用户提供具体资料与范围。见 [发布记录](releases/RELEASE-0.6.0.md)。
+
+2026-10-04真实验收：本机独立状态目录完成授权、OpenCLI正文和部分评论读取、独立Wiki／首页创建绑定，以及分类与笔记合并预览后的真实写入回读。Windows分享链接入口及首页URL通过有界绕行处理，未固化修复；从零安装仍未测。见 [真实验收](progress/PROG-010-live-acceptance.md)。
