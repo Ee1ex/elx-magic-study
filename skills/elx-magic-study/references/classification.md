@@ -22,6 +22,8 @@
 
 ## 在入库计划中填写
 
+新来源默认按 [note-naming.md](note-naming.md) 传titleSummary（约8字、最多10字符的具体概括），不再加“来源笔记”前缀。plan从核实的destination末级分类生成title及正文首标题。下例使用该协议；旧版传完整title的计划仍兼容。
+
 下面的 `classification` 放在新建 `category: source` 动作中。选择的现有位置放在同一动作的 parent，不在 classification 中另造目标。
 
 ```json
@@ -30,7 +32,7 @@
   "actions": [{
     "kind": "create",
     "category": "source",
-    "title": "来源笔记：按需读取资料",
+    "titleSummary": "按需读取节省上下文",
     "parent": "https://example.feishu.cn/wiki/ExistingShelf",
     "content": "# 来源笔记\n\n来源：https://example.com/article\n\n按已读取内容归纳，注明适用范围和限制。",
     "summary": "介绍按需读取资料的方法，适合减少 Agent 上下文占用。",
@@ -92,7 +94,7 @@
   "purpose": "首次创建必要分类并保存资料",
   "actions": [
     {"kind":"create","category":"shelf","title":"AI与效率","content":"收录 AI 工具与效率方法。"},
-    {"kind":"create","category":"source","parentStep":1,"title":"来源笔记：按需读取","content":"实际资料总结及来源。","classification":{"sourceId":"实际输入编号","sourceHash":"实际正文hash","status":"classified","basis":"content","reason":"讨论按需读取与效率。","evidence":"实际正文中的逐字依据","tags":["Agent"],"relatedTopics":[]}}
+    {"kind":"create","category":"source","parentStep":1,"titleSummary":"按需读取节省上下文","content":"实际资料总结及来源。","classification":{"sourceId":"实际输入编号","sourceHash":"实际正文hash","status":"classified","basis":"content","reason":"讨论按需读取与效率。","evidence":"实际正文中的逐字依据","tags":["Agent"],"relatedTopics":[]}}
   ]
 }
 ```

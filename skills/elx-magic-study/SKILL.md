@@ -50,6 +50,8 @@ node <SKILL_ROOT>/scripts/library.mjs <command> [--library <编号>] [--home <�
 
 ## 写入规则
 
+新来源笔记按 [note-naming.md](references/note-naming.md) 提供titleSummary与classification，生成「具体内容概括丨末级分类」；概括优先约8字、最多10字符，保留品牌与核心对象，不再添加惯用前缀。旧页不自动改名。新建知识库首页按[首页模板](assets/templates/library-home.md)先介绍本库名称、用途，再写功能和可复制提示词；完整正文纳入初始化预览，填充回读后才算完成。
+
 `capture` 和 `source-content` 只写本地，不能向用户说“已保存到飞书”。飞书保存需要 `plan` 和 `apply`，以及真实回读结果。
 
 默认先展示具体新增／修改、目标链接和原因，用户确认一次后完成该计划。用户明确要求“收藏这条到已绑定位置”可作为该单条来源页的授权，不扩展到主题改写、批量处理或权限操作。不要为了省事改用整篇覆盖。

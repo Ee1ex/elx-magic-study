@@ -15,9 +15,9 @@
   "current_task": {
     "id": "REQ-015",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.6.0发布与Codex安装完成",
-    "scope": "用户授权GitHub main/Tag/Release/ZIP和本机安装升级，逐项校验回读",
-    "out_of_scope": "真实飞书修改、个人绑定偏好迁移、外部读取工具安装与任务注册",
+    "summary": "0.6.0真实验收完成并同步发布记录",
+    "scope": "用户授权发布本次脱敏真实验收文档与Release补充",
+    "out_of_scope": "新功能修复、新版本Tag或ZIP、个人资料上传与额外远端知识库修改",
     "paths": [
       "skills/elx-magic-study",
       "tests",
@@ -28,12 +28,16 @@
       "docs",
       ".elx-level"
     ],
-    "next_step": "等待具体资料链接和测试范围，保留现有绑定及偏好"
+    "next_step": "本轮验收发布完成；兼容问题保留待后续修复"
   },
   "artifacts": [
     {
       "path": "docs/releases/RELEASE-0.6.0.md",
       "summary": "发布安装验证与真实测试边界"
+    },
+    {
+      "path": "docs/progress/PROG-010-live-acceptance.md",
+      "summary": "真实验收与有界绕行记录"
     }
   ],
   "verifications": [
@@ -51,6 +55,11 @@
       "command": "GitHub readback / install SHA256 / installed help, doctor, onboarding",
       "status": "passed",
       "summary": "main/Tag发布提交一致、Release正文换行规范后一致、README字节一致、ZIP digest一致；28文件安装校验及只读命令通过，不代表远端读取通过"
+    },
+    {
+      "command": "real user-flow acceptance",
+      "status": "passed",
+      "summary": "授权、读取、建库、分类和笔记实际回读通过；有界绕行与未测试范围见PROG-010"
     }
   ],
   "git": {
@@ -248,7 +257,11 @@
       "event": "v0.6.0_release_install_verified",
       "at": "2026-10-04T05:29:34.133354+00:00",
       "commit": "ed79546379a4f295054cf0f4ea67716c4d1ecf4e"
+    },
+    {
+      "event": "live_acceptance_publication_authorized",
+      "at": "2026-10-04T05:45:51.702830+00:00"
     }
   ],
-  "updated_at": "2026-10-04T05:29:34.133354+00:00"
+  "updated_at": "2026-10-04T05:45:51.702830+00:00"
 }

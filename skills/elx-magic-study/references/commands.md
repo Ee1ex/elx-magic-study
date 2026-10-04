@@ -97,6 +97,8 @@ actions 中可添加 `"summary":"讲什么、何时有用及依据边界。"`（
 
 ## 新资料内容分类
 
+新建source动作使用titleSummary＋classification，titleSummary为约8字、最多10字符的具体内容概括；省略title时由plan生成「概括丨真实末级分类」，同步正文首标题。若显式提供title须完全一致。旧计划无titleSummary仍兼容；不批量改名。详见 [note-naming.md](note-naming.md)。
+
 `classification-context --id <输入来源编号> --query "正文关键词" [--query "另一组词"] [--limit 300]` 只读返回两层节点、已有标签和主题候选，最多列 1000 个目录节点。locations.complete=false 不能当全目录；source.truncated=true 需继续分段读正文；topicCandidates 为缓存 BM25 候选，不代表已确认语义关联。
 
 plan 的新建 source 动作可附 classification，其来源版本、标签、依据与主题引用进入同一 digest；脚本将这些信息附到来源正文。语义判断、JSON 协议及用户修改预览流程见 [classification.md](classification.md)。旧动作不带该字段仍保持兼容。`classify --role` 是另一项输入／输出角色设置，不是内容分类。

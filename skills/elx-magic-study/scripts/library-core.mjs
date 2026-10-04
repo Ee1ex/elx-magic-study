@@ -204,6 +204,13 @@ function validContent(content) { assert(typeof content === 'string' && content.t
 export function normalizeText(s) { return s.normalize('NFKC').replace(/\\([\[\]_*~`|$<>])/g, '$1').replace(/[#*`_\s]/g, ''); }
 export function planDigest(payload) { return hash(payload); }
 const titleKey = s => s.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
+export function formatNoteTitle(summary, category) {
+  assert(typeof summary === 'string' && summary.trim() && !/[丨|\r\n\x00-\x1f]/.test(summary), 'NOTE_TITLE', '内容概括需单行，不能含分隔符；保留品牌、对象与核心内容');
+  const value = summary.normalize('NFKC').trim();
+  assert([...value].length <= 10 && !/[丨|]/.test(value), 'NOTE_TITLE', '内容概括最多10字符且不能含分隔符，优先约8字；字母、数字也计数，不自动截断');
+  assert(typeof category === 'string' && category.trim() && !/[丨|\r\n\x00-\x1f]/.test(category.normalize('NFKC')), 'NOTE_TITLE', '标题后缀必须是有效的末级分类名');
+  return `${value}丨${category.trim()}`;
+}
 
 // Planned path entries identify prior steps, never invented remote URLs.
 async function resolveAction(state, lark, plan, index) {
@@ -258,11 +265,8 @@ export async function makePlan(home, id, spec, supplied) {
     assert(['document', 'source', 'topic', 'experience', 'index', 'log', 'shelf'].includes(action.category), 'CATEGORY', '未知知识类型');
     assert(a.parentStep === undefined || (a.kind === 'create' && a.parent === undefined && Number.isInteger(a.parentStep) && a.parentStep >= 1 && a.parentStep <= i && actions[a.parentStep - 1]?.category === 'shelf'), 'PARENT_STEP', 'parentStep 只能引用本计划前序新分类步骤，不能与 parent 混用');
     assert(action.category !== 'shelf' || a.kind === 'create', 'CATEGORY', '分类动作仅创建，不借此修改旧分类');
+    assert(a.titleSummary === undefined || (a.kind === 'create' && action.category === 'source' && a.classification), 'NOTE_CLASSIFICATION', 'titleSummary 仅用于带classification的新来源笔记');
     if (a.kind === 'create') {
-      assert(typeof a.title === 'string' && a.title.trim() && a.title.length <= 200, 'TITLE', '创建文档需要明确标题');
-      assert(!titles.has(a.title) && !remoteTitles.has(a.title) && !state.documents.some(d => !d.outOfScope && d.title === a.title), 'DUPLICATE_TITLE', '已有同名文档或同一批次标题重复，请先核对');
-      if (action.category === 'shelf') assert(![...titles, ...remoteTitles].some(t => titleKey(t) === titleKey(a.title)), 'DUPLICATE_TITLE', '已有同形分类名称，先核对复用');
-      titles.add(a.title);
       if (a.parentStep !== undefined) {
         action.parentStep = a.parentStep;
         action.plannedParentPath = actions[a.parentStep - 1].shelfPath;
@@ -284,7 +288,20 @@ export async function makePlan(home, id, spec, supplied) {
     if (a.classification !== undefined) {
       action.classification = await prepareClassification(state, lark, action, a.classification, action.parentStep === undefined ? undefined : { parentStep: action.parentStep, path: action.plannedParentPath });
       assert(!classifiedSources.has(action.classification.sourceId), 'CLASSIFICATION_DUPLICATE', '同一来源在一份计划中只创建一篇主笔记'); classifiedSources.add(action.classification.sourceId);
+      if (a.titleSummary !== undefined) {
+        action.title = formatNoteTitle(a.titleSummary, action.classification.destination.path.at(-1).title);
+        assert(a.title === undefined || a.title === action.title, 'NOTE_TITLE', '传入的完整标题与概括及真实分类不一致，请重新预览');
+        action.titleSummary = a.titleSummary.normalize('NFKC').trim();
+        const heading = '# ' + action.title.replace(/[\\`*_\[\]<>$~]/g, '\\$&');
+        action.content = /^#\s+[^\n]+/.test(action.content) ? action.content.replace(/^#\s+[^\n]+/, () => heading) : heading + '\n\n' + action.content;
+      }
       action.content += '\n\n' + classificationMarkdown(action.classification); validContent(action.content);
+    }
+    if (a.kind === 'create') {
+      assert(typeof action.title === 'string' && action.title.trim() && action.title.length <= 200, 'TITLE', '创建文档需要明确标题');
+      assert(!titles.has(action.title) && !remoteTitles.has(action.title) && !state.documents.some(d => !d.outOfScope && d.title === action.title), 'DUPLICATE_TITLE', '已有同名文档或同一批次标题重复，请先核对');
+      if (action.category === 'shelf') assert(![...titles, ...remoteTitles].some(t => titleKey(t) === titleKey(action.title)), 'DUPLICATE_TITLE', '已有同形分类名称，先核对复用');
+      titles.add(action.title);
     }
     if (a.kind !== 'str_replace') { action.marker = `ELX记录 ${operation}-${i + 1}`; action.content += '\n\n' + action.marker; }
     actions.push(action);

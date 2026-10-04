@@ -1,5 +1,7 @@
 # 文档地图
 
+- 当前未发布：[REQ-016精细短标题与首页说明书](docs/requirements/REQ-016-note-titles-home.md)、[实现与真实验收](docs/progress/PROG-011-note-titles-home.md)。
+
 这里只负责导航；当前产品与技术事实统一在 SPEC，执行状态由 ELX Level 状态文件记录。
 
 | 需要了解什么 | 入口 |

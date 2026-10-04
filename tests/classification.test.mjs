@@ -39,6 +39,32 @@ async function fixture({ linkOnly = false } = {}) {
   return { home, lark, source, spec, classification };
 }
 
+test('REQ-016 标题保留具体对象、最多10字符，分类取真实末级并同步正文首标题', async () => {
+  const f = await fixture(), a = f.spec.actions[0]; delete a.title;
+  a.titleSummary = 'OPPO耳机耳帽选购'; a.content = '# 原先标题\n\n正文保留';
+  const p = await core.makePlan(f.home, 'test', f.spec, f.lark);
+  assert.equal(p.actions[0].title, 'OPPO耳机耳帽选购丨AI与Agent');
+  assert.ok(p.actions[0].content.startsWith('# OPPO耳机耳帽选购丨AI与Agent\n\n正文保留'));
+  await core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark);
+  assert.equal(f.lark.docs.get('Created1').title, p.actions[0].title);
+  assert.equal(core.formatNoteTitle('LLM知识库方法', '知识管理'), 'LLM知识库方法丨知识管理');
+  for (const s of ['OPPO耳机耳帽选购指南', '摘要丨伪分类', '摘要｜伪分类', '摘要\n换行', '']) assert.throws(() => core.formatNoteTitle(s, '数码'), e => e.code === 'NOTE_TITLE');
+});
+
+test('REQ-016 新分类父步骤可生成标题，拒绝伪后缀、缺分类与完整标题冲突', async () => {
+  const f = await emptyLibrary(); delete f.spec.actions[1].title; f.spec.actions[1].titleSummary = '按需读取节省上下文';
+  const p = await core.makePlan(f.home, 'test', f.spec, f.lark);
+  assert.equal(p.actions[1].title, '按需读取节省上下文丨AI与效率');
+  await core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark);
+  for (const change of [a => { a.title = '任意标题丨伪分类'; }, a => { delete a.classification; }]) {
+    const g = await fixture(); g.spec.actions[0].titleSummary = '按需读取节省上下文'; change(g.spec.actions[0]);
+    await assert.rejects(core.makePlan(g.home, 'test', g.spec, g.lark), e => ['NOTE_TITLE','NOTE_CLASSIFICATION'].includes(e.code)); assert.equal(g.lark.writes, 0);
+  }
+  const g = await fixture(); g.spec.actions[0].titleSummary = '按需读取节省上下文'; delete g.spec.actions[0].title;
+  g.lark.add('Existing', '按需读取节省上下文丨AI与Agent', 'AI');
+  await assert.rejects(core.makePlan(g.home, 'test', g.spec, g.lark), e => e.code === 'DUPLICATE_TITLE');
+});
+
 async function emptyLibrary() {
   const f = await fixture();
   for (const id of [...f.lark.docs.keys()]) if (id !== 'Root') f.lark.docs.delete(id);
