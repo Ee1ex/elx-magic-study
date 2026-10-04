@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "implementation-completed",
+  "stage": "release-0.7.0",
   "gate": null,
-  "status": "completed",
+  "status": "in_progress",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,9 +15,9 @@
   "current_task": {
     "id": "REQ-016",
     "owner": "项目负责人（当前用户）",
-    "summary": "精细标题和首页说明书完成；首页追加表格化可读性优化",
-    "scope": "源码测试文档、本地提交；已批准的现有首页和一篇方法笔记测试",
-    "out_of_scope": "批量改名迁移、其他真实资料修改、发布和全局安装升级",
+    "summary": "0.7.0打包发布与Codex升级",
+    "scope": "用户授权main/Tag/Release/ZIP与本机安装，逐项回读",
+    "out_of_scope": "额外真实知识库修改、批量迁移及个人状态变更",
     "paths": [
       "skills/elx-magic-study",
       "tests",
@@ -28,7 +28,7 @@
       "DOCUMENT_MAP.md",
       ".elx-level"
     ],
-    "next_step": "本轮完成；源码未发布，安装仍0.6.0，发布升级另行授权"
+    "next_step": "打包校验、备份安装、发布核验"
   },
   "artifacts": [
     {
@@ -270,7 +270,11 @@
     {
       "event": "homepage_table_layout_verified",
       "at": "2026-10-04T16:17:51.529659+00:00"
+    },
+    {
+      "event": "v0.7.0_publish_install_authorized",
+      "at": "2026-10-04T16:23:28.289733+00:00"
     }
   ],
-  "updated_at": "2026-10-04T16:17:51.529659+00:00"
+  "updated_at": "2026-10-04T16:23:28.289733+00:00"
 }

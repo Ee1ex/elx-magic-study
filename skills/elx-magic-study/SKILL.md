@@ -2,7 +2,7 @@
 name: elx-magic-study
 description: 连接飞书个人知识库，收藏、按内容分类并整理文章、视频、文档和实践经验，在其他项目中检索并给出来源依据；支持本地增强检索、按需 HTML 知识图谱与定时整理检查。首次使用引导授权和绑定；单纯总结不主动入库。
 metadata:
-  version: 0.6.0
+  version: 0.7.0
 ---
 
 # 魔法书屋 · Magic Study

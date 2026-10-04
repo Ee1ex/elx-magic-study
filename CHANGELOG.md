@@ -1,18 +1,11 @@
 # 变更记录
 
-## [0.7.0] - 2026-10-04
-
-- feat: name notes by specific summaries and fill library homepage guide
-- docs: require tabular homepage content before onboarding completion
-- docs: make library homepage scannable with usage tables
-- docs: publish v0.6.0 live acceptance results
-- docs: record verified v0.6.0 release and installation
-
-## 未发布
+## [0.7.0] - 2026-10-05
 
 - REQ-016：新来源笔记概括优先约8字、最多10字符，保留品牌／对象，标题改为「具体概括丨末级分类」；titleSummary由脚本校验并同步正文首标题，旧计划继续兼容。
 - 新增首页模板：知识库大标题、介绍和用途在前，Skill功能、可复制提示词和可选能力在后；新建首页须填充回读，已有首页只做授权的局部更新。
 - 63项合成回归通过；两处已授权真实页面完成标题／首页测试，导航链接和非目标正文保持。
+- 首页默认采用三步流程表和11项功能提示词表；写入回读后才报告初始化完成。
 
 ## [0.6.0] - 2026-10-04
 
