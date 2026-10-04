@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "implementation-completed",
+  "stage": "release-0.6.0",
   "gate": null,
-  "status": "completed",
+  "status": "in_progress",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,9 +15,9 @@
   "current_task": {
     "id": "REQ-015",
     "owner": "项目负责人（当前用户）",
-    "summary": "OpenCLIApp引导与魔法书屋知识库初始化、分类连续入库完成",
-    "scope": "已确认源码、测试、文档和本地提交；默认独立空间名魔法书屋知识库",
-    "out_of_scope": "真实飞书创建或修改、安装软件、个人数据迁移、打包发布和安装升级",
+    "summary": "0.6.0打包发布与Codex安装",
+    "scope": "用户授权GitHub main/Tag/Release/ZIP和本机安装升级，逐项校验回读",
+    "out_of_scope": "真实飞书修改、个人绑定偏好迁移、外部读取工具安装与任务注册",
     "paths": [
       "skills/elx-magic-study",
       "tests",
@@ -28,7 +28,7 @@
       "docs",
       ".elx-level"
     ],
-    "next_step": "本地切片完成，真实平台验收与发布升级需独立授权"
+    "next_step": "校验安装包，发布、备份安装并回读"
   },
   "artifacts": [
     {
@@ -238,7 +238,11 @@
       "event": "req015_implemented_verified",
       "at": "2026-10-04T13:08:15.378788+08:00",
       "summary": "用户确认独立魔法书屋知识库；61项合成测试与静态检查通过，未执行外部操作"
+    },
+    {
+      "event": "v0.6.0_publish_install_authorized",
+      "at": "2026-10-04T05:25:12.845974+00:00"
     }
   ],
-  "updated_at": "2026-10-04T13:08:15.378788+08:00"
+  "updated_at": "2026-10-04T05:25:12.845974+00:00"
 }

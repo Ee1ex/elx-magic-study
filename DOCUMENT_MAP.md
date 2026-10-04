@@ -64,3 +64,5 @@
 
 - [0.5.0发布与安装记录](docs/releases/RELEASE-0.5.0.md)。
 - [REQ-015首次专用知识库](docs/requirements/REQ-015-first-use-library.md)、[实施验收记录](docs/progress/PROG-009-first-use-library.md)及[Skill初始化指引](skills/elx-magic-study/references/library-bootstrap.md)：0.6.0功能与验收边界。
+
+- [0.6.0发布与安装记录](docs/releases/RELEASE-0.6.0.md)：main／Tag／Release／ZIP及本机28文件核验。

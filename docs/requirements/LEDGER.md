@@ -47,3 +47,5 @@
 ## REQ-015 桌面引导与首次专用知识库
 
 2026-10-04：用户确认 OpenCLIApp 内安装 CLI／Agent Skills；首次创建独立 Wiki「魔法书屋知识库」，新增分类和笔记一次预览确认后连续执行。源码与合成验收完成，未发布／安装；见 [需求](REQ-015-first-use-library.md) 和 [PROG-009](../progress/PROG-009-first-use-library.md)。
+
+2026-10-04：REQ-015已按追加授权随0.6.0发布并更新Codex安装；见 [发布记录](../releases/RELEASE-0.6.0.md)。
