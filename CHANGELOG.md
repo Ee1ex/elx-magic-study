@@ -1,5 +1,10 @@
 # 变更记录
 
+## [0.6.0] - 2026-10-04
+
+- feat: guide dedicated wiki setup and plan category creation
+- docs: record verified v0.5.0 release and installation
+
 ## 未发布
 
 - REQ-015：缺 OpenCLI 时优先引导 OpenCLIApp 内安装 CLI 与 Agent Skills，分别核对浏览器桥接与目标内容读取。
