@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-completed",
+  "stage": "implementation-completed",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -13,52 +13,50 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-014",
+    "id": "REQ-015",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.5.0发布与Codex安装完成",
-    "scope": "用户确认main/Tag/Release/ZIP发布和Codex安装，回读与记录",
-    "out_of_scope": "真实用户偏好回填、飞书修改、实际工具安装或任务启用",
+    "summary": "OpenCLIApp引导与魔法书屋知识库初始化、分类连续入库完成",
+    "scope": "已确认源码、测试、文档和本地提交；默认独立空间名魔法书屋知识库",
+    "out_of_scope": "真实飞书创建或修改、安装软件、个人数据迁移、打包发布和安装升级",
     "paths": [
-      ".elx-level",
-      "AGENTS.md",
-      "DOCUMENT_MAP.md",
-      "README.md",
-      "CHANGELOG.md",
-      "docs",
       "skills/elx-magic-study",
       "tests",
-      "package.json"
+      "README.md",
+      "AGENTS.md",
+      "CHANGELOG.md",
+      "DOCUMENT_MAP.md",
+      "docs",
+      ".elx-level"
     ],
-    "next_step": "发布收尾完成；用户新增图标请求按独立Skill操作处理"
+    "next_step": "本地切片完成，真实平台验收与发布升级需独立授权"
   },
   "artifacts": [
     {
-      "path": "docs/releases/RELEASE-0.5.0.md",
-      "summary": "发布安装证据"
+      "path": "docs/requirements/REQ-015-first-use-library.md",
+      "summary": "已确认范围与验收方案"
+    },
+    {
+      "path": "docs/progress/PROG-009-first-use-library.md",
+      "summary": "实现、验证与未执行边界"
     }
   ],
   "verifications": [
     {
       "command": "node --test --test-concurrency=1 tests/*.test.mjs",
       "status": "passed",
-      "summary": "52项回归通过，新增首次导览状态与偏好合并行为验收"
+      "summary": "61项合成回归通过；新能力先失败后实现，保留52项旧行为回归"
     },
     {
-      "command": "quick_validate.py / node --check / documentation checks",
+      "command": "node --check / quick_validate.py / documentation checks / git diff --check",
       "status": "passed",
-      "summary": "Skill格式、脚本语法、文档链接有效；README设计保留；场景走查非真实用户验收"
-    },
-    {
-      "command": "install and remote readback",
-      "status": "passed",
-      "summary": "27文件一致；main/Tag、Release正文、README、ZIP digest回读一致"
+      "summary": "语法、Skill格式、文档本地链接、README图片标题及结构保留通过；真实平台未测试"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "39cab59346f2408b9054221022cd07099140b004",
-    "last_commit_note": "v0.5.0发布提交，后续仅收尾文档",
+    "last_commit": "6583e64c23e8cc68cfdc0c30650bbbbc3d70f51d",
+    "last_commit_note": "REQ-015实施前基线；本轮本地提交以Git日志为准，未推送",
     "repository": true
   },
   "remote": {
@@ -235,7 +233,12 @@
       "event": "v0.5.0_release_install_verified",
       "at": "2026-10-03T18:55:11.471802+00:00",
       "commit": "39cab59346f2408b9054221022cd07099140b004"
+    },
+    {
+      "event": "req015_implemented_verified",
+      "at": "2026-10-04T13:08:15.378788+08:00",
+      "summary": "用户确认独立魔法书屋知识库；61项合成测试与静态检查通过，未执行外部操作"
     }
   ],
-  "updated_at": "2026-10-03T18:55:11.471802+00:00"
+  "updated_at": "2026-10-04T13:08:15.378788+08:00"
 }

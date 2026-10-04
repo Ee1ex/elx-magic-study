@@ -29,6 +29,36 @@ class FakeLark {
 }
 async function fixture() { const dir = home(), lark = new FakeLark(); await bind(dir, { id: 'test', readRoots: [root], writeRoot: root, confirmed: true }, lark); return { dir, lark }; }
 
+test('REQ-015 未绑定发现专用空间完整分页，区分无匹配、多候选与目录未完整', async () => {
+  const lark = new FakeLark(); let calls = 0;
+  lark.spaces = async token => { calls++; return token ? { items: [{ space_id: '2', name: '魔法书屋知识库' }], has_more: false } : { items: [{ space_id: '1', name: '其他空间' }], has_more: true, page_token: 'next' }; };
+  const result = await core.discoverSpace(home(), { supplied: lark });
+  assert.equal(result.decision, 'confirm-reuse'); assert.equal(result.candidates[0].spaceId, '2'); assert.equal(calls, 2);
+  lark.spaces = async () => ({ items: [], has_more: false });
+  const absent = await core.discoverSpace(home(), { supplied: lark }); assert.equal(absent.decision, 'confirm-create'); assert.equal(absent.name, '魔法书屋知识库');
+  lark.spaces = async () => ({ items: [{ space_id: '1', name: '魔法书屋知识库' }, { space_id: '2', name: '魔法书屋知识库' }], has_more: false });
+  assert.equal((await core.discoverSpace(home(), { supplied: lark })).decision, 'choose-space');
+  lark.spaces = async () => ({ items: [], has_more: true, page_token: 'next' });
+  assert.equal((await core.discoverSpace(home(), { supplied: lark, maxPages: 1 })).decision, 'incomplete'); assert.equal(lark.writes, 0);
+});
+
+test('REQ-015 已有绑定优先，不改名；权限和分页异常不冒充空间不存在', async () => {
+  const { dir, lark } = await fixture();
+  lark.spaces = async () => { throw new Error('must not list for existing binding'); };
+  assert.equal((await core.discoverSpace(dir, { supplied: lark })).decision, 'already-bound');
+  lark.account = 'changed'; await assert.rejects(core.discoverSpace(dir, { supplied: lark }), e => e.code === 'ACCOUNT_CHANGED');
+  lark.spaces = async () => { throw issue('PERMISSION', 'denied'); };
+  await assert.rejects(core.discoverSpace(home(), { supplied: lark }), e => e.code === 'PERMISSION');
+  lark.spaces = async () => ({ items: [], has_more: true, page_token: 'same' });
+  await assert.rejects(core.discoverSpace(home(), { supplied: lark }), e => e.code === 'PAGINATION');
+  const transportLark = new Lark(null, async args => { assert.ok(args.includes('--as') && args.includes('user')); return { data: { spaces: [{ space_id: '1', name: '魔法书屋知识库' }], has_more: false } }; });
+  assert.equal((await transportLark.spaces()).items[0].name, '魔法书屋知识库');
+  const missing = home(); await writeJSON(path.join(missing, 'config.json'), { defaultLibrary: 'missing' });
+  await assert.rejects(core.discoverSpace(missing, { supplied: lark }), e => e.code === 'BINDING_MISSING');
+  const badFormat = new Lark(null, async () => ({ data: {} }));
+  await assert.rejects(badFormat.spaces(), e => e.code === 'SPACE_FORMAT');
+});
+
 test('规范化保留分集和时间参数，飞书 token 不截断，拒绝危险 URL', () => {
   assert.equal(canonicalSource('https://example.com/video?p=2&utm_source=x#t=7'), 'https://example.com/video?p=2#t=7');
   assert.equal(feishuURL(root).token, 'ROOT12345678901234567890');

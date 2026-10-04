@@ -8,7 +8,7 @@ import { search, lint } from './retrieval.mjs';
 import { pendingContentClassification } from './classification.mjs';
 import { exportGraph } from './graph.mjs';
 import { onboardingStatus, recordOnboarding } from './onboarding.mjs';
-import { doctor, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan, classificationContext } from './library-core.mjs';
+import { doctor, discoverSpace, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan, classificationContext } from './library-core.mjs';
 
 const HELP = {
   version: '0.5.0', usage: 'node <SKILL_ROOT>/scripts/library.mjs <command> [--home <个人状态目录>] [--library <编号>]',
@@ -16,6 +16,7 @@ const HELP = {
     onboarding: '只读查看是否已介绍功能及用户提醒偏好；未绑定也可用',
     'onboarding-record': '--file <介绍及明确偏好JSON>；只保存本地引导记录，不启用功能',
     doctor: '只读检查 Node、飞书 CLI、用户授权和绑定；不登录或改权限',
+    'space-discover': '[--library <编号>] [--profile <配置>]；未绑定可用，只读发现魔法书屋知识库，完整分页后建议复用／创建，不创建远端空间',
     bind: '--id <编号> --root <Wiki/docx链接> [重复] --write-root <Wiki链接> --confirm；只保存已确认绑定',
     status: '显示当前库范围、索引覆盖和实际记录的调度任务',
     sync: '[--max-docs 30] [--max-nodes 500]；[--force] [--restart-scan]；目录与正文分别续扫授权范围，零远端写入',
@@ -25,7 +26,7 @@ const HELP = {
     'source-content': '--id <来源编号> --file <UTF8正文> --coverage partial|full_text|transcript --note <获取方式>；仅本地快照',
     'classification-context': '--id <输入来源编号> [--query <正文关键词>] [--limit 300]；只读分类位置、已有标签与主题候选',
     classify: '--id <文档编号> --role input|derived|navigation --confirm；确认后仅设置该条本地角色',
-    plan: '--file <动作JSON>；读取基线并生成可审核的飞书增改计划',
+    plan: '--file <动作JSON>；读取基线并生成可审核的飞书增改计划；category:shelf 创建分类，parentStep 引用前序分类步骤（从1开始）',
     plans: '列出操作状态、来源版本和结果链接，供定时任务去重',
     'plan-show': '--id <计划编号>；读取完整计划',
     'plan-cancel': '--id <计划编号> --approve <digest> --reason <原因>；仅终止未发送计划',
@@ -54,6 +55,7 @@ export async function run(argv) {
   const { command, options: o } = parse(argv), home = stateHome(o.home);
   if (command === 'help' || command === '--help') return HELP;
   if (command === 'doctor') return doctor(home, o.profile);
+  if (command === 'space-discover') return discoverSpace(home, { id: o.library, profile: o.profile });
   if (command === 'onboarding') return onboardingStatus(home);
   if (command === 'onboarding-record') return locked(home, async () => recordOnboarding(home, await readJSON(o.file)));
   const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','plan-cancel','plan-supersede','apply','recover','maintenance','schedule-record']);

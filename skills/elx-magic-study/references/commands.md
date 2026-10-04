@@ -8,6 +8,7 @@
 
 ```text
 node CLI doctor
+node CLI space-discover
 node CLI status
 node CLI sync --max-docs 30 --max-nodes 500
 node CLI search --query "离线 授权" --query "断网 许可证" --limit 8
@@ -46,9 +47,11 @@ Agent 写一个普通 UTF-8 JSON 文件，再 `plan --file <文件>`：
 }
 ```
 
-示例 URL／编号不得直接用于执行。类别支持 source/topic/experience/document/index/log。同一计划中每个已有文档只能编辑一次，最多 12 项。创建标题必须与已索引文档不冲突。
+示例 URL／编号不得直接用于执行。类别支持 source/topic/experience/document/index/log/shelf；shelf 是新分类文档，记录为 navigation。同一计划中每个已有文档只能编辑一次，最多 12 项。创建标题必须与已索引文档不冲突。
 
-创建动作可选 `parent`：填写已存在的分类 Wiki／docx 链接。脚本会验证该节点属于已授权写入根、记录其真实 Wiki token，并在创建后回读检查直接父节点。省略时仍使用写入根。首次分类入库先创建分类页，再用实际返回的分类链接生成内容计划；不要捏造节点 token。
+创建动作可选 `parent`：填写已存在的分类 Wiki／docx 链接。脚本验证范围、真实 Wiki token 与写后直接父节点。或用 `parentStep:1` 引用本计划第 1 个动作创建的 shelf；只能引用前序分类，不与 parent 混用。分类与笔记一次确认后依次回读执行，不捏造 token。两者均省略则使用写入根。详见 [classification.md](classification.md)。
+
+`space-discover` 未绑定也可用，只读分页发现「魔法书屋知识库」。already-bound 沿用；confirm-reuse／choose-space 核对选择；confirm-create 只是可见范围内无匹配；incomplete／错误不能据此新建。实际初始化按 [library-bootstrap.md](library-bootstrap.md) 使用官方 CLI，已有绑定不改名。
 
 脚本保留完整正文供预览，并为创建／追加加入可读的 ELX记录 标识用于恢复。`str_replace` 只支持唯一、非空的单行替换，保留正文其他内容；不支持删除、整篇覆盖和自动资源下载。
 

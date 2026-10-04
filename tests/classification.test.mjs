@@ -39,6 +39,113 @@ async function fixture({ linkOnly = false } = {}) {
   return { home, lark, source, spec, classification };
 }
 
+async function emptyLibrary() {
+  const f = await fixture();
+  for (const id of [...f.lark.docs.keys()]) if (id !== 'Root') f.lark.docs.delete(id);
+  const state = await loadLibrary(f.home, 'test'); state.documents = [f.source]; await saveLibrary(f.home, state);
+  f.classification.relatedTopics = [];
+  f.spec.actions = [
+    { kind: 'create', category: 'shelf', title: 'AI与效率', content: '收录 AI 工具和效率方法。' },
+    { kind: 'create', category: 'source', parentStep: 1, title: '来源笔记：首次整理', content: '按需读取资料可以节省上下文。', classification: f.classification }
+  ];
+  return f;
+}
+
+test('REQ-015 空库分类和笔记一次预览，真实父节点落库且重复执行不重建', async () => {
+  const f = await emptyLibrary(), p = await core.makePlan(f.home, 'test', f.spec, f.lark);
+  assert.equal(f.lark.writes, 0); assert.equal(p.actions[1].parentStep, 1);
+  assert.equal(p.actions[1].classification.destination.path[0].title, 'AI与效率');
+  assert.equal(p.actions[1].classification.destination.path[0].url, undefined);
+  const result = await core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark);
+  assert.equal(result.state, 'complete'); assert.equal(f.lark.docs.get('Created2').parent, 'Created1');
+  const state = await loadLibrary(f.home, 'test');
+  assert.equal(state.documents.find(d => d.id === 'Created1').recordRole, 'navigation');
+  assert.equal(state.documents.find(d => d.id === 'Created2').classification.destination.url, wiki('Created1'));
+  const stored = JSON.parse(await fs.readFile(path.join(libraryPath(f.home, 'test'), 'operations', p.plan + '.json'), 'utf8'));
+  assert.equal(stored.digest, p.digest); assert.equal(core.planDigest(stored.payload), p.digest);
+  await core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark); assert.equal(f.lark.writes, 2);
+});
+
+test('REQ-015 两层分类按前序依赖创建，拒绝前向引用、非分类父步骤和第三层', async () => {
+  const f = await emptyLibrary();
+  f.spec.actions.splice(1, 0, { kind: 'create', category: 'shelf', parentStep: 1, title: '上下文方法', content: '收录上下文管理。' });
+  f.spec.actions[2].parentStep = 2;
+  const p = await core.makePlan(f.home, 'test', f.spec, f.lark);
+  await core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark); assert.equal(f.lark.docs.get('Created3').parent, 'Created2');
+  for (const change of [s => { s.actions[1].parentStep = 2; }, s => { s.actions[0].category = 'document'; }, s => { s.actions[1].parent = wiki('Root'); }]) {
+    const g = await emptyLibrary(); change(g.spec); await assert.rejects(core.makePlan(g.home, 'test', g.spec, g.lark)); assert.equal(g.lark.writes, 0);
+  }
+  const g = await emptyLibrary();
+  g.spec.actions = [g.spec.actions[0], { kind: 'create', category: 'shelf', parentStep: 1, title: '二层', content: '分类说明' }, { kind: 'create', category: 'shelf', parentStep: 2, title: '三层', content: '分类说明' }];
+  await assert.rejects(core.makePlan(g.home, 'test', g.spec, g.lark), e => e.code === 'CLASSIFICATION_DEPTH');
+});
+
+test('REQ-015 分类创建响应丢失时停止，查证后沿原计划继续不重复创建', async () => {
+  const f = await emptyLibrary(), p = await core.makePlan(f.home, 'test', f.spec, f.lark);
+  const create = f.lark.create.bind(f.lark); let fail = true;
+  f.lark.create = async (...args) => { const r = await create(...args); if (fail) { fail = false; throw new Error('timeout'); } return r; };
+  await assert.rejects(core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark), e => e.code === 'WRITE_UNCERTAIN');
+  assert.equal(f.lark.writes, 1);
+  await assert.rejects(core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark), e => e.code === 'UNKNOWN_WRITE');
+  await core.recoverPlan(f.home, 'test', p.plan, 1, wiki('Created1'), f.lark);
+  await core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark); assert.equal(f.lark.writes, 2);
+});
+
+test('REQ-015 子笔记响应丢失可诊断恢复；分类被改名时不继续写入', async () => {
+  const f = await emptyLibrary(), p = await core.makePlan(f.home, 'test', f.spec, f.lark);
+  const create = f.lark.create.bind(f.lark);
+  f.lark.create = async (...args) => { const r = await create(...args); if (f.lark.writes === 2) throw new Error('timeout'); return r; };
+  await assert.rejects(core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark));
+  assert.equal((await core.diagnosePlan(f.home, 'test', p.plan, 2, wiki('Created2'), f.lark)).verified, true);
+  assert.equal((await core.recoverPlan(f.home, 'test', p.plan, 2, wiki('Created2'), f.lark)).state, 'complete');
+  assert.equal(f.lark.writes, 2);
+  const g = await emptyLibrary(), q = await core.makePlan(g.home, 'test', g.spec, g.lark);
+  const createG = g.lark.create.bind(g.lark);
+  g.lark.create = async (...args) => { const r = await createG(...args); g.lark.docs.get('Created1').title = '用户改名'; return r; };
+  await assert.rejects(core.applyPlan(g.home, 'test', q.plan, q.digest, g.lark)); assert.equal(g.lark.writes, 1);
+});
+
+test('REQ-015 来源变化、重复分类与父路径变化在创建前阻断；已有分类可复用', async () => {
+  const f = await emptyLibrary(), p = await core.makePlan(f.home, 'test', f.spec, f.lark);
+  await core.sourceContent(f.home, 'test', f.source.id, { markdown: '已经变化的正文', coverage: 'full_text', sourceNote: '合成更新' });
+  await assert.rejects(core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark), e => e.code === 'SOURCE_CHANGED'); assert.equal(f.lark.writes, 0);
+  const g = await emptyLibrary(), q = await core.makePlan(g.home, 'test', g.spec, g.lark);
+  g.lark.add('Manual', 'ＡＩ与效率', 'Root');
+  await assert.rejects(core.applyPlan(g.home, 'test', q.plan, q.digest, g.lark), e => e.code === 'DUPLICATE_TITLE'); assert.equal(g.lark.writes, 0);
+  g.spec.actions = [{ ...g.spec.actions[1], parent: wiki('Manual') }]; delete g.spec.actions[0].parentStep;
+  const reused = await core.makePlan(g.home, 'test', g.spec, g.lark);
+  await core.applyPlan(g.home, 'test', reused.plan, reused.digest, g.lark); assert.equal(g.lark.writes, 1);
+  const h = await fixture();
+  const plan = await core.makePlan(h.home, 'test', { actions: [{ kind: 'create', category: 'shelf', parent: wiki('Sources'), title: '新二层', content: '说明' }] }, h.lark);
+  h.lark.docs.get('Sources').title = '已改名';
+  await assert.rejects(core.applyPlan(h.home, 'test', plan.plan, plan.digest, h.lark), e => e.code === 'CLASSIFICATION_CHANGED'); assert.equal(h.lark.writes, 0);
+});
+
+test('REQ-015 仅链接首次建收件箱仍为待整理；分类父路径超深或目录不完整拒绝', async () => {
+  const f = await fixture({ linkOnly: true });
+  for (const id of [...f.lark.docs.keys()]) if (id !== 'Root') f.lark.docs.delete(id);
+  const state = await loadLibrary(f.home, 'test'); state.documents = [f.source]; await saveLibrary(f.home, state);
+  f.spec.actions = [{ kind: 'create', category: 'shelf', title: '收件箱与来源', content: '等待补全正文的来源。' }, { kind: 'create', category: 'source', parentStep: 1, title: '待获取资料', content: '仅有链接，尚未读取正文。', classification: { sourceId: f.source.id, sourceHash: f.source.hash, status: 'pending', basis: 'insufficient', reason: '仅有链接', tags: [], relatedTopics: [] } }];
+  const p = await core.makePlan(f.home, 'test', f.spec, f.lark); await core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark);
+  assert.equal((await loadLibrary(f.home, 'test')).documents.find(d => d.id === 'Created2').classification.status, 'pending');
+  const g = await emptyLibrary(); g.lark.children = async () => ({ items: [], has_more: true });
+  await assert.rejects(core.makePlan(g.home, 'test', g.spec, g.lark), e => e.code === 'PAGINATION'); assert.equal(g.lark.writes, 0);
+});
+
+test('REQ-015 已核实父分类被编辑或移动后，原计划不能继续写子文档', async () => {
+  for (const modify of [d => { d.markdown += '\n用户修改'; }, d => { d.parent = 'Elsewhere'; }, d => { d.title = '新名称'; }]) {
+    const f = await emptyLibrary(), p = await core.makePlan(f.home, 'test', f.spec, f.lark);
+    const create = f.lark.create.bind(f.lark);
+    f.lark.create = async (...args) => { const r = await create(...args); if (f.lark.writes === 1) f.lark.add('Conflict', '来源笔记：首次整理', 'Root'); return r; };
+    await assert.rejects(core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark), e => e.code === 'DUPLICATE_TITLE');
+    assert.equal(f.lark.writes, 1);
+    f.lark.add('Elsewhere', '其他目录', 'Root'); modify(f.lark.docs.get('Created1'));
+    f.lark.docs.get('Conflict').title = '冲突已解除';
+    await assert.rejects(core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark), e => ['PARENT_CHANGED', 'PARENT_MISMATCH'].includes(e.code));
+    assert.equal(f.lark.writes, 1);
+  }
+});
+
 test('分类上下文只读列出两层位置和主题候选，不把候选当语义结论', async () => {
   const f = await fixture(), file = path.join(libraryPath(f.home, 'test'), 'library.json'), before = await fs.readFile(file, 'utf8');
   const context = await core.classificationContext(f.home, 'test', f.source.id, { queries: ['上下文 按需读取'], supplied: f.lark });

@@ -49,6 +49,13 @@ export class Lark {
     return { account: hash(`${data.appId}/${user.openId}/${this.profile || 'default'}`), status: user.tokenStatus || user.status, available: true };
   }
   async assertAccount(binding) { const actual = await this.identity(); assert(actual.account === binding.account, 'ACCOUNT_CHANGED', '飞书账号或应用已变化，停止使用旧绑定；请重新确认连接'); return actual; }
+  async spaces(pageToken) {
+    const response = await this.call(['wiki', '+space-list', '--as', 'user', '--page-size', '50', ...(pageToken ? ['--page-token', pageToken] : [])]);
+    const data = response.data;
+    const items = data?.spaces || data?.items;
+    assert(Array.isArray(items) && typeof data.has_more === 'boolean', 'SPACE_FORMAT', '无法确认空间列表及分页状态，未判断为空');
+    return { ...data, items };
+  }
   async node(value) {
     const response = await this.call(['wiki', '+node-get', '--node-token', value, '--as', 'user']);
     const n = response.data?.node || response.data || response.node || response;

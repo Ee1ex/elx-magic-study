@@ -43,3 +43,7 @@
 ## REQ-014 首次导览与场景提示
 
 用户要求首次说明功能、可选项及初始化，后续在适合场景自动提示。实现为Skill指引加本地介绍／偏好记录，不自动启用功能。见 [PROG-008](../progress/PROG-008-feature-tour.md)。
+
+## REQ-015 桌面引导与首次专用知识库
+
+2026-10-04：用户确认 OpenCLIApp 内安装 CLI／Agent Skills；首次创建独立 Wiki「魔法书屋知识库」，新增分类和笔记一次预览确认后连续执行。源码与合成验收完成，未发布／安装；见 [需求](REQ-015-first-use-library.md) 和 [PROG-009](../progress/PROG-009-first-use-library.md)。

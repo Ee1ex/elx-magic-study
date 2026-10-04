@@ -77,7 +77,7 @@ export async function classificationContext(home, id, sourceId, { queries = [], 
     next: 'Agent 读取正文后选一个主位置；目录项不一定是书架，需核对用途。优先复用；目录不完整不能认定分类不存在。主题候选仅为关键词结果，须 fetch 后提供原文依据。' };
 }
 
-export async function prepareClassification(state, lark, action, input) {
+export async function prepareClassification(state, lark, action, input, plannedDestination) {
   assert(action.kind === 'create' && action.category === 'source', 'CLASSIFICATION_ACTION', '本轮分类仅用于新建来源笔记；不搬迁或改写旧笔记');
   assert(input && ['classified', 'pending'].includes(input.status) && ['content', 'user', 'insufficient'].includes(input.basis), 'CLASSIFICATION', '分类状态或依据无效');
   const source = sourceRecord(state, input.sourceId);
@@ -101,7 +101,7 @@ export async function prepareClassification(state, lark, action, input) {
   assert(tags.length <= 5, 'TAGS', '每份资料最多 5 个标签');
   const related = input.relatedTopics || []; assert(Array.isArray(related) && related.length <= 3, 'TOPIC', '最多关联 3 个已存在主题');
   assert(hasContent || (!tags.length && !related.length), 'CLASSIFICATION_COVERAGE', '只有链接时不生成内容标签和主题关联');
-  const destination = await classificationPath(state, lark, action.parent);
+  const destination = plannedDestination || await classificationPath(state, lark, action.parent);
   if (input.basis === 'insufficient') assert(destination.path.length === 1, 'CLASSIFICATION_PARENT', '依据不足时放入已确认的大书架待整理，不猜二级主题分类');
   const relatedTopics = [], ids = new Set();
   for (const item of related) {
@@ -131,11 +131,13 @@ export function classificationMarkdown(c) {
   return lines.join('\n\n');
 }
 
-export async function verifyClassification(state, lark, action) {
+export async function verifyClassification(state, lark, action, { deferDestination = false } = {}) {
   const c = action.classification; if (!c) return;
   requireNewSource(state, c.sourceId);
-  const destination = await classificationPath(state, lark, action.parent);
-  assert(hash(destination) === hash(c.destination), 'CLASSIFICATION_CHANGED', '分类名称或路径已变化，请重新预览');
+  if (!deferDestination) {
+    const destination = await classificationPath(state, lark, action.parent);
+    assert(hash(destination) === hash(c.destination), 'CLASSIFICATION_CHANGED', '分类名称或路径已变化，请重新预览');
+  }
   for (const topic of c.relatedTopics) {
     await lark.inScope(topic.url, state.readRoots); const fresh = await lark.fetch(topic.url);
     assert(fresh.id === topic.id && hash(fresh.markdown) === topic.hash, 'TOPIC_CHANGED', '关联主题已变化，请重新核对分类预览');
