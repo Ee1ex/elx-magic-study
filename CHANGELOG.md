@@ -1,5 +1,13 @@
 # 变更记录
 
+## [0.7.0] - 2026-10-04
+
+- feat: name notes by specific summaries and fill library homepage guide
+- docs: require tabular homepage content before onboarding completion
+- docs: make library homepage scannable with usage tables
+- docs: publish v0.6.0 live acceptance results
+- docs: record verified v0.6.0 release and installation
+
 ## 未发布
 
 - REQ-016：新来源笔记概括优先约8字、最多10字符，保留品牌／对象，标题改为「具体概括丨末级分类」；titleSummary由脚本校验并同步正文首标题，旧计划继续兼容。
