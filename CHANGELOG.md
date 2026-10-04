@@ -2,15 +2,10 @@
 
 ## [0.6.0] - 2026-10-04
 
-- feat: guide dedicated wiki setup and plan category creation
-- docs: record verified v0.5.0 release and installation
-
-## 未发布
-
 - REQ-015：缺 OpenCLI 时优先引导 OpenCLIApp 内安装 CLI 与 Agent Skills，分别核对浏览器桥接与目标内容读取。
 - 授权后未绑定时只读发现专用空间，默认首次创建独立「魔法书屋知识库」；官方 CLI 初始化指引保留确认、回读与未知结果恢复，已有绑定不改名。
 - 分类文档 shelf 与来源笔记可用 parentStep 合并预览，一次确认后依次创建并回读；每次入库检查分类，优先复用，不预建固定空目录。
-- 本轮不操作真实飞书、不更新安装、不打包发布；版本仍为 0.5.0。
+- 61项合成回归通过；真实首次空间创建、桌面安装引导及小红书评论完整流程仍待测试。
 
 ## [0.5.0] - 2026-10-04
 
