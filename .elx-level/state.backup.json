@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-completed",
+  "stage": "implementation-completed",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -13,60 +13,55 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-015",
+    "id": "REQ-016",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.6.0真实验收完成并同步发布记录",
-    "scope": "用户授权发布本次脱敏真实验收文档与Release补充",
-    "out_of_scope": "新功能修复、新版本Tag或ZIP、个人资料上传与额外远端知识库修改",
+    "summary": "精细短标题和首页说明书实现及两处真实测试完成",
+    "scope": "源码测试文档、本地提交；已批准的现有首页和一篇方法笔记测试",
+    "out_of_scope": "批量改名迁移、其他真实资料修改、发布和全局安装升级",
     "paths": [
       "skills/elx-magic-study",
       "tests",
+      "docs",
       "README.md",
       "AGENTS.md",
       "CHANGELOG.md",
       "DOCUMENT_MAP.md",
-      "docs",
       ".elx-level"
     ],
-    "next_step": "本轮验收发布完成；兼容问题保留待后续修复"
+    "next_step": "本轮完成；源码未发布，安装仍0.6.0，发布升级另行授权"
   },
   "artifacts": [
     {
-      "path": "docs/releases/RELEASE-0.6.0.md",
-      "summary": "发布安装验证与真实测试边界"
+      "path": "docs/requirements/REQ-016-note-titles-home.md",
+      "summary": "用户确认范围与命名原则"
     },
     {
-      "path": "docs/progress/PROG-010-live-acceptance.md",
-      "summary": "真实验收与有界绕行记录"
+      "path": "docs/progress/PROG-011-note-titles-home.md",
+      "summary": "实现和脱敏真实验收记录"
     }
   ],
   "verifications": [
     {
       "command": "node --test --test-concurrency=1 tests/*.test.mjs",
       "status": "passed",
-      "summary": "61项合成回归通过；新能力先失败后实现，保留52项旧行为回归"
+      "summary": "63项合成回归通过，新增2项先失败后实现，旧计划兼容"
     },
     {
-      "command": "node --check / quick_validate.py / documentation checks / git diff --check",
+      "command": "node --check / quick_validate.py / local document links / README layout / git diff --check",
       "status": "passed",
-      "summary": "语法、Skill格式、文档本地链接、README图片标题及结构保留通过；真实平台未测试"
+      "summary": "语法、Skill格式、本地链接、README结构保留及diff检查通过"
     },
     {
-      "command": "GitHub readback / install SHA256 / installed help, doctor, onboarding",
+      "command": "approved Feishu homepage and one note readback",
       "status": "passed",
-      "summary": "main/Tag发布提交一致、Release正文换行规范后一致、README字节一致、ZIP digest一致；28文件安装校验及只读命令通过，不代表远端读取通过"
-    },
-    {
-      "command": "real user-flow acceptance",
-      "status": "passed",
-      "summary": "授权、读取、建库、分类和笔记实际回读通过；有界绕行与未测试范围见PROG-010"
+      "summary": "首页介绍说明书顺序正确，13个导航链接和保留段落一致；单篇标题改名，正文及节点位置不变"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "ed79546379a4f295054cf0f4ea67716c4d1ecf4e",
-    "last_commit_note": "v0.6.0不可变发布提交；后续仅收尾记录",
+    "last_commit": "44422f86e0d872d984acbf08dba2766bc61e6bb7",
+    "last_commit_note": "REQ-016实施前基线；本轮本地提交见Git日志，未推送",
     "repository": true
   },
   "remote": {
@@ -261,7 +256,12 @@
     {
       "event": "live_acceptance_publication_authorized",
       "at": "2026-10-04T05:45:51.702830+00:00"
+    },
+    {
+      "event": "req016_verified",
+      "at": "2026-10-04T16:10:16.121362+00:00",
+      "summary": "具体概括约8字最多10字符；首页与单篇改名按用户批准范围完成"
     }
   ],
-  "updated_at": "2026-10-04T05:45:51.702830+00:00"
+  "updated_at": "2026-10-04T16:10:16.121362+00:00"
 }
