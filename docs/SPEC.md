@@ -1,6 +1,6 @@
 # 魔法书屋 项目 SPEC
 
-更新日期：2026-10-12。已发布及安装版本0.8.0；当前源码新增未发布REQ-018稳定性优化与REQ-019书屋工作台。REQ-017已实现并完成GitHub打包发布，见 [Release Record](releases/RELEASE-0.8.0.md)。上一版本见 [Release Record](releases/RELEASE-0.7.0.md)。0.6.0发布事实见 [Release Record](releases/RELEASE-0.6.0.md)。责任模式：**LEVEL 1，用户明确指定**。
+更新日期：2026-10-12。本地源码与Skill包0.9.0包含REQ-018稳定性优化和REQ-019工作台，未公开发布或升级全局安装，见[本地包记录](releases/PACKAGE-0.9.0.md)。最新公开/安装版本0.8.0；REQ-017发布见 [Release Record](releases/RELEASE-0.8.0.md)。此前版本见 [Release Record](releases/RELEASE-0.7.0.md)及[0.6.0记录](releases/RELEASE-0.6.0.md)。责任模式：**LEVEL 1，用户明确指定**。
 
 本文件是当前产品与技术事实入口，兼任 LEVEL 1 Project Brief。历史演变见进度与决策台账；未来功能见路线图；方案不代表已实现。
 
@@ -16,7 +16,7 @@
 
 **当前范围已确认**：飞书单后端、首次授权引导、收藏整理与项目查询、本地增强检索、按需 HTML 图谱、定时整理检查接入。
 
-**当前轮次范围已确认**：REQ-019合并工作台与Base、个人整理偏好和主题建议，允许源码、文档、合成验收、现有库管理资源及首页导航真实试点、本地提交。没有独立批量队列；不改主题正文或旧异常计划，不升级全局安装或发布。
+**当前轮次范围已确认**：整理已完成REQ-018/019进入Skill、集中验收并演进打包0.9.0，完成本地提交与记录。现有管理资源试点已完成；本轮不新增真实写入，不升级全局安装或发布。
 
 ## 2. 已有能力与边界
 
@@ -134,7 +134,7 @@ OPT-02 增加 plan-cancel、plan-supersede 和只读 diagnose。终态保留原 
 ## 6. 运行、测试与交付
 
 - Node.js 22+，辅助脚本无npm运行依赖；外部读取复用用户安装的工具。
-- 当前已发布版本0.8.0，版本源package.json；发布／安装回读见RELEASE-0.8.0。当前源码REQ-018／019未发布，不据此声称全局副本已升级。
+- 当前源码/本地包0.9.0，版本源package.json，Skill及CLI版本一致；最新公开/安装0.8.0。0.9.0未发布或安装，详见PACKAGE-0.9.0；旧发布回读见RELEASE-0.8.0。
 - 0.8.0验收为独立目录66项通过，原工作区曾发生Windows EPERM。当前改动基线在工作区66项通过；本轮新增回归和探针结果见PROG-013，不能将当前通过认定为历史环境根因已解决。
 - npm test执行合成／模拟行为测试；npm run demo只生成合成资料，不连接真实飞书。真实平台、调度与跨宿主验收分别记录。
 - Skill格式、脚本语法、文档本地链接及README原有图片与版式须核对；检查通过不等于语义质量达标。
@@ -216,7 +216,7 @@ space-discover 未绑定可用且只读：默认搜索「魔法书屋知识库�
 
 2026-10-11发布收尾：0.8.0 main／Tag／Release／32文件ZIP回读通过；本机安装already-identical。66项在源码逐字节一致的独立目录通过，原工作区EPERM环境问题保留待定位，见发布记录。
 
-## REQ-018 稳定性优化（当前未发布源码）
+## REQ-018 稳定性优化（纳入0.9.0本地包）
 
 contentComparison使用verificationText，仅规范已识别表格分隔行的连字符数量；保留列数、对齐、数据及代码块。旧normalizeText导出保留。新str_replace动作有verificationVersion=2，用新核验哈希；旧str_replace仍按旧哈希核验，旧create/append可通过新recover只读检查，不改原payload/digest。警告及partial_success依旧阻断。
 
