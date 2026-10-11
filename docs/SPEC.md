@@ -1,6 +1,6 @@
 # 魔法书屋 项目 SPEC
 
-更新日期：2026-10-11。当前版本0.8.0，REQ-017已实现并安装；已完成GitHub打包发布，见 [Release Record](releases/RELEASE-0.8.0.md)。上一版本见 [Release Record](releases/RELEASE-0.7.0.md)。0.6.0发布事实见 [Release Record](releases/RELEASE-0.6.0.md)。责任模式：**LEVEL 1，用户明确指定**。
+更新日期：2026-10-11。已发布及安装版本0.8.0；当前源码新增未发布REQ-018稳定性优化。REQ-017已实现并完成GitHub打包发布，见 [Release Record](releases/RELEASE-0.8.0.md)。上一版本见 [Release Record](releases/RELEASE-0.7.0.md)。0.6.0发布事实见 [Release Record](releases/RELEASE-0.6.0.md)。责任模式：**LEVEL 1，用户明确指定**。
 
 本文件是当前产品与技术事实入口，兼任 LEVEL 1 Project Brief。历史演变见进度与决策台账；未来功能见路线图；方案不代表已实现。
 
@@ -16,7 +16,7 @@
 
 **当前范围已确认**：飞书单后端、首次授权引导、收藏整理与项目查询、本地增强检索、按需 HTML 图谱、定时整理检查接入。
 
-**当前轮次范围已确认**：REQ-017先完成0.8.0 Skill与本地版本；主题目录、笔记类型、处理状态分离，补齐旧库改名移动的独立预览流程。已按追加授权安装本机0.8.0；具体清单及新增随迁对象获确认后，真实旧库整理已完成。用户已追加授权本轮0.8.0 GitHub发布收尾。
+**当前轮次范围已确认**：REQ-018表格回读、Windows参数传递、缺URL补查、错误诊断、EPERM调查和当前文档整理。只做源码、文档、合成／本地检查与本地提交，不修改真实知识库、全局安装或发布。
 
 ## 2. 已有能力与边界
 
@@ -63,7 +63,9 @@
   → scripts/library.mjs 命令入口
       ├── onboarding.mjs：未绑定可用的本地介绍状态与明确偏好
       ├── library-core.mjs：绑定、索引、收藏、计划、写入、维护
-      ├── lark.mjs：官方 CLI 调用、用户身份、Wiki 范围与正文
+      ├── lark.mjs：官方CLI调用、有限诊断、用户身份、Wiki范围、正文与元数据链接
+      ├── opencli.mjs：已安装入口发现、独立参数调用，避免Windows cmd二次解析
+      ├── verification.mjs：保留旧哈希协议，有限表格分隔行归一化核验
       ├── classification.mjs：分类上下文、协议校验、目录／主题版本、正文分类段落
       ├── scan.mjs：分页和页内检查点，独立正文队列
       ├── summaries.mjs：版本匹配摘要与干净正文摘录
@@ -127,33 +129,28 @@ OPT-02 增加 plan-cancel、plan-supersede 和只读 diagnose。终态保留原 
 
 ## 6. 运行、测试与交付
 
-- Node.js 22+；脚本无 npm 运行依赖。
-- 飞书连接依赖官方 lark-cli；实现曾对本机 1.0.93 的帮助与内嵌参考做过核对，升级后仍要重新核验接口。
-- 主要验证环境是 Windows／Codex。不能据代码可运行就宣称其他平台已验收。
-- `npm test`：本轮正式范围实际重跑 51 项（包含通用宿主回执测试），通过；是合成和模拟行为测试。
-- `npm run demo`：生成合成知识库图谱与检索结果，不连接真实飞书。
-- Skill 格式检查使用 Skill Creator 的 `quick_validate.py`；不是语义质量认证。
-- Git 远端：`https://github.com/Ee1ex/elx-magic-study.git`，0.3.0 已发布并回读，见 [Release Record](releases/RELEASE-0.3.0.md)。
-
-当前版本来自 `package.json`。本轮版本工具已将 0.2.0 演进为 0.3.0；历史交付证据与真实飞书入库记录分开保存，见进度和发布台账。
+- Node.js 22+，辅助脚本无npm运行依赖；外部读取复用用户安装的工具。
+- 当前已发布版本0.8.0，版本源package.json；发布／安装回读见RELEASE-0.8.0。当前源码REQ-018未发布，不据此声称全局副本已升级。
+- 0.8.0验收为独立目录66项通过，原工作区曾发生Windows EPERM。当前改动基线在工作区66项通过；本轮新增回归和探针结果见PROG-013，不能将当前通过认定为历史环境根因已解决。
+- npm test执行合成／模拟行为测试；npm run demo只生成合成资料，不连接真实飞书。真实平台、调度与跨宿主验收分别记录。
+- Skill格式、脚本语法、文档本地链接及README原有图片与版式须核对；检查通过不等于语义质量达标。
 
 ## 7. 当前问题与下一阶段
 
-四项优化源码已完成：防重复入队、计划生命周期与只读诊断、目录断点、版本化图谱摘要。38 项合成测试通过；浏览器拒绝本地 file 协议，故新版交互仍待验收。本机已备份旧版并安装 0.3.0，23 个文件与源码校验一致；真实资料不迁移。GitHub 0.2.0 已发布，结果见 [Release Record](releases/RELEASE-0.2.0.md)。任务与验收边界见 [可执行优化计划](plans/OPTIMIZATION_PLAN.md)。
-
-新资料自动分类已在本地实现，见 [REQ-009](requirements/REQ-009-classification.md) 和 [PROG-003](progress/PROG-003-classification.md)；本轮已完成 0.3.0 发布及本机安装，见 [发布记录](releases/RELEASE-0.3.0.md)。后续体验与功能设想见 [路线图](ROADMAP.md)。本 SPEC 不把候选设计写成已具备的能力。
+- 既有防重复入队、计划生命周期、扫描断点和版本化摘要已具备；内容主题目录、三类笔记命名和旧库清单整理已随0.8.0交付。
+- REQ-018在当前源码处理表格格式误报、完整链接参数传递、缺文档URL补查和有限错误诊断；实际新平台与新用户环境仍需验收，个人异常计划不会自动修改。
+- Windows EPERM发生条件及根因仍未确认；没有证据时不改存储原子性或系统设置。
+- 后续候选为书屋状态摘要、真实检索验收集、项目知识包及其他ROADMAP方向，尚未纳入本轮实现。
 
 ## 8. 工作区与恢复注意事项
 
-Skill、安装目录与 GitHub 仓库已使用 `elx-magic-study`。本机项目文件夹仍叫 `elx-library`，此前重命名因占用失败；实际根路径以当前宿主和文件系统检查为准，不凭期望名称操作。
+- 当前项目根目录为D:\VibeCoding-Project\elx-magic-study；Skill标识仍elx-magic-study，个人数据默认兼容~/.elx-library，不自动搬迁。
+- 恢复时核对Git、LEVEL状态、SPEC与当前任务；已忽略的私人产物和其他工具记录不作为新授权，不自动纳入提交。
+- 历史发布、测试计数、授权和旧库移动结果以对应Progress／Release Record为准；旧异常计划保留真实状态，不因代码更新伪造完成。
 
-本轮接管基线是 `df42fae`，其 README 插图变更属于已有工作，完整保留。`.workbuddy/` 是已有未跟踪目录，未读取或改写正文，不纳入本轮提交。
+## REQ-012 引导契约及后续演进
 
-恢复任务时先核对 Git、LEVEL 状态和 SPEC，再读对应任务卡。历史中某次“未绑定”“23 项测试”“尚未发布”仅表示当时状态，不应覆盖后续事实。
-
-## REQ-012 当前引导契约
-
-首次使用主动询问是否需要定时整理，即使已绑定飞书；已有选择不重复询问，拒绝不阻断使用。缺外部读取工具时先提供 Agent Reach 官方 GitHub 来源和安装范围，等授权；OpenCLI单独选择，平台按实际Skill/reference按需配置，不要求一次全部开通。
+首次使用主动询问是否需要定时整理，即使已绑定飞书；已有选择不重复询问，拒绝不阻断使用。当前外部读取按reading-tools.md复用已有能力；缺OpenCLI优先引导OpenCLIApp，Agent Reach按其他读取需要另选。安装和平台权限按具体范围确认，不要求一次全部开通。
 
 schedule-plan输出通用host-automation方案；当前Agent可调用自身工具时执行并回读，否则提供任务提示与准确手动配置步骤，不编造WorkBuddy菜单。schedule-record需要provider、真实ID、status、时间／时区与verified:true，按provider＋ID更新；既有记录不迁移。回执保存不等于唤醒验证。
 
@@ -195,16 +192,26 @@ space-discover 未绑定可用且只读：默认搜索「魔法书屋知识库�
 
 2026-10-05追加授权：发布0.7.0 main／Tag／Release／ZIP，并备份升级本机Codex；不额外改动真实知识库或个人状态。
 
-## REQ-017 内容主题目录（0.8.0本地开发）
+## REQ-017 内容主题目录（已随0.8.0交付）
 
 新目录按内容主题直接位于授权首页下，最多两层；不默认创建收件箱容器／主题知识／实践经验顶层目录。待整理仅处理未完成资料，书屋管理按需容纳指南和维护记录。既有结构保持兼容，不依据目录名称静默改kind或recordRole。
 
 新create的source/topic/experience支持titleSummary，生成具体概括丨末级内容分类；source仍需classification，topic/experience用实际parent或parentStep获取titleDestination并在执行前核对。来源／主题／实践正文分别标资料整理／主题综述／实践记录，重复或冲突类型拒绝；语义与实践证据由Agent核对。旧计划无新增字段兼容，原输入版本与技术kind不变。
 
-旧资料整理是library-organization.md定义的Agent工作流：逐对象盘点正文、旧新标题路径、范围与依据，确认后官方CLI原地操作与回读；核心plan/apply没有新增move/rename命令。部分未知结果先查证，不复制重建、不删除空分类、不篡改旧计划。实际迁移未执行，见 [PROG-012](progress/PROG-012-topic-organization.md)。
+旧资料整理是library-organization.md定义的Agent工作流：逐对象盘点正文、旧新标题路径、范围与依据，确认后官方CLI原地操作与回读；核心plan/apply没有新增move/rename命令。部分未知结果先查证，不复制重建、不删除空分类、不篡改旧计划。初始开发阶段尚未迁移；后续真实整理已执行，见 [PROG-012](progress/PROG-012-topic-organization.md)。
 
 2026-10-11：本机0.8.0安装32文件校验通过，0.7.0备份保留；已有知识库整理清单随后获确认并执行完成，见PROG-012。
 
 2026-10-11实际整理完成：2管理节点、14项移动、10项改名、28节点回读及索引同步无失败，旧页面保留不删除；3条历史异常计划保持原状态与payload，后续恢复需重新核对。
 
 2026-10-11发布收尾：0.8.0 main／Tag／Release／32文件ZIP回读通过；本机安装already-identical。66项在源码逐字节一致的独立目录通过，原工作区EPERM环境问题保留待定位，见发布记录。
+
+## REQ-018 稳定性优化（当前未发布源码）
+
+contentComparison使用verificationText，仅规范已识别表格分隔行的连字符数量；保留列数、对齐、数据及代码块。旧normalizeText导出保留。新str_replace动作有verificationVersion=2，用新核验哈希；旧str_replace仍按旧哈希核验，旧create/append可通过新recover只读检查，不改原payload/digest。警告及partial_success依旧阻断。
+
+parseCLIResult同时识别error与data.result/warnings，保留有限分类、错误码、警告数量、降级码、缺失scope与处理hint，不记录正文、原始警告、URL或凭据。apply的unknown步骤和错误输出保留diagnostic，不能据此盲目重试。
+
+Lark.fetch在明确URL且响应缺URL时保留既有地址；裸token缺链接时查官方Drive元数据with_url。documentURL／未绑定可用的resolve-url核对实际文档、类型及Feishu URL；缺权限、错误token、非法域名或无链接停止，不猜测或重建。
+
+scripts/opencli.mjs通过PATH发现已安装OpenCLIApp管理exe、直接exe或npm包内bin；限制入口范围并使用shell:false独立argv。识别失败或超时返回错误，不安装或修改全局工具，也不代表任意平台读取通过。

@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-completed",
+  "stage": "implementation-completed",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -13,80 +13,60 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-017",
+    "id": "REQ-018",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.8.0打包与GitHub发布收尾完成",
-    "scope": "当次授权main/Tag/Release/ZIP发布与回读；本机安装只核对一致性",
-    "out_of_scope": "真实知识库新增修改、个人资料上传、删除或修改历史Tag",
+    "summary": "稳定性修复与文档口径整理完成，EPERM未复现",
+    "scope": "表格回读、OpenCLI参数入口、元数据URL、有限诊断、EPERM调查、文档及本地提交",
+    "out_of_scope": "真实资料或旧计划修改、全局安装升级、发布、状态摘要及项目知识包",
     "paths": [
       "skills/elx-magic-study",
       "tests",
       "docs",
       "README.md",
-      "AGENTS.md",
       "CHANGELOG.md",
       "DOCUMENT_MAP.md",
-      "package.json",
+      "AGENTS.md",
       ".elx-level"
     ],
-    "next_step": "本轮完成；工作区EPERM及旧兼容问题保留待定位"
+    "next_step": "当前源码未发布；后续真实平台验收或安装发布需明确范围授权"
   },
   "artifacts": [
     {
-      "path": "docs/requirements/REQ-017-topic-organization.md",
-      "summary": "本轮范围与验收"
+      "path": "docs/requirements/REQ-018-reliability.md",
+      "summary": "用户确认范围与验收检查点"
     },
     {
-      "path": "docs/progress/PROG-012-topic-organization.md",
-      "summary": "源码与未执行边界"
-    },
-    {
-      "path": "docs/releases/RELEASE-0.8.0.md",
-      "summary": "远端发布、包与安装验证以及环境限制"
+      "path": "docs/progress/PROG-013-reliability.md",
+      "summary": "得到的效果、回归证据及未测试边界"
     }
   ],
   "verifications": [
     {
       "command": "node --test --test-concurrency=1 tests/*.test.mjs",
       "status": "passed",
-      "summary": "66项通过，新增3项先失败后实现，旧63项回归"
+      "summary": "工作区基线66项，新增6项先失败后修复、另补1项兼容；最终73项通过"
     },
     {
-      "command": "node --check / local links / README structure",
+      "command": "node --check / quick_validate.py / local links / README design / git diff --check",
       "status": "passed",
-      "summary": "语法链接有效，README图片和版式保留"
+      "summary": "语法、Skill格式、文档本地链接和README原设计保留；正式版本仍0.8.0"
     },
     {
-      "command": "Skill format and local version metadata",
+      "command": "atomic rename probes (workspace and system-temp)",
       "status": "passed",
-      "summary": "Skill格式有效；package/Skill/help本地0.8.0一致，全局安装未更新"
+      "summary": "各100次通过，本轮未复现EPERM；历史根因未知，不标修复"
     },
     {
-      "command": "local install SHA256 / live read-only inventory",
+      "command": "OpenCLI installed app help / official metadata schema",
       "status": "passed",
-      "summary": "旧30文件备份、新32文件校验；25节点读取无失败，预览2新节点／14移动／10改名／0删除，尚未执行远端修改"
-    },
-    {
-      "command": "live organization readback and index sync",
-      "status": "passed",
-      "summary": "2新节点、14移动、10改名；28节点回读及索引刷新无失败，0删除；3旧计划文件不变"
-    },
-    {
-      "command": "bundled Node --test --test-concurrency=1 tests/*.test.mjs in byte-identical temporary copy",
-      "status": "passed",
-      "summary": "35文件含32Skill、2测试和package逐字节一致，独立目录66项通过；工作区EPERM仍有环境限制，发布记录保留"
-    },
-    {
-      "command": "GitHub readback / ZIP manifest / install inventory",
-      "status": "passed",
-      "summary": "32Skill文件清单与ZIP摘要核对；main/Tag提交、Release、README、远端附件digest一致；本机already-identical"
+      "summary": "获准只读help正常退出；元数据schema支持request_docs和with_url；未执行平台内容读取"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "caea999789b245c09b4d7336f137f0cb4f94b3f7",
-    "last_commit_note": "v0.8.0不可变发布提交；后续仅收尾记录",
+    "last_commit": "6cca6fa10d48f32c87fd0fe283dc78b18b43773a",
+    "last_commit_note": "REQ-018修改前基线；本轮本地提交以Git日志为准，未推送",
     "repository": true
   },
   "remote": {
@@ -321,7 +301,12 @@
       "event": "v0.8.0_release_verified",
       "at": "2026-10-11T04:43:20.167185+00:00",
       "commit": "caea999789b245c09b4d7336f137f0cb4f94b3f7"
+    },
+    {
+      "event": "req018_verified",
+      "at": "2026-10-11T15:45:16.035820+00:00",
+      "summary": "73项回归，有限兼容修复和诊断；EPERM未复现，未改真实资料或发布"
     }
   ],
-  "updated_at": "2026-10-11T04:43:20.167185+00:00"
+  "updated_at": "2026-10-11T15:45:16.035820+00:00"
 }

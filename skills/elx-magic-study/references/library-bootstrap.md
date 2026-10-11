@@ -29,7 +29,7 @@ lark-cli wiki +node-create --space-id <真实space_id> --title "书屋首页" --
 
 - 创建前在个人状态目录（不是仓库）保存本次初始化记录 `bootstrap-<唯一编号>.json`：已确认范围、账号摘要、执行阶段、每步 sending／verified／unknown、真实结果 ID。发送前保存 sending，响应后立即保存回执；不含凭据。恢复时先检查这个记录，不新起同名初始化覆盖历史。
 - `+space-create` 返回 space_id，可能没有 URL。用官方空间详情／列表回读名称、描述和 ID，不能捏造空间链接。新建后先列顶层节点，复用已存在且用途合适的首页；多候选需核对，只有确认缺少时创建已批准的首页。
-- 必须显式传真实 space_id，不能省略后意外落入 my_library。首页创建返回 node_token、obj_token 等；用 node-get 核对所属空间，再用 docs +fetch 获取真实文档及 URL。必要时仅从回读 URL 的真实域名与返回的 node_token 组成 Wiki 链接，再 node-get 验证；禁止猜测租户域名或 token。
+- 必须显式传真实space_id，不能省略后意外落入my_library。首页创建返回node_token、obj_token等；先用node-get核对空间并fetch正文。正文缺URL时运行 `node <SKILL_ROOT>/scripts/library.mjs resolve-url --doc <实际返回的obj_token>`，只读查询官方Drive元数据with_url并核对身份、类型和链接。缺必要元数据权限时按setup说明并确认增量授权；不猜域名、不重复创建。必要时仅从核验链接的真实域名与返回的node_token组成Wiki链接，再node-get确认。
 - 首页已经存在时不覆盖正文。展示并核对首页真实链接，将该 Wiki 节点子树作为 readRoot/writeRoot 执行 bind（范围必须包含在原确认中）。本 Skill 当前不是整个空间永久自动发现，用户在首页外新建顶层节点不会自动纳入授权。
 - `bind` 使用可用的新本地编号、name「魔法书屋知识库」及真实首页链接，不覆盖已有编号。新建空首页随后以plan的append/index动作写入已确认的介绍和说明书，回读核对大标题、用途、功能及提示词；不只创建空页。已有首页不重复追加或覆盖，按 [note-naming.md](note-naming.md) 保留用户内容。最后少量sync，报告绑定与覆盖结果；空间创建、首页填充、本地绑定和全文同步分别核验。
 

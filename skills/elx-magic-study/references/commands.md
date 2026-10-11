@@ -9,6 +9,7 @@
 ```text
 node CLI doctor
 node CLI space-discover
+node CLI resolve-url --doc <实际返回的docx token>
 node CLI status
 node CLI sync --max-docs 30 --max-nodes 500
 node CLI search --query "离线 授权" --query "断网 许可证" --limit 8
@@ -80,6 +81,8 @@ node CLI schedule-record --file <真实宿主回执JSON>
 schedule-plan 只准备提示与时间配置；实际调用宿主调度工具后才算创建。回执字段：provider=`codex-heartbeat`、automationId、status、time、timezone，以及可选 days/name。不能编造回执。
 
 ## 本地文件与数据边界
+
+resolve-url未绑定可用，以用户身份只读查官方文件元数据。明确Wiki/docx URL的fetch保留原地址；裸token的fetch缺URL时走同一补查。返回错误文档、非法域名、无链接或缺权限则停止，不创建第二个首页。Windows外部读取使用 `node <SKILL_ROOT>/scripts/opencli.mjs <平台> <命令> [独立参数]`，复用已安装入口，避免cmd拆分&；不安装工具或修改平台语义。
 
 文件写入使用绝对或明确参数路径；图谱和调度方案拒绝覆盖已有文件。状态写入使用原子替换，单机同一状态目录由 OS 锁避免并发写。锁不跨设备，也不保护用户手动编辑飞书。
 

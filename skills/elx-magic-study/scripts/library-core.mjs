@@ -4,6 +4,8 @@ import { randomUUID } from 'node:crypto';
 import { now, hash, assert, issue, identifier, stateHome, libraryPath, readJSON, writeJSON, loadLibrary, saveLibrary, canonicalSource } from './store.mjs';
 import { Lark, feishuURL } from './lark.mjs';
 import { lint } from './retrieval.mjs';
+import { contentComparison, normalizeText, verificationText } from './verification.mjs';
+export { normalizeText } from './verification.mjs';
 import { scanCatalog } from './scan.mjs';
 import { prepareClassification, classificationMarkdown, verifyClassification, pendingContentClassification, classificationPath } from './classification.mjs';
 export { classificationContext } from './classification.mjs';
@@ -195,13 +197,7 @@ export async function retirePlan(home, id, operation, { approval, reason, replac
   if (replacement) plan.replacement = replacement;
   await writeJSON(file, plan); return { id: operation, state: plan.state, replacement: replacement || null, remoteChanged: false };
 }
-function contentComparison(expected, actual) {
-  const e = normalizeText(expected), a = normalizeText(actual); let difference = 0;
-  while (difference < Math.min(e.length, a.length) && e[difference] === a[difference]) difference++;
-  return { matched: a.includes(e), expectedLength: e.length, actualLength: a.length, expectedHash: hash(e), actualHash: hash(a), prefixDifference: difference };
-}
 function validContent(content) { assert(typeof content === 'string' && content.trim() && content.length <= 200000, 'CONTENT', '写入内容不能为空且单项不超过 20 万字符'); assert(!/<\s*(?:img|source|script|iframe|object)\b|!\[[^\]]*\]\(/i.test(content), 'ACTIVE_RESOURCE', '第一版仅导入纯文本 Markdown，图片／附件等资源须走独立审核流程'); }
-export function normalizeText(s) { return s.normalize('NFKC').replace(/\\([\[\]_*~`|$<>])/g, '$1').replace(/[#*`_\s]/g, ''); }
 export function planDigest(payload) { return hash(payload); }
 const titleKey = s => s.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
 export function formatNoteTitle(summary, category) {
@@ -284,7 +280,7 @@ export async function makePlan(home, id, spec, supplied) {
       const parsed = feishuURL(a.doc); await lark.inScope(parsed.url, [state.writeRoot]); const d = await lark.fetch(parsed.url);
       assert(!targets.has(d.id), 'DUPLICATE_TARGET', '同一计划每篇文档只修改一次，请合并修改'); targets.add(d.id);
       Object.assign(action, { doc: parsed.url, documentId: d.id, baseHash: hash(d.markdown), baseRevision: d.revision });
-      if (a.kind === 'str_replace') { assert(typeof a.pattern === 'string' && a.pattern.trim() && !a.pattern.includes('\n') && !a.content.includes('\n'), 'PATTERN', '精确替换只用于非空单行；多段内容用追加或官方块编辑流程'); assert(d.markdown.split(a.pattern).length === 2, 'PATTERN_AMBIGUOUS', '旧文本必须在新读取的正文中唯一出现'); action.pattern = a.pattern; action.expectedTextHash = hash(normalizeText(d.markdown.replace(a.pattern, a.content))); }
+      if (a.kind === 'str_replace') { assert(typeof a.pattern === 'string' && a.pattern.trim() && !a.pattern.includes('\n') && !a.content.includes('\n'), 'PATTERN', '精确替换只用于非空单行；多段内容用追加或官方块编辑流程'); assert(d.markdown.split(a.pattern).length === 2, 'PATTERN_AMBIGUOUS', '旧文本必须在新读取的正文中唯一出现'); action.pattern = a.pattern; action.verificationVersion = 2; action.expectedTextHash = hash(verificationText(d.markdown.replace(a.pattern, a.content))); }
     }
     if (a.classification !== undefined) {
       action.classification = await prepareClassification(state, lark, action, a.classification, action.parentStep === undefined ? undefined : { parentStep: action.parentStep, path: action.plannedParentPath });
@@ -354,7 +350,7 @@ export async function applyPlan(home, id, operation, approval, supplied) {
       assert(step.url, 'WRITE_RESPONSE', '返回值缺少可回读的文档，结果未知');
       await verifyStep(lark, state, a, step);
       step.state = 'verified'; step.verifiedAt = now(); await writeJSON(file, plan);
-    } catch (e) { step.state = 'unknown'; step.error = { code: e.code || 'ERROR', ...(e.code === 'VERIFY_FAILED' ? { comparison: e.details } : {}) }; plan.state = 'incomplete'; await writeJSON(file, plan); throw issue('WRITE_UNCERTAIN', '写入结果尚未核实；不要重发，使用 diagnose／recover 查证', { plan: operation, step: i + 1, cause: e.code }); }
+    } catch (e) { const diagnostic = ['LARK_ERROR','CONFIRMATION_REQUIRED'].includes(e.code) ? e.details : undefined; step.state = 'unknown'; step.error = { code: e.code || 'ERROR', ...(e.code === 'VERIFY_FAILED' ? { comparison: e.details } : {}), ...(diagnostic ? { diagnostic } : {}) }; plan.state = 'incomplete'; await writeJSON(file, plan); throw issue('WRITE_UNCERTAIN', '写入结果尚未核实；不要重发，使用 diagnose／recover 查证', { plan: operation, step: i + 1, cause: e.code, ...(diagnostic ? { diagnostic } : {}) }); }
   }
   await finishPlan(home, state, plan, lark); return { plan: operation, state: plan.state, results: plan.steps.map(s => ({ state: s.state, url: s.url })) };
 }
@@ -365,7 +361,7 @@ async function verifyStep(lark, state, action, step, fetched) {
   if (action.category === 'shelf') { await verifyShelfParent(state, lark, action); assert((await lark.node(step.url)).title === action.title, 'PARENT_CHANGED', '分类名称与预览不符'); }
   const comparison = contentComparison(action.content, actual.markdown);
   if (!comparison.matched) throw issue('VERIFY_FAILED', '回读正文没有完整匹配预期内容', comparison);
-  if (action.kind === 'str_replace') assert(hash(normalizeText(actual.markdown)) === action.expectedTextHash, 'VERIFY_FAILED', '回读结果与精确替换后的预期正文不一致');
+  if (action.kind === 'str_replace') assert(hash(action.verificationVersion === 2 ? verificationText(actual.markdown) : normalizeText(actual.markdown)) === action.expectedTextHash, 'VERIFY_FAILED', '回读结果与精确替换后的预期正文不一致');
   assert(!step.warningCount && step.result !== 'partial_success' && step.result !== 'failed', 'WRITE_WARNING', '返回警告或部分成功，需要人工核对');
   step.documentId = actual.id; step.verifiedHash = hash(actual.markdown); return actual;
 }

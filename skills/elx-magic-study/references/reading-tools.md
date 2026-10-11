@@ -48,6 +48,17 @@ Agent 负责解释下一步、检查状态、给出实际授权入口；用户�
 
 ## 完成与降级
 
+### Windows完整链接传参
+
+OpenCLIApp的cmd入口可能二次解析含`&`的签名链接。按实际OpenCLI使用指引确定命令后，优先通过本Skill安全入口调用，参数保持原样：
+
+```text
+node <SKILL_ROOT>/scripts/opencli.mjs doctor
+node <SKILL_ROOT>/scripts/opencli.mjs xiaohongshu note "用户给出的完整签名URL" -f json
+```
+
+入口只解析已安装OpenCLIApp的exe或npm包内bin，以独立argv和shell:false执行，不修改全局启动器、不安装或登录。无法识别时按桌面引导处理，不拼cmd字符串、不删签名参数。评论／字幕参数以实际help为准；入口正常不代表目标内容可读。超时先查连接和实际结果，不自动重发写操作。
+
 给用户列出：已安装什么、哪些平台实际读取通过、哪些待配置、哪些用户跳过，以及本次材料实际读取范围。拒绝安装或配置失败时保留 link_only／待获取，不编造摘要。若需要付费转写或向新服务发送资料，单独解释并取得授权。
 
 读取工具配置不恢复已暂停的图标适配器。仅当前宿主已有界面能力时，新增／改名分类可按 optional-icons.md 询问用户是否优化图标；不要为图标把OpenCLI变成核心依赖。

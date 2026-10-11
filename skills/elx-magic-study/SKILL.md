@@ -29,6 +29,8 @@ node <SKILL_ROOT>/scripts/library.mjs <command> [--library <编号>] [--home <�
 
 ## 按意图只读相关参考
 
+Windows上含签名参数的外部链接按reading-tools.md通过scripts/opencli.mjs复用安装入口，避免cmd拆分参数。新首页创建响应缺URL时按library-bootstrap.md用resolve-url核对官方元数据，不猜域名或重复建页。回读表格格式和有限错误诊断规则见writes.md。
+
 | 用户意图 | 参考与操作 |
 |---|---|
 | 先收藏、整理文章／视频、多来源综合、实践回写 | [capture-ingest.md](references/capture-ingest.md)：capture → source-content → 内容分类 → plan → 预览 → 确认 → apply |

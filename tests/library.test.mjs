@@ -94,6 +94,66 @@ test('没有批准 digest 和篡改的计划均不得写远端', async () => {
 test('创建回读成功、重复 apply 幂等', async () => {
   const {dir,lark}=await fixture(); const p=await makePlan(dir,'test',{actions:[{kind:'create',title:'来源A',content:'正文内容'}]},lark); const result=await applyPlan(dir,'test',p.plan,p.digest,lark);assert.equal(result.state,'complete');const again=await applyPlan(dir,'test',p.plan,p.digest,lark);assert.equal(again.alreadyApplied,true);assert.equal(lark.writes,1);
 });
+
+test('REQ-018 表格分隔线等价格式回读通过，内容变化及警告仍阻断', async () => {
+  const content = '# 表格\n\n| 项目 | 数值 |\n|---|---|\n| A | -5 |\n| B | 10 |';
+  const {dir,lark}=await fixture(), create=lark.create.bind(lark);
+  lark.create=async (...args)=>{const r=await create(...args); lark.docs.get(r.data.document.document_id).markdown=lark.docs.get(r.data.document.document_id).markdown.replace('|---|---|','|-|-|'); return r;};
+  const p=await makePlan(dir,'test',{actions:[{kind:'create',title:'表格来源',content}]},lark);
+  const result=await applyPlan(dir,'test',p.plan,p.digest,lark); assert.equal(result.state,'complete'); assert.equal(lark.writes,1);
+  const stored=await readJSON(path.join(libraryPath(dir,'test'),'operations',p.plan+'.json'));assert.equal(core.planDigest(stored.payload),p.digest);
+  for(const mutate of [s=>s.replace('-5','5'),s=>s.replace('| B | 10 |','| B | 11 |'),s=>s.replace('| A | -5 |','| -5 | A |'),s=>s.replace('|---|---|','|-|'),s=>s.replace('项目','')]){
+    const f=await fixture(), send=f.lark.create.bind(f.lark);f.lark.create=async (...args)=>{const r=await send(...args);f.lark.docs.get(r.data.document.document_id).markdown=mutate(f.lark.docs.get(r.data.document.document_id).markdown);return r;};
+    const q=await makePlan(f.dir,'test',{actions:[{kind:'create',title:'变化表格',content}]},f.lark);
+    await assert.rejects(applyPlan(f.dir,'test',q.plan,q.digest,f.lark),e=>e.code==='WRITE_UNCERTAIN');assert.equal(f.lark.writes,1);
+  }
+});
+
+test('REQ-018 旧创建计划只读恢复表格，正文横线和代码块不当作格式变化', async () => {
+  const {dir,lark}=await fixture(),p=await makePlan(dir,'test',{actions:[{kind:'create',title:'旧表格',content:'| 名称 | 值 |\n|---|---|\n| A | 1 |'}]},lark);
+  lark.throwAfterCreate=true;await assert.rejects(applyPlan(dir,'test',p.plan,p.digest,lark));lark.docs.get('created1').markdown=lark.docs.get('created1').markdown.replace('|---|---|','|-|-|');
+  assert.equal((await recoverPlan(dir,'test',p.plan,1,lark.docs.get('created1').url,lark)).state,'complete');assert.equal(lark.writes,1);
+  for(const content of ['代码：---\n保持原样','```markdown\n| 名称 | 值 |\n|---|---|\n| A | 1 |\n```']){
+    const f=await fixture(),send=f.lark.create.bind(f.lark);f.lark.create=async (...args)=>{const r=await send(...args);f.lark.docs.get(r.data.document.document_id).markdown=f.lark.docs.get(r.data.document.document_id).markdown.replace(/---/g,'-');return r;};
+    const q=await makePlan(f.dir,'test',{actions:[{kind:'create',title:'不可归一化',content}]},f.lark);await assert.rejects(applyPlan(f.dir,'test',q.plan,q.digest,f.lark));
+  }
+});
+
+test('REQ-018 裸token正文缺URL时查官方元数据，已有真实URL不多请求', async () => {
+  const calls=[];const l=new Lark(null,async args=>{calls.push(args);if(args.includes('+fetch'))return {data:{document:{document_id:'DOC123',content:'# 书屋首页'}}};return {data:{metas:[{doc_token:'DOC123',doc_type:'docx',url:'https://example.feishu.cn/docx/DOC123'}]}};});
+  assert.equal((await l.fetch('DOC123')).url,'https://example.feishu.cn/docx/DOC123');assert.equal(calls.length,2);assert.ok(calls[1].includes('metas'));
+  calls.length=0;assert.equal((await l.fetch(root)).url,root);assert.equal(calls.length,1);
+  for(const meta of [{doc_token:'OTHER',doc_type:'docx',url:'https://example.feishu.cn/docx/OTHER'},{doc_token:'DOC123',doc_type:'docx',url:'https://evil.example/docx/DOC123'},{doc_token:'DOC123',doc_type:'docx',url:'https://example.feishu.cn/docx/OTHER'}]){
+    const bad=new Lark(null,async args=>args.includes('+fetch')?{data:{document:{document_id:'DOC123',content:'正文'}}}:{data:{metas:[meta]}});await assert.rejects(bad.fetch('DOC123'));
+  }
+});
+
+test('REQ-018 CLI失败可定位块范围，错误详情不泄露正文链接和凭据', async () => {
+  const {parseCLIResult}=await import('../skills/elx-magic-study/scripts/lark.mjs');
+  const privateText='PRIVATE_BODY access_token=secret https://private.example/docx/private';
+  const response={ok:false,data:{result:'failed',document:{content:privateText},warnings:['degrade_code=1002,msg=Invalid block range '+privateText]}};
+  assert.throws(()=>parseCLIResult({status:1,stdout:JSON.stringify(response),stderr:''},[]),e=>{assert.equal(e.details.remoteResult,'failed');assert.equal(e.details.hint,'check_block_range');assert.deepEqual(e.details.degradeCodes,[1002]);assert.ok(!JSON.stringify(e).includes('secret'));assert.ok(!JSON.stringify(e).includes('private.example'));return e.code==='LARK_ERROR';});
+  assert.throws(()=>parseCLIResult({status:1,stdout:JSON.stringify({ok:false,error:{subtype:'missing_scope',missing_scopes:['drive:drive.metadata:readonly'],message:privateText}})},[]),e=>e.details.hint==='request_missing_scopes'&&!JSON.stringify(e).includes('secret'));
+  const partial={ok:true,data:{result:'partial_success',warnings:['warning']}};
+  assert.equal(parseCLIResult({status:0,stdout:JSON.stringify(partial)},[]).data.result,'partial_success');
+  assert.throws(()=>parseCLIResult({status:1,stdout:JSON.stringify({ok:false,data:{result:'failed',warnings:['degrade_code=1002,msg=Unclassified failure']}})},[]),e=>e.details.hint==='inspect_result_before_retry');
+  const {dir,lark}=await fixture(),p=await makePlan(dir,'test',{actions:[{kind:'create',title:'诊断示例',content:'正文'}]},lark);
+  lark.create=async()=>parseCLIResult({status:1,stdout:JSON.stringify(response)},[]);
+  await assert.rejects(applyPlan(dir,'test',p.plan,p.digest,lark),e=>e.details.diagnostic?.hint==='check_block_range');
+  const stored=await readJSON(path.join(libraryPath(dir,'test'),'operations',p.plan+'.json'));assert.equal(stored.steps[0].error.diagnostic.hint,'check_block_range');assert.ok(!JSON.stringify(stored.steps[0].error).includes('secret'));
+});
+
+test('REQ-018 精确替换的新哈希接受表格格式，旧哈希协议仍可执行', async () => {
+  const {dir,lark}=await fixture(),doc=lark.add('table','# 说明\n旧词\n| 名称 | 值 |\n|---|---|\n| A | 1 |'),update=lark.update.bind(lark);
+  const p=await makePlan(dir,'test',{actions:[{kind:'str_replace',doc:doc.url,pattern:'旧词',content:'新词'}]},lark);
+  lark.update=async (...args)=>{const r=await update(...args);doc.markdown=doc.markdown.replace('|---|---|','|-|-|');return r;};
+  assert.equal((await applyPlan(dir,'test',p.plan,p.digest,lark)).state,'complete');
+  const f=await fixture(),old=f.lark.add('oldtable','# 说明\n旧词\n| 名称 | 值 |\n|---|---|\n| A | 1 |');
+  const q=await makePlan(f.dir,'test',{actions:[{kind:'str_replace',doc:old.url,pattern:'旧词',content:'新词'}]},f.lark);
+  const file=path.join(libraryPath(f.dir,'test'),'operations',q.plan+'.json'),plan=await readJSON(file);delete plan.payload.actions[0].verificationVersion;
+  plan.payload.actions[0].expectedTextHash=hash(core.normalizeText(old.markdown.replace('旧词','新词')));plan.digest=core.planDigest(plan.payload);await writeJSON(file,plan);
+  assert.equal((await applyPlan(f.dir,'test',q.plan,plan.digest,f.lark)).state,'complete');
+});
 test('尚未进入本地缓存的同名远端页面也会阻止重复创建', async () => {
   const {dir,lark}=await fixture();lark.nodePages.push({obj_type:'docx',obj_token:'old',node_token:'old',title:'已存在',has_child:false});await assert.rejects(makePlan(dir,'test',{actions:[{kind:'create',title:'已存在',content:'资料'}]},lark),e=>e.code==='DUPLICATE_TITLE');assert.equal(lark.writes,0);
 });

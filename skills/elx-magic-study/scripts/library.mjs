@@ -17,6 +17,7 @@ const HELP = {
     'onboarding-record': '--file <介绍及明确偏好JSON>；只保存本地引导记录，不启用功能',
     doctor: '只读检查 Node、飞书 CLI、用户授权和绑定；不登录或改权限',
     'space-discover': '[--library <编号>] [--profile <配置>]；未绑定可用，只读发现魔法书屋知识库，完整分页后建议复用／创建，不创建远端空间',
+    'resolve-url': '--doc <实际返回的docx token> [--profile <配置>]；未绑定可用，只读查询官方元数据并核对访问链接',
     bind: '--id <编号> --root <Wiki/docx链接> [重复] --write-root <Wiki链接> --confirm；只保存已确认绑定',
     status: '显示当前库范围、索引覆盖和实际记录的调度任务',
     sync: '[--max-docs 30] [--max-nodes 500]；[--force] [--restart-scan]；目录与正文分别续扫授权范围，零远端写入',
@@ -55,6 +56,7 @@ export async function run(argv) {
   const { command, options: o } = parse(argv), home = stateHome(o.home);
   if (command === 'help' || command === '--help') return HELP;
   if (command === 'doctor') return doctor(home, o.profile);
+  if (command === 'resolve-url') { const lark = new Lark(o.profile); await lark.identity(); return { mode: 'read-only', url: await lark.documentURL(o.doc) }; }
   if (command === 'space-discover') return discoverSpace(home, { id: o.library, profile: o.profile });
   if (command === 'onboarding') return onboardingStatus(home);
   if (command === 'onboarding-record') return locked(home, async () => recordOnboarding(home, await readJSON(o.file)));

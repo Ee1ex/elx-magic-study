@@ -4,11 +4,17 @@
 
 ## 成功的证据
 
+回读只归一化已识别Markdown表格分隔行的连字符数量，例如`|---|---|`与`|-|-|`。列数与对齐标记保留；正文、数据单元格、负号和代码块不因此删改；警告与partial_success仍拒绝完整成功。不通过删除全部标点放宽比较。
+
+新精确替换计划记录verificationVersion=2与新预期哈希；旧精确替换计划仍用旧哈希，不能改写payload/digest伪装成功。旧创建／追加可用新版recover只读核验格式等价结果，不重发或自动回填真实操作状态。
+
 脚本通过 argv 传参、stdin 导入 Markdown，不经 shell 拼接。创建与更新返回后再次检查所属子树并读取正文，完整匹配预期内容；有服务端警告、partial_success、目标不一致或内容缺失时视为未核实。
 
 精确替换检查原文唯一匹配、基线 hash 和回读后的预期全文。追加保留既有内容。revision 参数会传给支持的 CLI，但不把它宣称为跨设备原子事务保证。
 
 ## 请求超时或中断
+
+CLI失败时查看有限字段remoteResult、warningCount、degradeCodes、missingScopes和hint。check_block_range表示重新读块ID并分段编辑；request_missing_scopes表示核对精确权限；inspect_result_before_retry表示先查证实际结果。未知步骤保留diagnostic，不保存原始正文、完整警告、URL或凭据；诊断更清楚不意味着允许自动重发。
 
 plans／plan-show 检查步骤：pending 可按已确认计划执行；sending、unknown、needs_review 不能重发。
 

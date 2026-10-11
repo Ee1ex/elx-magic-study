@@ -19,13 +19,23 @@ export function transport(args, { profile, input, timeout = 60000 } = {}) {
     encoding: 'utf8', input, windowsHide: true, shell: false, timeout, maxBuffer: 24 * 1024 * 1024,
     env: { ...process.env, LARKSUITE_CLI_NO_UPDATE_NOTIFIER: '1', LARKSUITE_CLI_NO_SKILLS_NOTIFIER: '1' }
   });
+  return parseCLIResult(result, args);
+}
+export function parseCLIResult(result, args = []) {
   let output; try { output = JSON.parse(result.stdout || result.stderr || '{}'); } catch { output = null; }
-  if (result.error || result.status !== 0 || output?.ok === false) {
+  if (result.error || result.status !== 0 || output?.ok === false || output?.data?.result === 'failed') {
     const e = output?.error || {};
-    // No raw stdout/stderr: they may contain credentials or full private content.
-    throw issue(result.status === 10 ? 'CONFIRMATION_REQUIRED' : 'LARK_ERROR', '飞书 CLI 调用失败；不要直接重试未知结果的写操作', {
-      subtype: e.subtype || e.type || result.error?.code || 'unknown', code: e.code,
-      missingScopes: e.missing_scopes || [], exitCode: result.status
+    const warnings = Array.isArray(output?.data?.warnings) ? output.data.warnings : [];
+    const degradeCodes = [...new Set(warnings.flatMap(w => [...String(w).matchAll(/degrade_code=(\d+)/g)].map(m => Number(m[1]))))];
+    const missingScopes = (Array.isArray(e.missing_scopes) ? e.missing_scopes : []).filter(s => typeof s === 'string' && /^[a-z0-9_.:-]{1,128}$/i.test(s));
+    const safeType = value => typeof value === 'string' && /^[a-z0-9_.:-]{1,80}$/i.test(value) ? value : null;
+    const remoteResult = ['success','partial_success','failed'].includes(output?.data?.result) ? output.data.result : undefined;
+    const hint = warnings.some(w => /Invalid block range\b/i.test(String(w))) ? 'check_block_range' : missingScopes.length ? 'request_missing_scopes' : result.error?.code === 'EPERM' ? 'check_local_permissions' : 'inspect_result_before_retry';
+    const messages = { check_block_range: '飞书拒绝当前块范围；请重新读取块ID，分段编辑', request_missing_scopes: '飞书调用缺少必要权限；先核对所列scope', check_local_permissions: '本地CLI执行权限受阻；先检查本地环境', inspect_result_before_retry: '飞书CLI调用失败；先查证实际结果，不盲目重发' };
+    // Only classified metadata: no raw warning, message, body, URL or credential.
+    throw issue(result.status === 10 ? 'CONFIRMATION_REQUIRED' : 'LARK_ERROR', messages[hint], {
+      subtype: safeType(e.subtype) || safeType(e.type) || safeType(result.error?.code) || (remoteResult === 'failed' ? 'remote_failed' : 'unknown'), code: /^\d+$/.test(String(e.code || '')) ? Number(e.code) : undefined,
+      missingScopes, exitCode: result.status, remoteResult, warningCount: warnings.length, degradeCodes, hint
     });
   }
   if (args.includes('--version')) return { version: (result.stdout || '').trim() };
@@ -66,7 +76,20 @@ export class Lark {
     const response = await this.call(['docs', '+fetch', '--doc', value, '--as', 'user', '--doc-format', 'markdown']);
     const d = response.data?.document;
     assert(d?.document_id && typeof d.content === 'string', 'DOC_FORMAT', '无法解析文档内容，未更新缓存');
-    return { id: d.document_id, revision: d.revision_id ?? null, markdown: d.content, url: d.url, referenceMap: d.reference_map || {}, warnings: response.data.warnings || [] };
+    let url = d.url;
+    if (!url && /^https:\/\//.test(value)) url = feishuURL(value).url;
+    if (!url) url = await this.documentURL(d.document_id);
+    return { id: d.document_id, revision: d.revision_id ?? null, markdown: d.content, url, referenceMap: d.reference_map || {}, warnings: response.data.warnings || [] };
+  }
+  async documentURL(token) {
+    assert(typeof token === 'string' && /^[A-Za-z0-9]{1,100}$/.test(token), 'DOC_ID', '请使用实际返回的文档token，不猜测域名');
+    const response = await this.call(['drive','metas','batch_query','--data','-','--as','user'], { input: JSON.stringify({ request_docs: [{ doc_token: token, doc_type: 'docx' }], with_url: true }) });
+    const d = response.data; const matches = d?.metas?.filter(m => (m.doc_token === token || m.request_doc_info?.doc_token === token) && (!m.doc_token || m.doc_token === token) && (!m.request_doc_info?.doc_token || m.request_doc_info.doc_token === token) && m.doc_type === 'docx');
+    assert(!d?.failed_list?.length && matches?.length === 1 && matches[0].url, 'DOC_URL', '文件元数据未返回唯一、可核对的链接，停止初始化；不要重复创建');
+    const parsed = feishuURL(matches[0].url);
+    if (parsed.kind === 'docx') assert(parsed.token === token, 'DOC_ID_CHANGED', '元数据链接指向其他文档，停止');
+    else assert((await this.node(parsed.url)).obj_token === token, 'DOC_ID_CHANGED', '元数据Wiki链接与实际文档不符');
+    return parsed.url;
   }
   async children(root, pageToken) {
     const response = await this.call(['wiki', '+node-list', '--space-id', String(root.space_id), '--parent-node-token', root.node_token, '--page-size', '50', '--as', 'user', ...(pageToken ? ['--page-token', pageToken] : [])]);

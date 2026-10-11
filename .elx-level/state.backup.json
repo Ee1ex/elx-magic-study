@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-0.8.0",
+  "stage": "release-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,7 +15,7 @@
   "current_task": {
     "id": "REQ-017",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.8.0打包与GitHub发布收尾",
+    "summary": "0.8.0打包与GitHub发布收尾完成",
     "scope": "当次授权main/Tag/Release/ZIP发布与回读；本机安装只核对一致性",
     "out_of_scope": "真实知识库新增修改、个人资料上传、删除或修改历史Tag",
     "paths": [
@@ -29,7 +29,7 @@
       "package.json",
       ".elx-level"
     ],
-    "next_step": "安装包核验、发布远端并逐项回读"
+    "next_step": "本轮完成；工作区EPERM及旧兼容问题保留待定位"
   },
   "artifacts": [
     {
@@ -39,6 +39,10 @@
     {
       "path": "docs/progress/PROG-012-topic-organization.md",
       "summary": "源码与未执行边界"
+    },
+    {
+      "path": "docs/releases/RELEASE-0.8.0.md",
+      "summary": "远端发布、包与安装验证以及环境限制"
     }
   ],
   "verifications": [
@@ -71,13 +75,18 @@
       "command": "bundled Node --test --test-concurrency=1 tests/*.test.mjs in byte-identical temporary copy",
       "status": "passed",
       "summary": "35文件含32Skill、2测试和package逐字节一致，独立目录66项通过；工作区EPERM仍有环境限制，发布记录保留"
+    },
+    {
+      "command": "GitHub readback / ZIP manifest / install inventory",
+      "status": "passed",
+      "summary": "32Skill文件清单与ZIP摘要核对；main/Tag提交、Release、README、远端附件digest一致；本机already-identical"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "ccbbd9172c5f31a5e80b3fde22888fdcf6f2ed5e",
-    "last_commit_note": "本轮实施前基线，实际本地提交见git log",
+    "last_commit": "caea999789b245c09b4d7336f137f0cb4f94b3f7",
+    "last_commit_note": "v0.8.0不可变发布提交；后续仅收尾记录",
     "repository": true
   },
   "remote": {
@@ -307,7 +316,12 @@
     {
       "event": "v0.8.0_publication_authorized",
       "at": "2026-10-11T04:41:49.267112+00:00"
+    },
+    {
+      "event": "v0.8.0_release_verified",
+      "at": "2026-10-11T04:43:20.167185+00:00",
+      "commit": "caea999789b245c09b4d7336f137f0cb4f94b3f7"
     }
   ],
-  "updated_at": "2026-10-11T04:41:49.267112+00:00"
+  "updated_at": "2026-10-11T04:43:20.167185+00:00"
 }
