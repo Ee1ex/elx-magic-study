@@ -97,7 +97,7 @@ actions 中可添加 `"summary":"讲什么、何时有用及依据边界。"`（
 
 ## 新资料内容分类
 
-新建source动作使用titleSummary＋classification，titleSummary为约8字、最多10字符的具体内容概括；省略title时由plan生成「概括丨真实末级分类」，同步正文首标题。若显式提供title须完全一致。旧计划无titleSummary仍兼容；不批量改名。详见 [note-naming.md](note-naming.md)。
+新建source/topic/experience动作使用titleSummary；source仍需classification，其他类型使用已核对的parent或parentStep，titleSummary为约8字、最多10字符的具体内容概括；省略title时由plan生成「概括丨真实末级分类」，同步正文首标题和匹配的笔记类型说明。标题路径进入预览核验，分类名或路径变动会停止执行。若显式提供title须完全一致。旧计划无titleSummary仍兼容；不批量改名。详见 [note-naming.md](note-naming.md)。
 
 `classification-context --id <输入来源编号> --query "正文关键词" [--query "另一组词"] [--limit 300]` 只读返回两层节点、已有标签和主题候选，最多列 1000 个目录节点。locations.complete=false 不能当全目录；source.truncated=true 需继续分段读正文；topicCandidates 为缓存 BM25 候选，不代表已确认语义关联。
 
@@ -114,3 +114,5 @@ schedule-plan 输出 kind=host-automation 的未注册方案，交给当前Agent
 ## 功能导览与提醒偏好
 
 `onboarding` 未绑定也可只读查看首次介绍状态与偏好，不创建文件。`onboarding-record --file <JSON>` 记录introduced:true或明确choices，增量合并；只写个人状态目录onboarding.json，不创建绑定、安装工具或启用功能。可用键和值及触发规则见 [feature-tour.md](feature-tour.md)。当前用户指令优先，偏好不代表真实任务状态。
+
+旧库move/rename不属于plan/apply新增命令；执行方式与确认范围见 [library-organization.md](library-organization.md)。

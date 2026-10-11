@@ -132,6 +132,10 @@ export function classificationMarkdown(c) {
 }
 
 export async function verifyClassification(state, lark, action, { deferDestination = false } = {}) {
+  if (action.titleDestination && !deferDestination) {
+    const destination = await classificationPath(state, lark, action.parent);
+    assert(hash(destination) === hash(action.titleDestination), 'CLASSIFICATION_CHANGED', '命名所用分类名称或路径已变化，请重新预览');
+  }
   const c = action.classification; if (!c) return;
   requireNewSource(state, c.sourceId);
   if (!deferDestination) {

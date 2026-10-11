@@ -39,12 +39,40 @@ async function fixture({ linkOnly = false } = {}) {
   return { home, lark, source, spec, classification };
 }
 
+test('REQ-017 主题综述与实践记录按内容目录命名，保留技术类型和来源版本', async () => {
+  for (const [category, label] of [['topic','主题综述'],['experience','实践记录']]) {
+    const f=await fixture(); f.spec={sourceIds:[f.source.id],actions:[{kind:'create',category,titleSummary:'按需读取实践总结',parent:wiki('AI'),content:'# 原标题\n\n依据与验证范围。'}]};
+    const p=await core.makePlan(f.home,'test',f.spec,f.lark);
+    assert.equal(p.actions[0].title,'按需读取实践总结丨AI与Agent');
+    assert.ok(p.actions[0].content.includes('笔记类型：'+label));
+    await core.applyPlan(f.home,'test',p.plan,p.digest,f.lark);
+    const d=(await loadLibrary(f.home,'test')).documents.find(d=>d.id==='Created1');
+    assert.equal(d.kind,category); assert.equal(d.recordRole,'derived');assert.equal(d.inputVersions[0].id,f.source.id);
+  }
+});
+
+test('REQ-017 主题笔记可依赖新主题分类，分类改变阻断旧标题执行', async () => {
+  const f=await emptyLibrary();f.spec.actions[1]={kind:'create',category:'topic',titleSummary:'上下文管理方法汇总',parentStep:1,content:'主题综合正文'};
+  const p=await core.makePlan(f.home,'test',f.spec,f.lark);await core.applyPlan(f.home,'test',p.plan,p.digest,f.lark);
+  assert.equal(f.lark.docs.get('Created2').parent,'Created1');
+  const g=await fixture();const q=await core.makePlan(g.home,'test',{actions:[{kind:'create',category:'experience',titleSummary:'上下文管理实测记录',parent:wiki('AI'),content:'测试环境与结果'}]},g.lark);
+  g.lark.docs.get('AI').title='已改名';await assert.rejects(core.applyPlan(g.home,'test',q.plan,q.digest,g.lark),e=>e.code==='CLASSIFICATION_CHANGED');assert.equal(g.lark.writes,0);
+});
+
+test('REQ-017 一级内容分类可直接入库，笔记类型不重复且不伪造实践类型', async () => {
+  const f=await emptyLibrary();delete f.spec.actions[1].title;f.spec.actions[1].titleSummary='按需读取节省上下文';f.spec.actions[1].content='笔记类型：资料整理\n\n原始标题：原文标题\n\n内容';
+  const p=await core.makePlan(f.home,'test',f.spec,f.lark);assert.equal(p.actions[1].content.split('笔记类型：资料整理').length,2);assert.equal(p.actions[1].classification.destination.path.length,1);
+  const g=await fixture();delete g.spec.actions[0].title;g.spec.actions[0].titleSummary='按需读取节省上下文';g.spec.actions[0].content='笔记类型：实践记录\n\n来源整理';
+  await assert.rejects(core.makePlan(g.home,'test',g.spec,g.lark),e=>e.code==='NOTE_TYPE');
+});
+
 test('REQ-016 标题保留具体对象、最多10字符，分类取真实末级并同步正文首标题', async () => {
   const f = await fixture(), a = f.spec.actions[0]; delete a.title;
   a.titleSummary = 'OPPO耳机耳帽选购'; a.content = '# 原先标题\n\n正文保留';
   const p = await core.makePlan(f.home, 'test', f.spec, f.lark);
   assert.equal(p.actions[0].title, 'OPPO耳机耳帽选购丨AI与Agent');
-  assert.ok(p.actions[0].content.startsWith('# OPPO耳机耳帽选购丨AI与Agent\n\n正文保留'));
+  assert.ok(p.actions[0].content.startsWith('# OPPO耳机耳帽选购丨AI与Agent\n\n笔记类型：资料整理'));
+  assert.ok(p.actions[0].content.includes('正文保留'));
   await core.applyPlan(f.home, 'test', p.plan, p.digest, f.lark);
   assert.equal(f.lark.docs.get('Created1').title, p.actions[0].title);
   assert.equal(core.formatNoteTitle('LLM知识库方法', '知识管理'), 'LLM知识库方法丨知识管理');

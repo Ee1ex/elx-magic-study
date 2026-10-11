@@ -238,6 +238,7 @@ async function resolveAction(state, lark, plan, index) {
   assert(hash(destination.path) === hash(expected), 'CLASSIFICATION_CHANGED', '分类路径与原预览不符，停止后续写入');
   if (action.category === 'shelf') action.shelfPath = [...destination.path, { step: index + 1, title: action.title }];
   if (action.classification) action.classification.destination = destination;
+  if (action.titleDestination) action.titleDestination = destination;
   return action;
 }
 
@@ -265,7 +266,7 @@ export async function makePlan(home, id, spec, supplied) {
     assert(['document', 'source', 'topic', 'experience', 'index', 'log', 'shelf'].includes(action.category), 'CATEGORY', '未知知识类型');
     assert(a.parentStep === undefined || (a.kind === 'create' && a.parent === undefined && Number.isInteger(a.parentStep) && a.parentStep >= 1 && a.parentStep <= i && actions[a.parentStep - 1]?.category === 'shelf'), 'PARENT_STEP', 'parentStep 只能引用本计划前序新分类步骤，不能与 parent 混用');
     assert(action.category !== 'shelf' || a.kind === 'create', 'CATEGORY', '分类动作仅创建，不借此修改旧分类');
-    assert(a.titleSummary === undefined || (a.kind === 'create' && action.category === 'source' && a.classification), 'NOTE_CLASSIFICATION', 'titleSummary 仅用于带classification的新来源笔记');
+    assert(a.titleSummary === undefined || (a.kind === 'create' && ['source', 'topic', 'experience'].includes(action.category) && (action.category !== 'source' || a.classification)), 'NOTE_CLASSIFICATION', 'titleSummary 用于新资料整理、主题综述或实践记录；来源笔记仍需classification');
     if (a.kind === 'create') {
       if (a.parentStep !== undefined) {
         action.parentStep = a.parentStep;
@@ -288,14 +289,20 @@ export async function makePlan(home, id, spec, supplied) {
     if (a.classification !== undefined) {
       action.classification = await prepareClassification(state, lark, action, a.classification, action.parentStep === undefined ? undefined : { parentStep: action.parentStep, path: action.plannedParentPath });
       assert(!classifiedSources.has(action.classification.sourceId), 'CLASSIFICATION_DUPLICATE', '同一来源在一份计划中只创建一篇主笔记'); classifiedSources.add(action.classification.sourceId);
-      if (a.titleSummary !== undefined) {
-        action.title = formatNoteTitle(a.titleSummary, action.classification.destination.path.at(-1).title);
-        assert(a.title === undefined || a.title === action.title, 'NOTE_TITLE', '传入的完整标题与概括及真实分类不一致，请重新预览');
-        action.titleSummary = a.titleSummary.normalize('NFKC').trim();
-        const heading = '# ' + action.title.replace(/[\\`*_\[\]<>$~]/g, '\\$&');
-        action.content = /^#\s+[^\n]+/.test(action.content) ? action.content.replace(/^#\s+[^\n]+/, () => heading) : heading + '\n\n' + action.content;
-      }
       action.content += '\n\n' + classificationMarkdown(action.classification); validContent(action.content);
+    }
+    if (a.titleSummary !== undefined) {
+      action.titleDestination = action.classification?.destination || (action.parentStep === undefined ? await classificationPath(state, lark, action.parent) : { parentStep: action.parentStep, path: action.plannedParentPath });
+      action.title = formatNoteTitle(a.titleSummary, action.titleDestination.path.at(-1).title);
+      assert(a.title === undefined || a.title === action.title, 'NOTE_TITLE', '传入的完整标题与概括及真实分类不一致，请重新预览');
+      action.titleSummary = a.titleSummary.normalize('NFKC').trim();
+      const heading = '# ' + action.title.replace(/[\\`*_\[\]<>$~]/g, '\\$&');
+      action.content = /^#\s+[^\n]+/.test(action.content) ? action.content.replace(/^#\s+[^\n]+/, () => heading) : heading + '\n\n' + action.content;
+      const noteType = { source: '资料整理', topic: '主题综述', experience: '实践记录' }[action.category];
+      const labels = [...action.content.matchAll(/^笔记类型[：:]\s*(.+)$/gm)];
+      assert(labels.length <= 1 && labels.every(m => m[1].trim() === noteType), 'NOTE_TYPE', '笔记类型标记与知识类型不一致或重复，请核对');
+      if (!labels.length) action.content = action.content.replace(/^(#[^\n]*)(\n|$)/, (_, h) => h + '\n\n笔记类型：' + noteType + '\n');
+      validContent(action.content);
     }
     if (a.kind === 'create') {
       assert(typeof action.title === 'string' && action.title.trim() && action.title.length <= 200, 'TITLE', '创建文档需要明确标题');

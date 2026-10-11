@@ -72,3 +72,5 @@
 - [0.6.0真实使用验收](docs/progress/PROG-010-live-acceptance.md)：授权、读取、建库与首次入库；兼容绕行及未测边界。
 
 - [0.7.0发布与安装记录](docs/releases/RELEASE-0.7.0.md)：精细标题、表格化首页与本机30文件校验。
+
+- [REQ-017内容主题目录](docs/requirements/REQ-017-topic-organization.md)、[实现记录](docs/progress/PROG-012-topic-organization.md)：0.8.0开发范围，旧库实际整理待清单确认。
