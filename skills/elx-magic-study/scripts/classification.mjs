@@ -2,6 +2,7 @@ import path from 'node:path';
 import { assert, hash, loadLibrary, libraryPath } from './store.mjs';
 import { Lark, feishuURL } from './lark.mjs';
 import { search } from './retrieval.mjs';
+import { knowledgeDocuments } from './workbench.mjs';
 
 const active = d => !d.unavailable && !d.outOfScope;
 const contentAvailable = d => ['full_text', 'partial', 'transcript'].includes(d.coverage) && !!d.markdown?.trim();
@@ -68,7 +69,7 @@ export async function classificationContext(home, id, sourceId, { queries = [], 
   const d = sourceRecord(state, sourceId);
   if (d.remote !== false) await lark.inScope(d.url, state.readRoots);
   const catalog = await locations(state, lark, limit);
-  const available = state.documents.filter(active);
+  const available = knowledgeDocuments(state).filter(active);
   // Query terms come from the Agent's reading. Link-only titles are not evidence.
   const topicCandidates = search(available.filter(t => t.kind === 'topic' && t.id !== d.id), contentAvailable(d) ? queries : [], { limit: 8, expand: false });
   for (const candidate of topicCandidates.results) await lark.inScope(candidate.url, state.readRoots);

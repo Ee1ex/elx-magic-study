@@ -120,4 +120,34 @@ export class Lark {
     assert(['append', 'str_replace'].includes(action.kind), 'WRITE_KIND', '辅助脚本只支持追加或精确行内替换，不做覆盖和删除');
     return this.call(['docs', '+update', '--doc', doc, '--command', action.kind, '--doc-format', 'markdown', '--content', '-', '--as', 'user', ...(action.kind === 'str_replace' ? ['--pattern', action.pattern] : []), ...(action.baseRevision !== null && action.baseRevision !== undefined ? ['--revision-id', String(action.baseRevision)] : [])], { input: action.content });
   }
+  async workbenchRows(base) {
+    const rows=[];let offset=0;
+    for(let page=0;page<50;page++) {
+      const r=await this.call(['base','+record-list','--base-token',base.token,'--table-id',base.tableId,'--format','json','--limit','200','--offset',String(offset),'--as','user']);const d=r.data;
+      assert(Array.isArray(d?.data)&&Array.isArray(d.fields)&&Array.isArray(d.record_id_list)&&d.data.length===d.record_id_list.length&&typeof d.has_more==='boolean','BASE_FORMAT','Base列表格式不完整，不判定为空');
+      assert(['记录键','条目名称','状态','我的备注／调整意见'].every(f=>d.fields.includes(f)),'BASE_SCHEMA','工作台关键字段缺失，先核对，不创建重复记录');
+      for(let i=0;i<d.data.length;i++){assert(Array.isArray(d.data[i])&&d.data[i].length===d.fields.length,'BASE_FORMAT','Base矩阵列数不符');rows.push({recordId:d.record_id_list[i],fields:Object.fromEntries(d.fields.map((f,j)=>{let value=d.data[i][j]??'';if(f==='最近更新'&&value){assert(!Number.isNaN(Date.parse(value)),'BASE_FORMAT','更新时间不可解析');value=new Date(value).toISOString();}if(['来源链接','结果文档'].includes(f)&&typeof value==='string'){const link=value.match(/^\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)$/);if(link&&link[1]===link[2])value=link[2];}return [f,value];}))});}
+      if(!d.has_more)return rows;
+      assert(d.data.length>0,'BASE_PAGINATION','Base分页未推进');offset+=d.data.length;
+    }
+    throw issue('BASE_INCOMPLETE','Base读取超过预算，不据此创建记录');
+  }
+  async workbenchUpsert(base, recordId, fields) {
+    if(recordId){await this.call(['base','+record-upsert','--base-token',base.token,'--table-id',base.tableId,'--json',JSON.stringify(fields),'--record-id',recordId,'--as','user']);return recordId;}
+    const r=await this.call(['base','+record-batch-create','--base-token',base.token,'--table-id',base.tableId,'--json',JSON.stringify({create_records:[fields]}),'--as','user']);
+    const id=r.data?.record_id_list?.[0];assert(id,'BASE_RESPONSE','记录响应缺少ID，先查证，不重建');return id;
+  }
+  async workbenchRegion(url, heading, end) {
+    const r=await this.call(['docs','+fetch','--doc',url,'--doc-format','xml','--detail','with-ids','--as','user']);const xml=r.data?.document?.content;
+    assert(typeof xml==='string','WORKBENCH_FORMAT','未取得管理页块结构');
+    const blocks=[...xml.matchAll(/<(h[1-6]|p)\b([^>]*)>([\s\S]*?)<\/\1>/g)].map(m=>({tag:m[1],id:m[2].match(/\b(?:block-id|block_id|id)="([A-Za-z0-9]+)"/)?.[1],text:m[3].replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')}));
+    const starts=blocks.filter(b=>b.tag==='h2'&&b.text===heading),ends=blocks.filter(b=>b.tag==='p'&&b.text===end);assert(starts.length===1&&ends.length===1&&starts[0].id&&ends[0].id,'WORKBENCH_REGION','自动更新区域缺失或不唯一，请核对');
+    const document=await this.fetch(url),prefix='## '+heading;const a=document.markdown.indexOf(prefix),b=document.markdown.indexOf(end,a);
+    assert(a>=0&&b>a&&document.markdown.indexOf(prefix,a+prefix.length)<0&&document.revision===r.data.document.revision_id,'WORKBENCH_REGION','区域顺序或版本不符，重新读取');
+    return {document,text:document.markdown.slice(a,b+end.length),startId:starts[0].id,endId:ends[0].id};
+  }
+  async workbenchWrite(url, region, content) {
+    const r=await this.call(['docs','+update','--doc',url,'--command','block_replace','--start-block-id',region.startId,'--end-block-id',region.endId,'--revision-id',String(region.document.revision),'--doc-format','markdown','--content','-','--as','user'],{input:content});
+    assert(r.data?.result==='success'&&!r.data?.warnings?.length,'WORKBENCH_WARNING','管理页返回警告或部分成功，先核对');return r;
+  }
 }

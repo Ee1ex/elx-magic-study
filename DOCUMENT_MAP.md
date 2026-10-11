@@ -1,6 +1,6 @@
 # 文档地图
 
-- 当前未发布：[REQ-018稳定性优化](docs/requirements/REQ-018-reliability.md)、[实现与验收](docs/progress/PROG-013-reliability.md)。
+- 当前未发布：[REQ-018稳定性优化](docs/requirements/REQ-018-reliability.md)、[实现与验收](docs/progress/PROG-013-reliability.md)，以及[REQ-019书屋工作台](docs/requirements/REQ-019-workbench.md)、[实现与试点](docs/progress/PROG-014-workbench.md)。
 
 - 0.7.0功能：[REQ-016精细短标题与首页说明书](docs/requirements/REQ-016-note-titles-home.md)、[实现与真实验收](docs/progress/PROG-011-note-titles-home.md)。
 

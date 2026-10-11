@@ -21,6 +21,8 @@ node <SKILL_ROOT>/scripts/library.mjs <command> [--library <编号>] [--home <�
 
 每次调用先运行 `onboarding`，并按 [feature-tour.md](references/feature-tour.md) 判断是否需要首次功能导览、沿用哪些明确偏好。首次用简短文字介绍核心功能、可选功能与初始化步骤；后续只在相关场景且用户偏好允许时少量提示，不反复介绍、不自动启用。记录已展示介绍和用户明确选择，不记录未回答的猜测。
 
+已绑定知识库后运行 `workbench-context`；已配置时每次读取整理偏好与用户意见，偏好改变时按[workbench.md](references/workbench.md)询问是否先预览旧资料整理。新专用库把工作台、偏好页、主题建议页及配套多维表格纳入初始化预览；现有库先确认具体新增范围。配置后入库、预览、异常与查证结果自动同步管理资源；管理同步失败只补管理信息，不重建文章。
+
 首次连接或连接异常时读取 [setup.md](references/setup.md)，运行 doctor。已有授权与绑定复用；授权后没有明确目标时按 [library-bootstrap.md](references/library-bootstrap.md) 运行 space-discover，确认后复用或创建独立「魔法书屋知识库」及首页，再绑定。列表错误不等于不存在，不索取聊天中的密钥。首次主动询问定时整理，已有选择沿用；绑定不等于介绍过功能。
 
 需要确切参数时运行 `help`，再按 [commands.md](references/commands.md) 使用。工具缺失、命令不可识别或远端失败都要说明真实原因；不把安装完成当作已连通。
@@ -43,6 +45,7 @@ Windows上含签名参数的外部链接按reading-tools.md通过scripts/opencli
 | 只检查重复、过期、矛盾、断链 | [maintenance.md](references/maintenance.md)：只读检查，语义问题由 Agent 回原文核实 |
 | 旧笔记改名、目录扁平化、旧库整理 | [library-organization.md](references/library-organization.md)：只读盘点与完整变更清单 → 确认 → 官方CLI原地操作／核验；不自动删除旧分类 |
 | 写入失败、请求超时、结果未知 | [writes.md](references/writes.md)：plans／plan-show → 查证 → recover，禁止盲目重发 |
+| 查看工作台、填偏好、按表内意见修订、主题更新建议 | [workbench.md](references/workbench.md)：管理文档＋一表五视图；入库后Agent评估主题，写建议而不直接改主题正文 |
 
 ## 内容与证据
 
@@ -57,13 +60,13 @@ Windows上含签名参数的外部链接按reading-tools.md通过scripts/opencli
 
 新资料整理／主题综述／实践记录按 [note-naming.md](references/note-naming.md) 提供titleSummary，来源仍需classification，生成「具体内容概括丨末级分类」；概括优先约8字、最多10字符，保留品牌与核心对象，不再添加惯用前缀。旧页不自动改名。新建知识库首页按[首页模板](assets/templates/library-home.md)先介绍本库名称、用途，再写功能和可复制提示词；完整正文纳入初始化预览，填充回读后才算完成。
 
-`capture` 和 `source-content` 只写本地，不能向用户说“已保存到飞书”。飞书保存需要 `plan` 和 `apply`，以及真实回读结果。
+`capture` 和 `source-content` 生成本地来源记录及快照，不直接创建飞书知识文章；已配置工作台时自动同步管理条目。不能把管理条目称为“文章已保存到飞书”。文章保存需要 `plan` 和 `apply`，以及真实回读结果。
 
 默认先展示具体新增／修改、目标链接和原因，用户确认一次后完成该计划。用户明确要求“收藏这条到已绑定位置”可作为该单条来源页的授权，不扩展到主题改写、批量处理或权限操作。不要为了省事改用整篇覆盖。
 
 首次空库按内容建立必要分类，不预建固定空目录；后续每次入库核对分类并优先复用。新分类与笔记一起预览确认，用 parentStep 引用本计划前序分类，取得真实节点后连续写入；不重复询问已确认范围。新分类本身未包含在单条收藏授权时，先展示完整新增范围。
 
-写入脚本只支持创建、追加和唯一行内替换。复杂富文本块编辑通过当前官方 CLI 技能指导完成，同样需要范围确认、版本检查和回读；不要绕过计划的失败状态对同一目标直接重试。
+文章写入脚本支持创建、追加和唯一行内替换；工作台另在已确认的自动区域内使用块替换并回读，不覆盖整篇。其他复杂富文本块编辑通过当前官方 CLI 技能指导完成，同样需要范围确认、版本检查和回读；不要绕过计划的失败状态对同一目标直接重试。
 
 删除、批量迁移、整体覆盖不属于普通整理授权。付款、注册、发布、发送消息和修改账号权限执行前再次确认。删除前列出准确对象、数量、影响；本技能不提供自动删除入口。
 

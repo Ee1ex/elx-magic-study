@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stateHome, loadLibrary, saveLibrary, libraryPath, readJSON, writeJSON, writeNew, locked, assert, identifier, now } from './store.mjs';
 import { Lark } from './lark.mjs';
+import { bindWorkbench, workbenchContext, syncWorkbench, acknowledgePreferences, recordTopicSuggestions, recordSourceIssue, knowledgeDocuments } from './workbench.mjs';
 import { search, lint } from './retrieval.mjs';
 import { pendingContentClassification } from './classification.mjs';
 import { exportGraph } from './graph.mjs';
@@ -20,11 +21,17 @@ const HELP = {
     'resolve-url': '--doc <实际返回的docx token> [--profile <配置>]；未绑定可用，只读查询官方元数据并核对访问链接',
     bind: '--id <编号> --root <Wiki/docx链接> [重复] --write-root <Wiki链接> --confirm；只保存已确认绑定',
     status: '显示当前库范围、索引覆盖和实际记录的调度任务',
+    'workbench-bind': '--file <管理资源JSON> --confirm；核对已创建页面及Base范围，登记自动区域',
+    'workbench-context': '读取当前整理偏好、变化状态和表内用户意见',
+    'workbench-sync': '只补同步已确认管理资源；不重建文章',
+    'preferences-ack': '--file <hash及choice:preview|later|no>；记录用户对整理旧资料的明确选择',
+    'topic-suggest': '--file <双方证据及版本JSON>；记录主题建议，不改主题正文',
+    'source-issue': '--file <sourceId/hash/status/reason/next>；记录实际读取失败或缺材料，不保存原始错误及凭据',
     sync: '[--max-docs 30] [--max-nodes 500]；[--force] [--restart-scan]；目录与正文分别续扫授权范围，零远端写入',
     search: '--query <问题关键词> [重复] [--limit 8] [--offline]；本地 BM25 和引用邻居',
     fetch: '--id <已索引文档编号>；回远端核对后返回正文',
-    capture: '--url <来源链接> --title <标题> [--note <备注>]；仅生成本地来源记录',
-    'source-content': '--id <来源编号> --file <UTF8正文> --coverage partial|full_text|transcript --note <获取方式>；仅本地快照',
+    capture: '--url <来源链接> --title <标题> [--note <备注>]；本地来源，已配工作台时同步管理条目，不创建知识文章',
+    'source-content': '--id <来源编号> --file <UTF8正文> --coverage partial|full_text|transcript --note <获取方式>；本地快照，已配工作台时同步管理条目',
     'classification-context': '--id <输入来源编号> [--query <正文关键词>] [--limit 300]；只读分类位置、已有标签与主题候选',
     classify: '--id <文档编号> --role input|derived|navigation --confirm；确认后仅设置该条本地角色',
     plan: '--file <动作JSON>；读取基线并生成可审核的飞书增改计划；category:shelf 创建分类，parentStep 引用前序分类步骤（从1开始）',
@@ -60,12 +67,19 @@ export async function run(argv) {
   if (command === 'space-discover') return discoverSpace(home, { id: o.library, profile: o.profile });
   if (command === 'onboarding') return onboardingStatus(home);
   if (command === 'onboarding-record') return locked(home, async () => recordOnboarding(home, await readJSON(o.file)));
-  const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','plan-cancel','plan-supersede','apply','recover','maintenance','schedule-record']);
+  const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','plan-cancel','plan-supersede','apply','recover','maintenance','schedule-record','workbench-bind','workbench-sync','preferences-ack','topic-suggest','source-issue']);
   const execute = async () => {
     if (command === 'bind') return bind(home, { id: o.id, name: o.name, profile: o.profile, readRoots: o.root, writeRoot: o['write-root'], confirmed: !!o.confirm });
     if (command === 'demo-import') return importManifest(home, o.id, await readJSON(o.file));
     const state = await loadLibrary(home, o.library); const id = state.id;
-    if (command === 'status') { const queue = intakeQueue(state.documents); const plans = await planOverview(home, state); const tasks = {}; for (const p of plans) tasks[p.label] = (tasks[p.label] || 0) + 1; return { id, name: state.name, provider: state.provider, readRoots: state.readRoots, writeRoot: state.writeRoot, indexed: state.documents.length, pendingInputs: queue.pending.length, needsClassification: queue.needsClassification.length, pendingContentClassification: pendingContentClassification(state.documents).length, tasks, lastSync: state.lastSync || null, schedules: state.schedules || [], next: state.documents.length ? '可 search、graph 或 maintenance；回答重要问题前 fetch 最新正文' : '先 sync 建立索引' }; }
+    const documents = knowledgeDocuments(state);
+    if (command === 'workbench-bind') return bindWorkbench(home,id,{...await readJSON(o.file),confirmed:!!o.confirm});
+    if (command === 'workbench-context') return workbenchContext(home,id);
+    if (command === 'workbench-sync') return syncWorkbench(home,id);
+    if (command === 'preferences-ack') return acknowledgePreferences(home,id,await readJSON(o.file));
+    if (command === 'topic-suggest') return recordTopicSuggestions(home,id,await readJSON(o.file));
+    if (command === 'source-issue') return recordSourceIssue(home,id,await readJSON(o.file));
+    if (command === 'status') { const queue = intakeQueue(documents); const plans = await planOverview(home, state); const tasks = {}; for (const p of plans) tasks[p.label] = (tasks[p.label] || 0) + 1; return { id, name: state.name, provider: state.provider, readRoots: state.readRoots, writeRoot: state.writeRoot, indexed: documents.length, pendingInputs: queue.pending.length, needsClassification: queue.needsClassification.length, pendingContentClassification: pendingContentClassification(documents).length, tasks, workbench:state.workbench?.sync||null, lastSync: state.lastSync || null, schedules: state.schedules || [], next: state.documents.length ? '可 search、graph 或 maintenance；回答重要问题前 fetch 最新正文' : '先 sync 建立索引' }; }
     if (command === 'sync') return sync(home, id, { maxDocs: number(o['max-docs'], 30, 1, 200), maxNodes: number(o['max-nodes'], 500, 1, 5000), force: !!o.force, restartScan: !!o['restart-scan'] });
     if (command === 'fetch') return fetchDocument(home, id, o.id);
     if (command === 'capture') return capture(home, id, { url: o.url, title: o.title, note: o.note });
@@ -80,9 +94,9 @@ export async function run(argv) {
     if (command === 'apply') return applyPlan(home, id, o.id, o.approve);
     if (command === 'recover') return recoverPlan(home, id, o.id, number(o.step, 1, 1, 12), o.doc);
     if (command === 'maintenance') return maintenance(home, id, { refresh: !!o.refresh });
-    if (command === 'search') { await localAccess(state, o.offline); assert(o.query?.some(q => q.trim()), 'QUERY', '请提供至少一个非空关键词'); return search(state.documents, o.query, { limit: number(o.limit, 8, 1, 30) }); }
-    if (command === 'lint') { await localAccess(state, o.offline); return lint(state.documents, { staleDays: number(o['stale-days'], 180, 1, 36500) }); }
-    if (command === 'graph') { await localAccess(state, o.offline); assert(o.output, 'OUTPUT', '需要明确图谱输出路径'); return exportGraph(state.documents, path.resolve(o.output), { maxNodes: number(o.limit, 300, 1, 1000), title: state.name + ' · 知识关系图谱', demo: state.provider === 'demo' }); }
+    if (command === 'search') { await localAccess(state, o.offline); assert(o.query?.some(q => q.trim()), 'QUERY', '请提供至少一个非空关键词'); return search(documents, o.query, { limit: number(o.limit, 8, 1, 30) }); }
+    if (command === 'lint') { await localAccess(state, o.offline); return lint(documents, { staleDays: number(o['stale-days'], 180, 1, 36500) }); }
+    if (command === 'graph') { await localAccess(state, o.offline); assert(o.output, 'OUTPUT', '需要明确图谱输出路径'); return exportGraph(documents, path.resolve(o.output), { maxNodes: number(o.limit, 300, 1, 1000), title: state.name + ' · 知识关系图谱', demo: state.provider === 'demo' }); }
     if (command === 'schedule-plan') {
       assert(state.provider === 'feishu', 'DEMO_ONLY', '不为演示库安排真实定时任务');
       assert(/^([01]\d|2[0-3]):[0-5]\d$/.test(o.time || ''), 'TIME', '需要用户明确的 HH:MM');

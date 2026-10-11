@@ -7,6 +7,7 @@ import { lint } from './retrieval.mjs';
 import { contentComparison, normalizeText, verificationText } from './verification.mjs';
 export { normalizeText } from './verification.mjs';
 import { scanCatalog } from './scan.mjs';
+import { knowledgeDocuments, workbenchContext, syncWorkbench } from './workbench.mjs';
 import { prepareClassification, classificationMarkdown, verifyClassification, pendingContentClassification, classificationPath } from './classification.mjs';
 export { classificationContext } from './classification.mjs';
 
@@ -151,22 +152,23 @@ export async function fetchDocument(home, id, docId, supplied) {
   const d = await lark.fetch(old.url); assert(d.id === old.id, 'DOC_ID_CHANGED', '目标文档身份变化');
   Object.assign(old, d, { url: old.url, hash: hash(d.markdown), fetchedAt: now(), unavailable: false, outOfScope: false }); await saveLibrary(home, state); return old;
 }
-export async function capture(home, id, { url, title, note = '' }) {
+export async function capture(home, id, { url, title, note = '' }, supplied) {
   const state = await loadLibrary(home, id); const sourceUrl = canonicalSource(url); const duplicate = state.documents.find(d => d.sourceUrl === sourceUrl);
   if (duplicate) return { existing: true, id: duplicate.id, status: 'local-record', note: '已有来源，未重复添加；此回执不代表飞书已写入' };
   assert(title && title.length <= 300, 'TITLE', '提供可确认的来源标题或清楚标记的用户暂定标题');
   const d = { id: 'src-' + hash(sourceUrl).slice(0, 20), title, sourceUrl, url: sourceUrl, kind: 'source', recordRole: 'input', coverage: 'link_only', markdown: `# ${title}\n\n来源：${sourceUrl}\n\n收藏备注：${note}\n\n状态：待获取正文。\n`, createdAt: now(), remote: false };
   d.hash = hash(d.markdown); state.documents.push(d); await saveLibrary(home, state);
-  return { id: d.id, status: 'local-draft', remoteSaved: false, next: '按 capture-ingest.md 生成飞书来源页计划；用户明确收藏且目标已确认时，可作为该单条写入的授权。' };
+  return { id: d.id, status: 'local-draft', remoteSaved: false, workbench: await syncWorkbench(home,id,supplied), next: '按 capture-ingest.md 生成飞书来源页计划；用户明确收藏且目标已确认时，可作为该单条写入的授权。' };
 }
-export async function sourceContent(home, id, sourceId, { markdown, coverage, sourceNote }) {
+export async function sourceContent(home, id, sourceId, { markdown, coverage, sourceNote }, supplied) {
   assert(['partial', 'full_text', 'transcript'].includes(coverage), 'COVERAGE', '必须如实选择 partial/full_text/transcript');
   assert(markdown && markdown.length <= 1000000 && sourceNote, 'CONTENT', '需要正文和获取方式说明；单条上限 100 万字符');
   const state = await loadLibrary(home, id); const d = state.documents.find(d => d.id === sourceId && d.remote === false); assert(d, 'SOURCE', '只为本地已登记的外部来源添加正文，不改远端缓存');
   const snapshot = { sourceId, markdown, coverage, sourceNote, capturedAt: now(), hash: hash(markdown) };
   const snapshotFile = path.join(libraryPath(home, state.id), 'snapshots', `${sourceId}-${snapshot.hash}.json`);
   if (!await readJSON(snapshotFile, null)) await writeJSON(snapshotFile, snapshot);
-  Object.assign(d, { markdown, coverage, sourceNote, hash: snapshot.hash, fetchedAt: snapshot.capturedAt }); await saveLibrary(home, state); return { id: sourceId, hash: d.hash, coverage, remoteSaved: false };
+  delete d.ingestIssue;
+  Object.assign(d, { markdown, coverage, sourceNote, hash: snapshot.hash, fetchedAt: snapshot.capturedAt }); await saveLibrary(home, state); return { id: sourceId, hash: d.hash, coverage, remoteSaved: false, workbench: await syncWorkbench(home,id,supplied) };
 }
 const planFile = (home, id, operation) => path.join(libraryPath(home, id), 'operations', identifier(operation) + '.json');
 const retired = plan => ['cancelled', 'superseded'].includes(plan.state);
@@ -195,7 +197,7 @@ export async function retirePlan(home, id, operation, { approval, reason, replac
   }
   plan.state = replacement ? 'superseded' : 'cancelled'; plan.retiredAt = now(); plan.reason = reason;
   if (replacement) plan.replacement = replacement;
-  await writeJSON(file, plan); return { id: operation, state: plan.state, replacement: replacement || null, remoteChanged: false };
+  await writeJSON(file, plan); return { id: operation, state: plan.state, replacement: replacement || null, remoteChanged: false, workbench:await syncWorkbench(home,id) };
 }
 function validContent(content) { assert(typeof content === 'string' && content.trim() && content.length <= 200000, 'CONTENT', '写入内容不能为空且单项不超过 20 万字符'); assert(!/<\s*(?:img|source|script|iframe|object)\b|!\[[^\]]*\]\(/i.test(content), 'ACTIVE_RESOURCE', '第一版仅导入纯文本 Markdown，图片／附件等资源须走独立审核流程'); }
 export function planDigest(payload) { return hash(payload); }
@@ -247,6 +249,7 @@ async function verifyShelfParent(state, lark, action) {
 export async function makePlan(home, id, spec, supplied) {
   const state = await loadLibrary(home, id); assert(state.provider === 'feishu' && state.writeRoot, 'WRITE_DISABLED', '需要已绑定的飞书写入根');
   const lark = client(state, supplied); await lark.assertAccount(state);
+  const context = await workbenchContext(home,id,lark);
   assert(Array.isArray(spec.actions) && spec.actions.length > 0 && spec.actions.length <= 12, 'ACTIONS', '每个预览计划包含 1—12 项动作');
   let remoteTitles = new Set();
   if (spec.actions.some(a => a.kind === 'create')) {
@@ -312,10 +315,10 @@ export async function makePlan(home, id, spec, supplied) {
   const sources = [];
   for (const sourceId of new Set([...(spec.sourceIds || []), ...classifiedSources])) { const d = state.documents.find(d => d.id === sourceId); assert(d && !d.unavailable && !d.outOfScope, 'SOURCE', '引用的来源不存在或不可用'); sources.push({ id: d.id, hash: d.hash }); }
   for (const action of actions) for (const topic of action.classification?.relatedTopics || []) assert(!targets.has(topic.id), 'CLASSIFICATION_TOPIC_WRITE', '关联主题若需更新，另作计划；本次分类只建立引用');
-  const payload = { schemaVersion: 1, operation, library: state.id, account: state.account, writeRoot: state.writeRoot, createdAt: now(), purpose: spec.purpose || '知识整理', sources, actions };
+  const payload = { schemaVersion: 1, operation, library: state.id, account: state.account, writeRoot: state.writeRoot, createdAt: now(), purpose: spec.purpose || '知识整理', sources, actions, ...(context.configured ? {preferencesHash:context.preferences.hash} : {}) };
   const plan = { payload, digest: planDigest(payload), state: 'preview', steps: actions.map(() => ({ state: 'pending' })) };
   await writeJSON(planFile(home, state.id, operation), plan);
-  return { plan: operation, digest: plan.digest, purpose: payload.purpose, actions, sources, note: '只生成预览，尚未执行飞书写入；同一份计划确认后才能 apply。' };
+  return { plan: operation, digest: plan.digest, purpose: payload.purpose, actions, sources, workbench: await syncWorkbench(home,id,lark), note: '已生成文章预览；配置工作台时同步管理记录，文章尚未写入。同一份计划确认后才能 apply。' };
 }
 export async function applyPlan(home, id, operation, approval, supplied) {
   const state = await loadLibrary(home, id); const file = planFile(home, state.id, operation); const plan = await readJSON(file); const p = plan.payload;
@@ -325,7 +328,8 @@ export async function applyPlan(home, id, operation, approval, supplied) {
   const lark = client(state, supplied); await lark.assertAccount(state);
   const liveWriteRoot = await lark.node(state.writeRoot.url);
   assert(liveWriteRoot.node_token === state.writeRoot.node_token && String(liveWriteRoot.space_id) === String(state.writeRoot.space_id), 'ROOT_CHANGED', '写入根节点身份或所属空间变化，请重新确认');
-  if (plan.state === 'complete') return { plan: operation, state: 'complete', alreadyApplied: true };
+  if (plan.state === 'complete') return { plan: operation, state: 'complete', alreadyApplied: true, workbench: await syncWorkbench(home,id,lark) };
+  if (p.preferencesHash) { const c=await workbenchContext(home,id,lark);assert(c.configured&&c.preferences.hash===p.preferencesHash,'PREFERENCES_CHANGED','个人偏好在预览后变化，先按新偏好重新预览，不执行旧方案'); }
   assert(!plan.steps.some(s => ['sending', 'unknown', 'needs_review'].includes(s.state)), 'UNKNOWN_WRITE', '存在未核实的写入，先 recover，不允许重复发送');
   for (const src of p.sources) { const d = state.documents.find(d => d.id === src.id); assert(d?.hash === src.hash, 'SOURCE_CHANGED', '来源内容已改变，请重新整理与预览'); if (d.remote !== false) { await lark.inScope(d.url, state.readRoots); const fresh = await lark.fetch(d.url); assert(hash(fresh.markdown) === src.hash, 'SOURCE_CHANGED', '远端来源已更新，请重新整理与预览'); } }
   for (let i = 0; i < p.actions.length; i++) if (plan.steps[i].state !== 'verified') await verifyClassification(state, lark, p.actions[i], { deferDestination: p.actions[i].parentStep !== undefined });
@@ -350,9 +354,9 @@ export async function applyPlan(home, id, operation, approval, supplied) {
       assert(step.url, 'WRITE_RESPONSE', '返回值缺少可回读的文档，结果未知');
       await verifyStep(lark, state, a, step);
       step.state = 'verified'; step.verifiedAt = now(); await writeJSON(file, plan);
-    } catch (e) { const diagnostic = ['LARK_ERROR','CONFIRMATION_REQUIRED'].includes(e.code) ? e.details : undefined; step.state = 'unknown'; step.error = { code: e.code || 'ERROR', ...(e.code === 'VERIFY_FAILED' ? { comparison: e.details } : {}), ...(diagnostic ? { diagnostic } : {}) }; plan.state = 'incomplete'; await writeJSON(file, plan); throw issue('WRITE_UNCERTAIN', '写入结果尚未核实；不要重发，使用 diagnose／recover 查证', { plan: operation, step: i + 1, cause: e.code, ...(diagnostic ? { diagnostic } : {}) }); }
+    } catch (e) { const diagnostic = ['LARK_ERROR','CONFIRMATION_REQUIRED'].includes(e.code) ? e.details : undefined; step.state = 'unknown'; step.error = { code: e.code || 'ERROR', ...(e.code === 'VERIFY_FAILED' ? { comparison: e.details } : {}), ...(diagnostic ? { diagnostic } : {}) }; plan.state = 'incomplete'; await writeJSON(file, plan); const workbench=await syncWorkbench(home,id,lark);throw issue('WRITE_UNCERTAIN', '写入结果尚未核实；不要重发，使用 diagnose／recover 查证', { plan: operation, step: i + 1, cause: e.code, workbench, ...(diagnostic ? { diagnostic } : {}) }); }
   }
-  await finishPlan(home, state, plan, lark); return { plan: operation, state: plan.state, results: plan.steps.map(s => ({ state: s.state, url: s.url })) };
+  await finishPlan(home, state, plan, lark); return { plan: operation, state: plan.state, results: plan.steps.map(s => ({ state: s.state, url: s.url })), workbench: await syncWorkbench(home,id,lark) };
 }
 async function verifyStep(lark, state, action, step, fetched) {
   await lark.inScope(step.url, [state.writeRoot]); const actual = fetched || await lark.fetch(step.url);
@@ -375,6 +379,7 @@ async function finishPlan(home, state, plan, lark) {
     if (a.summary) Object.assign(record, { summary: a.summary, summaryForHash: step.verifiedHash });
   }
   for (const src of plan.payload.sources) { const d = state.documents.find(d => d.id === src.id); if (d?.hash === src.hash) d.processedHash = src.hash; }
+  if(state.workbench) { state.workbench.topicReviews||={};for(const src of plan.payload.sources){const d=state.documents.find(x=>x.id===src.id);if(d&&['full_text','partial','transcript'].includes(d.coverage))state.workbench.topicReviews[hash([src.id,src.hash])]||={title:d.title,state:'pending',at:now()};} }
   await saveLibrary(home, state); plan.state = 'complete'; plan.completedAt = now(); await writeJSON(planFile(home, state.id, plan.payload.operation), plan);
 }
 export async function recoverPlan(home, id, operation, index, url, supplied) {
@@ -389,7 +394,7 @@ export async function recoverPlan(home, id, operation, index, url, supplied) {
   const proposed = { ...step, url: feishuURL(url || step.url).url };
   await verifyStep(lark, state, a, proposed); Object.assign(step, proposed, { state: 'verified', verifiedAt: now() });
   await writeJSON(file, plan); await finishPlan(home, state, plan, lark);
-  return { plan: operation, step: index, state: plan.state, note: '只核对已有远端结果，没有重发写操作；剩余 pending 步骤可按原授权继续 apply。' };
+  return { plan: operation, step: index, state: plan.state, workbench: await syncWorkbench(home,id,lark), note: '只核对已有远端结果，没有重发写操作；剩余 pending 步骤可按原授权继续 apply。' };
 }
 export async function diagnosePlan(home, id, operation, index, url, supplied) {
   const state = await loadLibrary(home, id), plan = await readJSON(planFile(home, state.id, operation));
@@ -406,8 +411,9 @@ export async function diagnosePlan(home, id, operation, index, url, supplied) {
 export async function maintenance(home, id, { refresh = false, supplied } = {}) {
   let state = await loadLibrary(home, id); let syncResult = null;
   if (refresh && state.provider === 'feishu') { syncResult = await sync(home, state.id, { supplied }); state = await loadLibrary(home, state.id); }
-  const report = lint(state.documents); const { pending, needsClassification } = intakeQueue(state.documents);
-  const pendingClassification = pendingContentClassification(state.documents);
+  const documents = knowledgeDocuments(state);
+  const report = lint(documents); const { pending, needsClassification } = intakeQueue(documents);
+  const pendingClassification = pendingContentClassification(documents);
   const plans = (await planOverview(home, state)).filter(p => p.active);
   const signature = hash({ report: report.signature, pending, needsClassification, pendingClassification, plans: plans.map(p => ({ id: p.id, state: p.state, steps: p.results.map(s => s.state) })), errors: syncResult?.failures || [], complete: syncResult?.catalogComplete });
   const changed = state.maintenanceSignature !== signature; state.maintenanceSignature = signature; state.maintenanceAt = now(); await saveLibrary(home, state);

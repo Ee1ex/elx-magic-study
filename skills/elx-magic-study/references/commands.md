@@ -29,7 +29,9 @@ node CLI capture --url <链接> --title <可确认标题> --note <收藏理由>
 node CLI source-content --id <src编号> --file <正文UTF8文件> --coverage transcript --note "B站字幕；未核对画面"
 ```
 
-两个命令仅生成本地记录，来源正文快照按内容 hash 留存。source-content 不代表自动向飞书保存。获取失败时保持 link_only，不填写虚构全文。
+两个命令生成本地记录，来源正文快照按内容 hash 留存；已配置工作台时同步管理条目，不创建知识文章，不把管理条目当文章已保存。获取失败时保持 link_only，不填写虚构全文。
+
+已配置管理资源时先运行workbench-context读偏好；需要补管理同步用workbench-sync，不能重发文章。偏好确认、读取异常及主题建议协议见 [workbench.md](workbench.md)，完整命令见help。
 
 新输入记录使用 recordRole=input，生成知识页使用 derived，导航／维护页使用 navigation。旧远端记录没有角色时列为 needsClassification，不能自动把所有 source 都重新整理。确认单条角色后可执行 `classify --id <编号> --role input|derived|navigation --confirm`，只改本地角色，不修改正文或远端。
 

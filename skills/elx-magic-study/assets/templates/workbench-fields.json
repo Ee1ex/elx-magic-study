@@ -1,0 +1,15 @@
+[
+  {"name":"条目名称","type":"text"},
+  {"name":"事项类型","type":"select","options":[{"name":"新资料入库"},{"name":"已有文档更新"},{"name":"异常资料处理"}]},
+  {"name":"状态","type":"select","options":[{"name":"待确认","hue":"Blue","lightness":"Lighter"},{"name":"待补材料","hue":"Orange","lightness":"Lighter"},{"name":"读取失败","hue":"Red","lightness":"Lighter"},{"name":"写入待查证","hue":"Purple","lightness":"Lighter"},{"name":"已完成","hue":"Green","lightness":"Lighter"},{"name":"暂缓","hue":"Gray","lightness":"Lighter"}]},
+  {"name":"来源链接","type":"text","style":{"type":"url"}},
+  {"name":"目标分类","type":"text"},
+  {"name":"变更前","type":"text"},
+  {"name":"变更后／完整预览","type":"text"},
+  {"name":"读取覆盖","type":"text"},
+  {"name":"原因与下一步","type":"text"},
+  {"name":"结果文档","type":"text","style":{"type":"url"}},
+  {"name":"最近更新","type":"datetime"},
+  {"name":"我的备注／调整意见","type":"text"},
+  {"name":"记录键","type":"text"}
+]
