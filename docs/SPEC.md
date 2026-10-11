@@ -1,6 +1,6 @@
 # 魔法书屋 项目 SPEC
 
-更新日期：2026-10-11。当前版本0.8.0，REQ-017已实现并安装；本轮正在完成GitHub打包发布，完成结果见0.8.0发布记录。上一版本见 [Release Record](releases/RELEASE-0.7.0.md)。0.6.0发布事实见 [Release Record](releases/RELEASE-0.6.0.md)。责任模式：**LEVEL 1，用户明确指定**。
+更新日期：2026-10-11。当前版本0.8.0，REQ-017已实现并安装；已完成GitHub打包发布，见 [Release Record](releases/RELEASE-0.8.0.md)。上一版本见 [Release Record](releases/RELEASE-0.7.0.md)。0.6.0发布事实见 [Release Record](releases/RELEASE-0.6.0.md)。责任模式：**LEVEL 1，用户明确指定**。
 
 本文件是当前产品与技术事实入口，兼任 LEVEL 1 Project Brief。历史演变见进度与决策台账；未来功能见路线图；方案不代表已实现。
 
@@ -206,3 +206,5 @@ space-discover 未绑定可用且只读：默认搜索「魔法书屋知识库�
 2026-10-11：本机0.8.0安装32文件校验通过，0.7.0备份保留；已有知识库整理清单随后获确认并执行完成，见PROG-012。
 
 2026-10-11实际整理完成：2管理节点、14项移动、10项改名、28节点回读及索引同步无失败，旧页面保留不删除；3条历史异常计划保持原状态与payload，后续恢复需重新核对。
+
+2026-10-11发布收尾：0.8.0 main／Tag／Release／32文件ZIP回读通过；本机安装already-identical。66项在源码逐字节一致的独立目录通过，原工作区EPERM环境问题保留待定位，见发布记录。

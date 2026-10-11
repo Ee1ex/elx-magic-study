@@ -74,3 +74,5 @@
 - [0.7.0发布与安装记录](docs/releases/RELEASE-0.7.0.md)：精细标题、表格化首页与本机30文件校验。
 
 - [REQ-017内容主题目录](docs/requirements/REQ-017-topic-organization.md)、[实现记录](docs/progress/PROG-012-topic-organization.md)：0.8.0开发范围，旧库实际整理待清单确认。
+
+- [0.8.0发布收尾记录](docs/releases/RELEASE-0.8.0.md)：版本、ZIP摘要、远端回读、本机一致性和测试环境边界。
