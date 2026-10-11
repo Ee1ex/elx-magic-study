@@ -1,5 +1,12 @@
 # 变更记录
 
+## [0.9.0] - 2026-10-11
+
+- feat: add Feishu workbench preferences and topic suggestions
+- fix: distinguish overview document from workbench Base
+- fix: verify table formatting and harden tool compatibility diagnostics
+- docs: record verified v0.8.0 release and environment limits
+
 ## 未发布
 
 - 工作台命名区分：摘要文档“书屋状态总览”、多维表格“书屋工作台”，同步首页入口与新建模板；既有试点原地改名，正文及链接保持。
