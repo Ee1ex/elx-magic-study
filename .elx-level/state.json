@@ -15,8 +15,8 @@
   "current_task": {
     "id": "REQ-019",
     "owner": "项目负责人（当前用户）",
-    "summary": "书屋工作台、显式整理偏好与主题建议完成源码及现有库管理资源试点",
-    "scope": "合并状态/增改/异常文档＋Base五视图，偏好与主题建议，合成及授权管理资源验收、本地提交",
+    "summary": "工作台名称区分修订完成：文档状态总览、Base工作台",
+    "scope": "REQ-019局部命名修订：试点文档原地改名、首页入口与新建模板同步；保留既有资源与更新机制",
     "out_of_scope": "批量队列、旧异常计划修改、文章/主题正文改写、全局安装、发布、权限与删除",
     "paths": [
       "skills/elx-magic-study",
@@ -46,24 +46,14 @@
   ],
   "verifications": [
     {
-      "command": "node --test --test-concurrency=1 tests/*.test.mjs (workspace)",
+      "command": "official CLI node/body/home readback and workbench-sync",
       "status": "passed",
-      "summary": "最后工作区85项完整通过；中间EPERM失败记录保留PROG-014，根因未修复"
+      "summary": "两个实际节点类型及名称回读，只有文档标题与首页标签改变；ID/位置/链接保持，自动同步complete、29条记录"
     },
     {
-      "command": "byte-verified isolated snapshot / node --test --test-concurrency=1",
+      "command": "quick_validate.py / local links / syntax / README design / git diff --check",
       "status": "passed",
-      "summary": "45个源码/模板/测试/配置文件字节一致，系统临时副本85项通过，12项工作台专项"
-    },
-    {
-      "command": "node --check / quick_validate.py (-X utf8) / local links / README design / git diff --check",
-      "status": "passed",
-      "summary": "13个正式模块语法、Skill、字段JSON、本地文档链接与README原图片/HTML/标题版式通过；正式0.8.0未变"
-    },
-    {
-      "command": "official CLI management pilot readback",
-      "status": "passed",
-      "summary": "3页、13字段、5目标视图和首页导航；29条明细重复同步无新增，人工区保留，旧操作字节不变，1条主题建议未改主题正文"
+      "summary": "模板和Skill有效，链接与语法检查通过；未改功能代码，本次不重跑全量测试"
     }
   ],
   "git": {
@@ -315,7 +305,12 @@
       "event": "req019_verified",
       "at": "2026-10-11T17:26:05.035Z",
       "summary": "合并工作台与Base、偏好和主题建议；工作区及临时副本分别85项与批准管理资源试点通过，中间EPERM重现未修复；未安装发布"
+    },
+    {
+      "event": "req019_names_distinguished",
+      "at": "2026-10-11T17:46:50.702Z",
+      "summary": "用户要求区分同名资源：文档书屋状态总览、Base书屋工作台，原地修改与模板同步完成；未安装发布"
     }
   ],
-  "updated_at": "2026-10-11T17:33:45.741Z"
+  "updated_at": "2026-10-11T17:46:50.702Z"
 }
