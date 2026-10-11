@@ -1,5 +1,10 @@
 # 变更记录
 
+## [0.8.0] - 2026-10-11
+
+- feat: organize notes by content topics and preview legacy cleanup
+- docs: record verified v0.7.0 release and installation
+
 ## 未发布
 
 - REQ-017：目录按内容主题扁平组织，笔记类型与处理状态独立；不默认新建收件箱容器及主题知识／实践经验目录。
