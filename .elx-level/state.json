@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "implementation-completed",
+  "stage": "local-version-ready",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -29,7 +29,7 @@
       "package.json",
       ".elx-level"
     ],
-    "next_step": "新版完成后只读准备旧库逐项整理清单，确认后操作"
+    "next_step": "0.8.0本地Skill完成；下一步用项目内新版只读准备旧库清单，确认后操作；未发布安装"
   },
   "artifacts": [
     {
@@ -51,6 +51,11 @@
       "command": "node --check / local links / README structure",
       "status": "passed",
       "summary": "语法链接有效，README图片和版式保留"
+    },
+    {
+      "command": "Skill format and local version metadata",
+      "status": "passed",
+      "summary": "Skill格式有效；package/Skill/help本地0.8.0一致，全局安装未更新"
     }
   ],
   "git": {
@@ -276,5 +281,5 @@
       "at": "2026-10-11T04:09:21.796590+00:00"
     }
   ],
-  "updated_at": "2026-10-11T04:09:21.796590+00:00"
+  "updated_at": "2026-10-11T04:10:09.223302+00:00"
 }

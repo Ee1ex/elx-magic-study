@@ -1,6 +1,6 @@
 # 魔法书屋 项目 SPEC
 
-更新日期：2026-10-11。0.8.0开发切片REQ-017已实现；已发布／全局安装仍为0.7.0，见 [Release Record](releases/RELEASE-0.7.0.md)。0.6.0发布事实见 [Release Record](releases/RELEASE-0.6.0.md)。责任模式：**LEVEL 1，用户明确指定**。
+更新日期：2026-10-11。本地源码版本0.8.0，REQ-017已实现且未发布；已发布／全局安装仍为0.7.0，见 [Release Record](releases/RELEASE-0.7.0.md)。0.6.0发布事实见 [Release Record](releases/RELEASE-0.6.0.md)。责任模式：**LEVEL 1，用户明确指定**。
 
 本文件是当前产品与技术事实入口，兼任 LEVEL 1 Project Brief。历史演变见进度与决策台账；未来功能见路线图；方案不代表已实现。
 

@@ -2,7 +2,7 @@
 
 ![魔法书屋 Magic Study：把好资料放进来，需要的时候找出来](assets/readme/hero.svg)
 
-简称 **elx-ms** · 正式 Skill 名称 **`elx-magic-study`** · 当前版本 **[0.7.0](https://github.com/Ee1ex/elx-magic-study/releases/tag/v0.7.0)**
+简称 **elx-ms** · 正式 Skill 名称 **`elx-magic-study`** · 已发布版本 **[0.7.0](https://github.com/Ee1ex/elx-magic-study/releases/tag/v0.7.0)**
 
 [怎么用](#-平时这样说就行) · [开始使用](#-第一次怎么用) · [看看图谱](#-还能画一张知识地图) · [开发说明](docs/DEVELOPMENT.md)
 
