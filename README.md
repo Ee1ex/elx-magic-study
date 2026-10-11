@@ -2,7 +2,7 @@
 
 ![魔法书屋 Magic Study：把好资料放进来，需要的时候找出来](assets/readme/hero.svg)
 
-简称 **elx-ms** · 正式 Skill 名称 **`elx-magic-study`** · 已发布版本 **[0.7.0](https://github.com/Ee1ex/elx-magic-study/releases/tag/v0.7.0)**
+简称 **elx-ms** · 正式 Skill 名称 **`elx-magic-study`** · 当前版本 **[0.8.0](https://github.com/Ee1ex/elx-magic-study/releases/tag/v0.8.0)**
 
 [怎么用](#-平时这样说就行) · [开始使用](#-第一次怎么用) · [看看图谱](#-还能画一张知识地图) · [开发说明](docs/DEVELOPMENT.md)
 
@@ -131,7 +131,7 @@ node scripts/install.mjs --apply
 
 ## 🏠 飞书里的书架
 
-当前0.8.0开发版改为按内容主题直接分书架；下方插图保留为旧结构示意。新库不默认创建“收件箱与来源”“主题知识”“实践经验”顶层目录，旧库也不会因升级自动搬家。
+0.8.0 改为按内容主题直接分书架；下方插图保留为旧结构示意。新库不默认创建“收件箱与来源”“主题知识”“实践经验”顶层目录，旧库也不会因升级自动搬家。
 
 ![飞书里的书架：首页指路，下面是收件箱与来源、主题知识、实践经验、维护记录](assets/readme/shelves.svg)
 
@@ -195,7 +195,7 @@ npm test
 npm run demo
 ```
 
-0.7.0 的 63 项合成回归测试通过，覆盖分类流程、计划校验和不同宿主的任务回执等脚本行为。安装引导和可选图标规则经过文档检查，不等于所有平台或 Agent 都已实测。演示不会连接真实飞书。另已完成一次 Windows／Codex 真实测试：授权、OpenCLI正文与部分评论读取、独立Wiki创建、分类与首篇笔记连续入库并回读；两处兼容问题经有界绕行完成，尚未固化修复。从零安装、全量评论、跨宿主定时唤醒及部分图谱交互仍待验证。见[真实验收记录](docs/progress/PROG-010-live-acceptance.md)。更多细节见 [开发与兼容说明](docs/DEVELOPMENT.md)。
+0.8.0 的 66 项合成回归测试在源码逐字节一致的独立临时目录通过；当前工作区测试曾受 Windows EPERM 文件替换错误影响，已保留记录，覆盖分类流程、计划校验和不同宿主的任务回执等脚本行为。安装引导和可选图标规则经过文档检查，不等于所有平台或 Agent 都已实测。演示不会连接真实飞书。另已完成一次 Windows／Codex 真实测试：授权、OpenCLI正文与部分评论读取、独立Wiki创建、分类与首篇笔记连续入库并回读；两处兼容问题经有界绕行完成，尚未固化修复。从零安装、全量评论、跨宿主定时唤醒及部分图谱交互仍待验证。见[真实验收记录](docs/progress/PROG-010-live-acceptance.md)。更多细节见 [开发与兼容说明](docs/DEVELOPMENT.md)。
 
 </details>
 

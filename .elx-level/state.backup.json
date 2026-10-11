@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "organization-preview",
+  "stage": "organization-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,9 +15,9 @@
   "current_task": {
     "id": "REQ-017",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.8.0本机安装完成，旧库整理清单待确认",
-    "scope": "用户授权本机备份升级及旧资料整理准备；具体清单确认后原地操作",
-    "out_of_scope": "删除、GitHub发布、重发旧未知写入或篡改其历史",
+    "summary": "0.8.0本机安装与已批准旧库整理完成",
+    "scope": "用户确认原清单和新增1篇随迁；创建管理节点、原地移动改名与导航更新，全量核验",
+    "out_of_scope": "删除、GitHub发布、图标和权限修改、重发或改写旧异常计划",
     "paths": [
       "skills/elx-magic-study",
       "tests",
@@ -29,7 +29,7 @@
       "package.json",
       ".elx-level"
     ],
-    "next_step": "用户确认逐项移动／改名及导航范围后执行"
+    "next_step": "本次整理完成；旧异常计划独立保留待诊断，不重复执行"
   },
   "artifacts": [
     {
@@ -61,6 +61,11 @@
       "command": "local install SHA256 / live read-only inventory",
       "status": "passed",
       "summary": "旧30文件备份、新32文件校验；25节点读取无失败，预览2新节点／14移动／10改名／0删除，尚未执行远端修改"
+    },
+    {
+      "command": "live organization readback and index sync",
+      "status": "passed",
+      "summary": "2新节点、14移动、10改名；28节点回读及索引刷新无失败，0删除；3旧计划文件不变"
     }
   ],
   "git": {
@@ -288,7 +293,12 @@
     {
       "event": "v0.8.0_installed_organization_preview_ready",
       "at": "2026-10-11T04:19:17.801455+00:00"
+    },
+    {
+      "event": "approved_organization_completed",
+      "at": "2026-10-11T04:36:44.097194+00:00",
+      "summary": "新增对象单独确认随迁，全部范围核验完成"
     }
   ],
-  "updated_at": "2026-10-11T04:19:17.801455+00:00"
+  "updated_at": "2026-10-11T04:36:44.097194+00:00"
 }
