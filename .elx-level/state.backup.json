@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "implementation-completed",
+  "stage": "package-completed",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -15,9 +15,9 @@
   "current_task": {
     "id": "REQ-019",
     "owner": "项目负责人（当前用户）",
-    "summary": "工作台名称区分修订完成：文档状态总览、Base工作台",
-    "scope": "REQ-019局部命名修订：试点文档原地改名、首页入口与新建模板同步；保留既有资源与更新机制",
-    "out_of_scope": "批量队列、旧异常计划修改、文章/主题正文改写、全局安装、发布、权限与删除",
+    "summary": "0.9.0完整Skill本地包与收尾完成，未安装/公开发布",
+    "scope": "Skill指引及模板整合、版本演进、本地ZIP/SHA256与项目收尾提交",
+    "out_of_scope": "GitHub发布/Tag、全局安装、真实知识库或个人状态修改、删除历史",
     "paths": [
       "skills/elx-magic-study",
       "tests",
@@ -28,32 +28,33 @@
       "AGENTS.md",
       ".elx-level"
     ],
-    "next_step": "用户可填写偏好、审阅试点；新版安装发布、真实新文章与跨宿主验收分别明确范围"
+    "next_step": "本地包可交付；安装升级或GitHub发布需用户明确授权，真实新文章及其他环境验收仍待进行"
   },
   "artifacts": [
     {
-      "path": "docs/requirements/REQ-019-workbench.md",
-      "summary": "本轮范围与验收边界"
+      "path": "docs/releases/PACKAGE-0.9.0.md",
+      "summary": "本地包范围、摘要、40个Skill文件与解包入口校验及未验收边界"
     },
     {
       "path": "docs/progress/PROG-014-workbench.md",
-      "summary": "源码、合成证据、管理资源试点及剩余边界"
-    },
-    {
-      "path": "docs/plans/WORKBENCH_TEMPLATE.md",
-      "summary": "用户批准的合并模板，旧计划保留历史"
+      "summary": "已有功能/命名试点、保留历史与本次打包衔接"
     }
   ],
   "verifications": [
     {
-      "command": "official CLI node/body/home readback and workbench-sync",
+      "command": "byte-verified isolated source / node --test --test-concurrency=1",
       "status": "passed",
-      "summary": "两个实际节点类型及名称回读，只有文档标题与首页标签改变；ID/位置/链接保持，自动同步complete、29条记录"
+      "summary": "最终0.9.0的45文件字节一致，85项通过；工作区本次EPERM失败保留记录，不认定修复"
     },
     {
-      "command": "quick_validate.py / local links / syntax / README design / git diff --check",
+      "command": "quick_validate.py / syntax / local links / README design / git diff --check",
       "status": "passed",
-      "summary": "模板和Skill有效，链接与语法检查通过；未改功能代码，本次不重跑全量测试"
+      "summary": "格式、13模块语法、链接及README原视觉保留，版本源/Skill/help均0.9.0"
+    },
+    {
+      "command": "ZIP CRC/all-bytes/SHA256 + extracted standalone CLI",
+      "status": "passed",
+      "summary": "40个Skill文件＋说明/摘要，共42项全部匹配；解压help/首次导览/离线demo/context入口通过，未安装或连接飞书"
     }
   ],
   "git": {
@@ -310,7 +311,17 @@
       "event": "req019_names_distinguished",
       "at": "2026-10-11T17:46:50.702Z",
       "summary": "用户要求区分同名资源：文档书屋状态总览、Base书屋工作台，原地修改与模板同步完成；未安装发布"
+    },
+    {
+      "event": "package_090_authorized",
+      "at": "2026-10-11T17:52:53.645Z",
+      "summary": "用户要求整理Skill、打包新版本并收尾；只做本地版本及ZIP，不安装或发布"
+    },
+    {
+      "event": "package_090_verified",
+      "at": "2026-10-11T17:59:44.382Z",
+      "summary": "0.9.0本地ZIP逐文件及独立入口完成；原包/安装/个人数据保留，未公开发布"
     }
   ],
-  "updated_at": "2026-10-11T17:46:50.702Z"
+  "updated_at": "2026-10-11T17:59:44.383Z"
 }

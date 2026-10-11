@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "package-completed",
+  "stage": "release-completed",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -15,9 +15,9 @@
   "current_task": {
     "id": "REQ-019",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.9.0完整Skill本地包与收尾完成，未安装/公开发布",
-    "scope": "Skill指引及模板整合、版本演进、本地ZIP/SHA256与项目收尾提交",
-    "out_of_scope": "GitHub发布/Tag、全局安装、真实知识库或个人状态修改、删除历史",
+    "summary": "0.9.0本机升级及GitHub正式发布回读完成",
+    "scope": "备份0.8.0并安装0.9.0；main/v0.9.0/Release/ZIP/摘要发布与文档收尾",
+    "out_of_scope": "真实知识库/个人状态修改、后台任务、强推、公共历史改写、旧资源删除",
     "paths": [
       "skills/elx-magic-study",
       "tests",
@@ -28,40 +28,45 @@
       "AGENTS.md",
       ".elx-level"
     ],
-    "next_step": "本地包可交付；安装升级或GitHub发布需用户明确授权，真实新文章及其他环境验收仍待进行"
+    "next_step": "新对话使用新版Skill；实际新文章、全新用户及跨宿主等验收边界继续保留"
   },
   "artifacts": [
     {
-      "path": "docs/releases/PACKAGE-0.9.0.md",
-      "summary": "本地包范围、摘要、40个Skill文件与解包入口校验及未验收边界"
+      "path": "docs/releases/RELEASE-0.9.0.md",
+      "summary": "授权发布目标、Release附件回读、安装及个人状态保留证据"
     },
     {
-      "path": "docs/progress/PROG-014-workbench.md",
-      "summary": "已有功能/命名试点、保留历史与本次打包衔接"
+      "path": "docs/releases/PACKAGE-0.9.0.md",
+      "summary": "构建摘要、包内40文件和解压入口核对"
     }
   ],
   "verifications": [
     {
-      "command": "byte-verified isolated source / node --test --test-concurrency=1",
+      "command": "final source isolated regression / package CRC and per-file hashes",
       "status": "passed",
-      "summary": "最终0.9.0的45文件字节一致，85项通过；工作区本次EPERM失败保留记录，不认定修复"
+      "summary": "复用最终45文件字节一致85项、ZIP42项及解包入口证据；本轮未改功能代码"
     },
     {
-      "command": "quick_validate.py / syntax / local links / README design / git diff --check",
+      "command": "install.mjs --apply / all-file SHA256 / installed help",
       "status": "passed",
-      "summary": "格式、13模块语法、链接及README原视觉保留，版本源/Skill/help均0.9.0"
+      "summary": "旧32文件完整备份，新40文件匹配源码，131个个人状态文件摘要不变，实际版本0.9.0"
     },
     {
-      "command": "ZIP CRC/all-bytes/SHA256 + extracted standalone CLI",
+      "command": "GitHub plugin repo/permission/tag file / git refs / release download readback",
       "status": "passed",
-      "summary": "40个Skill文件＋说明/摘要，共42项全部匹配；解压help/首次导览/离线demo/context入口通过，未安装或连接飞书"
+      "summary": "main及annotated v0.9.0目标04ce720，正式Release及两附件已上传，正文和下载ZIP/清单摘要一致；不移动Tag"
+    },
+    {
+      "command": "local links / syntax / README design / privacy / git diff --check",
+      "status": "passed",
+      "summary": "本轮仅安装发布事实文档，原README视觉与私人物料隔离保留"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "e3b1ffb07a67c379c1de09af2201ad42f5598d4f",
-    "last_commit_note": "REQ-019修改前基线；本轮本地提交以Git日志为准，未推送",
+    "last_commit": "04ce7204a75dee5713ab91841df63b049ec87844",
+    "last_commit_note": "已发布Tag目标；后续文档收尾提交以Git日志为准",
     "repository": true
   },
   "remote": {
@@ -321,7 +326,12 @@
       "event": "package_090_verified",
       "at": "2026-10-11T17:59:44.382Z",
       "summary": "0.9.0本地ZIP逐文件及独立入口完成；原包/安装/个人数据保留，未公开发布"
+    },
+    {
+      "event": "v090_release_install_verified",
+      "at": "2026-10-11T18:14:55.442Z",
+      "summary": "用户当次授权安装与发布；备份/40文件/131个人文件及Release下载回读通过，未改真实飞书"
     }
   ],
-  "updated_at": "2026-10-11T17:59:44.383Z"
+  "updated_at": "2026-10-11T18:14:55.442Z"
 }

@@ -13,9 +13,9 @@
 
 Node.js 22 或更高版本；飞书操作需要官方 lark-cli。辅助脚本没有 npm 运行依赖。Windows 已完成本地验证；其他系统尚未做完整端到端验证。
 
-当前本地源码和Skill包0.9.0，包含REQ-018／019；最新公开版与全局安装仍0.8.0。回归宜使用 `node --test --test-concurrency=1 tests/*.test.mjs`，分别记录合成、实际平台和环境检查，不以工作区偶尔通过关闭历史EPERM。包闭环见 [PACKAGE-0.9.0](releases/PACKAGE-0.9.0.md)。
+当前已发布及本机安装0.9.0，包含REQ-018／019。回归宜使用 `node --test --test-concurrency=1 tests/*.test.mjs`，分别记录合成、实际平台和环境检查，不以工作区偶尔通过关闭历史EPERM。包及发布闭环见 [PACKAGE-0.9.0](releases/PACKAGE-0.9.0.md)和[RELEASE-0.9.0](releases/RELEASE-0.9.0.md)。
 
-工作台入口为workbench-bind/context/sync、preferences-ack、source-issue、topic-suggest；配置及恢复见Skill包references/workbench.md。脚本没有常驻后台，管理资源随当前新版命令调用同步。全局0.8.0未升级，不假定其调用已有新钩子。
+工作台入口为workbench-bind/context/sync、preferences-ack、source-issue、topic-suggest；配置及恢复见Skill包references/workbench.md。脚本没有常驻后台，管理资源随当前新版命令调用同步。本机40文件与源码及ZIP核对一致；宿主在新对话发现新版仍与文件安装核验区分。
 
 ```bash
 npm test
