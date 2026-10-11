@@ -1,6 +1,6 @@
 # 魔法书屋 项目 SPEC
 
-更新日期：2026-10-11。本地源码版本0.8.0，REQ-017已实现且未发布；已发布／全局安装仍为0.7.0，见 [Release Record](releases/RELEASE-0.7.0.md)。0.6.0发布事实见 [Release Record](releases/RELEASE-0.6.0.md)。责任模式：**LEVEL 1，用户明确指定**。
+更新日期：2026-10-11。本地源码版本0.8.0，REQ-017已实现且未发布；GitHub已发布仍为0.7.0，全局安装已按追加授权升级0.8.0，见 [Release Record](releases/RELEASE-0.7.0.md)。0.6.0发布事实见 [Release Record](releases/RELEASE-0.6.0.md)。责任模式：**LEVEL 1，用户明确指定**。
 
 本文件是当前产品与技术事实入口，兼任 LEVEL 1 Project Brief。历史演变见进度与决策台账；未来功能见路线图；方案不代表已实现。
 
@@ -202,3 +202,5 @@ space-discover 未绑定可用且只读：默认搜索「魔法书屋知识库�
 新create的source/topic/experience支持titleSummary，生成具体概括丨末级内容分类；source仍需classification，topic/experience用实际parent或parentStep获取titleDestination并在执行前核对。来源／主题／实践正文分别标资料整理／主题综述／实践记录，重复或冲突类型拒绝；语义与实践证据由Agent核对。旧计划无新增字段兼容，原输入版本与技术kind不变。
 
 旧资料整理是library-organization.md定义的Agent工作流：逐对象盘点正文、旧新标题路径、范围与依据，确认后官方CLI原地操作与回读；核心plan/apply没有新增move/rename命令。部分未知结果先查证，不复制重建、不删除空分类、不篡改旧计划。实际迁移未执行，见 [PROG-012](progress/PROG-012-topic-organization.md)。
+
+2026-10-11：本机0.8.0安装32文件校验通过，0.7.0备份保留；已有知识库只读盘点及整理清单已准备，真实移动改名尚未执行。

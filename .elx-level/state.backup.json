@@ -3,7 +3,7 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-completed",
+  "stage": "local-version-ready",
   "gate": null,
   "status": "completed",
   "risk": "R2",
@@ -13,11 +13,11 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-016",
+    "id": "REQ-017",
     "owner": "项目负责人（当前用户）",
-    "summary": "0.7.0发布与Codex安装完成",
-    "scope": "用户授权main/Tag/Release/ZIP与本机安装，逐项回读",
-    "out_of_scope": "额外真实知识库修改、批量迁移及个人状态变更",
+    "summary": "0.8.0主题目录与旧库整理Skill实现完成",
+    "scope": "用户确认先做Skill、本地0.8.0版本和验证提交",
+    "out_of_scope": "真实旧库移动改名、删除、全局安装升级与GitHub发布",
     "paths": [
       "skills/elx-magic-study",
       "tests",
@@ -26,56 +26,43 @@
       "AGENTS.md",
       "CHANGELOG.md",
       "DOCUMENT_MAP.md",
+      "package.json",
       ".elx-level"
     ],
-    "next_step": "本轮发布安装收尾完成"
+    "next_step": "0.8.0本地Skill完成；下一步用项目内新版只读准备旧库清单，确认后操作；未发布安装"
   },
   "artifacts": [
     {
-      "path": "docs/requirements/REQ-016-note-titles-home.md",
-      "summary": "用户确认范围与命名原则"
+      "path": "docs/requirements/REQ-017-topic-organization.md",
+      "summary": "本轮范围与验收"
     },
     {
-      "path": "docs/progress/PROG-011-note-titles-home.md",
-      "summary": "实现和脱敏真实验收记录"
-    },
-    {
-      "path": "docs/releases/RELEASE-0.7.0.md",
-      "summary": "发布安装回读证据"
+      "path": "docs/progress/PROG-012-topic-organization.md",
+      "summary": "源码与未执行边界"
     }
   ],
   "verifications": [
     {
       "command": "node --test --test-concurrency=1 tests/*.test.mjs",
       "status": "passed",
-      "summary": "63项合成回归通过，新增2项先失败后实现，旧计划兼容"
+      "summary": "66项通过，新增3项先失败后实现，旧63项回归"
     },
     {
-      "command": "node --check / quick_validate.py / local document links / README layout / git diff --check",
+      "command": "node --check / local links / README structure",
       "status": "passed",
-      "summary": "语法、Skill格式、本地链接、README结构保留及diff检查通过"
+      "summary": "语法链接有效，README图片和版式保留"
     },
     {
-      "command": "approved Feishu homepage and one note readback",
+      "command": "Skill format and local version metadata",
       "status": "passed",
-      "summary": "首页介绍说明书顺序正确，13个导航链接和保留段落一致；单篇标题改名，正文及节点位置不变"
-    },
-    {
-      "command": "homepage readback after tabular layout",
-      "status": "passed",
-      "summary": "2张原生表格含11项功能提示词；13个旧链接、导航与历史尾部保留；模板同步，无运行代码变更"
-    },
-    {
-      "command": "release readback and local install SHA256",
-      "status": "passed",
-      "summary": "30文件校验；main/Tag发布提交一致，Release正文、README与ZIP digest回读一致"
+      "summary": "Skill格式有效；package/Skill/help本地0.8.0一致，全局安装未更新"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "061f881970b6dac01d02ea58b77514f252ef89d7",
-    "last_commit_note": "0.7.0不可变发布提交，后续仅收尾记录",
+    "last_commit": "ccbbd9172c5f31a5e80b3fde22888fdcf6f2ed5e",
+    "last_commit_note": "本轮实施前基线，实际本地提交见git log",
     "repository": true
   },
   "remote": {
@@ -288,7 +275,11 @@
       "event": "v0.7.0_release_install_verified",
       "at": "2026-10-04T16:25:31.432368+00:00",
       "commit": "061f881970b6dac01d02ea58b77514f252ef89d7"
+    },
+    {
+      "event": "req017_implemented",
+      "at": "2026-10-11T04:09:21.796590+00:00"
     }
   ],
-  "updated_at": "2026-10-04T16:25:31.432368+00:00"
+  "updated_at": "2026-10-11T04:10:09.223302+00:00"
 }
