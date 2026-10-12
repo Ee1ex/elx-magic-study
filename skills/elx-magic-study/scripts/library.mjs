@@ -9,6 +9,8 @@ import { search, lint } from './retrieval.mjs';
 import { pendingContentClassification } from './classification.mjs';
 import { exportGraph } from './graph.mjs';
 import { onboardingStatus, recordOnboarding } from './onboarding.mjs';
+import { bindAreas, verifyAreas } from './content-areas.mjs';
+import { recordContext, searchRecords } from './records.mjs';
 import { doctor, discoverSpace, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan, classificationContext } from './library-core.mjs';
 
 const HELP = {
@@ -20,6 +22,9 @@ const HELP = {
     'space-discover': '[--library <编号>] [--profile <配置>]；未绑定可用，只读发现魔法书屋知识库，完整分页后建议复用／创建，不创建远端空间',
     'resolve-url': '--doc <实际返回的docx token> [--profile <配置>]；未绑定可用，只读查询官方元数据并核对访问链接',
     bind: '--id <编号> --root <Wiki/docx链接> [重复] --write-root <Wiki链接> --confirm；只保存已确认绑定',
+    'areas-bind': '--file <links/personal真实分区链接JSON> --confirm；只登记首页下已确认的两个分区，不移动或创建远端对象',
+    'record-context': '--id <个人记录文档编号> [--offline]；核对正文、表格ID和动态列，供Agent检查已有条目并建议新增列',
+    'record-search': '[--query <关键词>] [--filter <字段文本JSON>] [--random] [--file <已核对合格条目ID数组>] [--limit 8] [--offline]；条目级检索和真正随机抽取，不证明语义条件或联网结果',
     status: '显示当前库范围、索引覆盖和实际记录的调度任务',
     'workbench-bind': '--file <管理资源JSON> --confirm；核对已创建页面及Base范围，登记自动区域',
     'workbench-context': '读取当前整理偏好、变化状态和表内用户意见',
@@ -52,8 +57,8 @@ const HELP = {
 };
 function parse(argv) {
   const [command = 'help', ...args] = argv; const options = {};
-  const boolean = new Set(['confirm', 'offline', 'refresh', 'force', 'restart-scan']);
-  const allowed = new Set(['home', 'library', 'profile', 'id', 'root', 'write-root', 'name', 'query', 'limit', 'max-docs', 'max-nodes', 'url', 'title', 'note', 'file', 'coverage', 'approve', 'step', 'doc', 'stale-days', 'output', 'time', 'timezone', 'days', 'role', 'replacement', 'reason', ...boolean]);
+  const boolean = new Set(['confirm', 'offline', 'refresh', 'force', 'restart-scan', 'random']);
+  const allowed = new Set(['home', 'library', 'profile', 'id', 'root', 'write-root', 'name', 'query', 'limit', 'max-docs', 'max-nodes', 'url', 'title', 'note', 'file', 'coverage', 'approve', 'step', 'doc', 'stale-days', 'output', 'time', 'timezone', 'days', 'role', 'replacement', 'reason', 'filter', ...boolean]);
   for (let i = 0; i < args.length; i++) { assert(args[i].startsWith('--'), 'ARGUMENT', '参数使用 --name value 形式'); const key = args[i].slice(2); assert(allowed.has(key), 'ARGUMENT', `未知参数 ${key}`); const value = boolean.has(key) ? true : args[++i]; assert(value !== undefined && !String(value).startsWith('--'), 'ARGUMENT', `参数 ${key} 缺少值`); if (['root', 'query'].includes(key)) (options[key] ||= []).push(value); else { assert(!(key in options), 'ARGUMENT', `参数 ${key} 不能重复`); options[key] = value; } }
   return { command, options };
 }
@@ -67,12 +72,20 @@ export async function run(argv) {
   if (command === 'space-discover') return discoverSpace(home, { id: o.library, profile: o.profile });
   if (command === 'onboarding') return onboardingStatus(home);
   if (command === 'onboarding-record') return locked(home, async () => recordOnboarding(home, await readJSON(o.file)));
-  const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','plan-cancel','plan-supersede','apply','recover','maintenance','schedule-record','workbench-bind','workbench-sync','preferences-ack','topic-suggest','source-issue']);
+  const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','plan-cancel','plan-supersede','apply','recover','maintenance','schedule-record','workbench-bind','workbench-sync','preferences-ack','topic-suggest','source-issue','areas-bind','record-context']);
   const execute = async () => {
     if (command === 'bind') return bind(home, { id: o.id, name: o.name, profile: o.profile, readRoots: o.root, writeRoot: o['write-root'], confirmed: !!o.confirm });
     if (command === 'demo-import') return importManifest(home, o.id, await readJSON(o.file));
     const state = await loadLibrary(home, o.library); const id = state.id;
     const documents = knowledgeDocuments(state);
+    if (command === 'areas-bind') return bindAreas(home, id, { ...await readJSON(o.file), confirmed: !!o.confirm });
+    if (command === 'record-context') {
+      if (state.provider === 'demo' || o.offline) return recordContext(documents, o.id);
+      const d = await fetchDocument(home, id, o.id), live = await new Lark(state.profile).recordTables(d.url);
+      assert(d.id === live.document.id && d.markdown === live.document.markdown, 'CONCURRENT_EDIT', '表格读取期间正文或文档身份变化，重新核对');
+      return { ...recordContext([d], o.id), cached: false, nativeTables: live.tables.map(t => ({ tableId: t.id, headers: t.headers, rows: t.rows, ...(t.unsupported ? { unsupported: t.unsupported } : {}) })) };
+    }
+    if (command === 'record-search') { await localAccess(state, o.offline); if (state.provider === 'feishu' && !o.offline) await verifyAreas(state, new Lark(state.profile)); return searchRecords(documents, o.query || [], { limit: number(o.limit, o.random ? 1 : 8, 1, 50), filters: o.filter ? JSON.parse(o.filter) : {}, random: !!o.random, eligibleIds: o.file ? await readJSON(o.file) : undefined }); }
     if (command === 'workbench-bind') return bindWorkbench(home,id,{...await readJSON(o.file),confirmed:!!o.confirm});
     if (command === 'workbench-context') return workbenchContext(home,id);
     if (command === 'workbench-sync') return syncWorkbench(home,id);

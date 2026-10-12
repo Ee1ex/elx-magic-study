@@ -50,7 +50,7 @@ Agent 写一个普通 UTF-8 JSON 文件，再 `plan --file <文件>`：
 }
 ```
 
-示例 URL／编号不得直接用于执行。类别支持 source/topic/experience/document/index/log/shelf；shelf 是新分类文档，记录为 navigation。同一计划中每个已有文档只能编辑一次，最多 12 项。创建标题必须与已索引文档不冲突。
+示例 URL／编号不得直接用于执行。类别支持 source/topic/experience/document/index/log/shelf/personal；shelf 是新分类文档，记录为 navigation；personal是个人分类文档，不需虚构链接或实践证据。同一计划中每个已有文档只能编辑一次，最多 12 项。创建标题必须与已索引文档不冲突。
 
 创建动作可选 `parent`：填写已存在的分类 Wiki／docx 链接。脚本验证范围、真实 Wiki token 与写后直接父节点。或用 `parentStep:1` 引用本计划第 1 个动作创建的 shelf；只能引用前序分类，不与 parent 混用。分类与笔记一次确认后依次回读执行，不捏造 token。两者均省略则使用写入根。详见 [classification.md](classification.md)。
 
@@ -69,6 +69,23 @@ node CLI plan-supersede --id <未发送旧计划> --replacement <新预览计划
 ```
 
 digest 绑定预览内容，不能自行生成新计划后沿用旧确认。计划写入状态不代表语义正确，Agent 仍应核对实际结果与用户目标。
+
+## 个人记录与分区
+
+```text
+node CLI areas-bind --file <links/personal真实Wiki链接JSON> --confirm
+node CLI record-context --id <个人分类文档ID>
+node CLI record-search --query "深圳" --filter <现有字段文本JSON>
+node CLI record-search --query "零食" --file <已核对候选ID数组JSON> --random --limit 1
+```
+
+areas-bind只登记已核验的首页直接子节点，不创建、移动或调整顺序。绑定后，新计划记录contentAreasHash并核对分区；旧payload/digest不改写。未登记库继续原分类深度；两区已登记时主题最多两层从区内计算。
+
+record-context默认回读正文和原生tableId；--offline只在明确接受缓存时用。record-search基于缓存按真实表格条目检索、已有字段文本筛选；随机先由Agent核对语义条件并用--file限定ID池。结果含文档、子分类、字段和fetchedAt，未做联网查询，不证明热量或预算条件。
+
+record_append动作需要doc、实际tableId、按现有表头填写的fields；示例和动态字段规则见 [personal-records.md](personal-records.md)。plan自动派生行内容、原生表格基线、预期全文哈希及幂等token；没有向远端写入。已有唯一目标的“帮我记录”可作为单条授权，展示后直接apply；新增文档／表格／列仍需具体预览确认。
+
+追加只插入原生行并填新单元格，不覆盖旧行和表格外正文。插入与填充不是整体事务，失败后保留unknown并只读recover；同一文档有未核实写入时不生成第二份插入计划。复杂／合并／资源单元格走官方块编辑，核心脚本不提供扩列、批量回填、删除或迁移。
 
 取消／替代只改变本地未发送计划的生命周期，保留 payload 和 digest。diagnose 是只读检查，不等于 recover；成功诊断后仍需 recover 更新核验状态。status 会给出待确认、待查证等计数。
 

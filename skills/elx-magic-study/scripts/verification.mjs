@@ -3,7 +3,7 @@ import { hash } from './store.mjs';
 // Keep the legacy normalizer for hashes already recorded in old plans.
 export function normalizeText(s) { return s.normalize('NFKC').replace(/\\([\[\]_*~`|$<>])/g, '$1').replace(/[#*`_\s]/g, ''); }
 
-function tableCells(line) {
+export function tableCells(line) {
   const text = line.trim(); if (!text.includes('|')) return null;
   const cells = []; let cell = '', code = '';
   for (let i = 0; i < text.length; i++) {

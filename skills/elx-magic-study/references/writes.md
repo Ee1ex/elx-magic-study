@@ -12,6 +12,8 @@
 
 精确替换检查原文唯一匹配、基线 hash 和回读后的预期全文。追加保留既有内容。revision 参数会传给支持的 CLI，但不把它宣称为跨设备原子事务保证。
 
+个人表格record_append按真实tableId核对动态表头和原生单元格；只插入末行并填新块，完整回读预期全文以保护旧备注和表格外内容。新计划记录分区版本并在发送前核对位置；同名同品牌先查原条目。插入／填充不是整体事务，任一步结果未知不重发；同一文档未核实写入也不能换新计划绕过。合并／资源单元格或无法唯一对应的表格停止普通追加，不用文末Markdown或整篇重建替代。
+
 ## 请求超时或中断
 
 CLI失败时查看有限字段remoteResult、warningCount、degradeCodes、missingScopes和hint。check_block_range表示重新读块ID并分段编辑；request_missing_scopes表示核对精确权限；inspect_result_before_retry表示先查证实际结果。未知步骤保留diagnostic，不保存原始正文、完整警告、URL或凭据；诊断更清楚不意味着允许自动重发。

@@ -10,11 +10,14 @@ import { scanCatalog } from './scan.mjs';
 import { knowledgeDocuments, workbenchContext, syncWorkbench } from './workbench.mjs';
 import { prepareClassification, classificationMarkdown, verifyClassification, pendingContentClassification, classificationPath } from './classification.mjs';
 export { classificationContext } from './classification.mjs';
+import { areaDepth, areaHash, verifyAreas, documentArea } from './content-areas.mjs';
+export { bindAreas } from './content-areas.mjs';
+import { prepareRecord } from './records.mjs';
 
 const client = (state, supplied) => supplied || new Lark(state.profile);
 export function recordRole(document) { return ['input', 'derived', 'navigation'].includes(document.recordRole) ? document.recordRole : (document.recordRole === undefined && document.remote === false ? 'input' : 'unknown'); }
 export function intakeQueue(documents) {
-  const active = documents.filter(d => !d.unavailable && !d.outOfScope);
+  const active = documents.filter(d => !d.unavailable && !d.outOfScope && d.kind !== 'personal' && d.contentArea !== 'personal');
   const describe = d => ({ id: d.id, title: d.title, hash: d.hash, coverage: d.coverage });
   return { pending: active.filter(d => recordRole(d) === 'input' && d.hash !== d.processedHash).map(describe), needsClassification: active.filter(d => recordRole(d) === 'unknown').map(describe) };
 }
@@ -119,6 +122,7 @@ export async function sync(home, id, { maxDocs = 30, maxNodes = 500, force = fal
   assert(Number.isInteger(maxDocs) && maxDocs >= 1 && maxDocs <= 200 && Number.isInteger(maxNodes) && maxNodes >= 1 && maxNodes <= 5000, 'LIMIT', '正文预算为 1—200，目录预算为 1—5000');
   const state = await loadLibrary(home, id); assert(state.provider === 'feishu', 'DEMO_ONLY', '演示资料不能调用飞书同步');
   const lark = client(state, supplied); await lark.assertAccount(state);
+  await verifyAreas(state, lark);
   const { scan, reset } = await scanCatalog(home, state, lark, { maxNodes, force, restartScan });
   const old = new Map(state.documents.map(d => [d.id, d])); const failures = [], changed = [];
   let refreshed = 0, skippedUnchanged = 0;
@@ -127,11 +131,11 @@ export async function sync(home, id, { maxDocs = 30, maxNodes = 500, force = fal
     try {
       await lark.inScope(item.url, state.readRoots);
       if (!scan.force && item.remoteEditTime && item.remoteEditTime === previous?.remoteEditTime && previous?.hash && !previous.unavailable && !previous.outOfScope) {
-        Object.assign(previous, item, { metadataCheckedAt: now() }); skippedUnchanged++;
+        Object.assign(previous, item, { contentArea: await documentArea(state, lark, item.url), metadataCheckedAt: now() }); skippedUnchanged++;
       } else {
         const d = await lark.fetch(item.url); assert(d.id === item.id, 'DOC_ID_CHANGED', '文档 ID 与目录不一致'); const contentHash = hash(d.markdown);
         if (contentHash !== previous?.hash) changed.push(d.id);
-        old.set(d.id, { ...previous, ...item, ...d, url: item.url, aliases: [`${item.origin}/docx/${d.id}`], title: item.title, kind: previous?.kind || inferKind(item.title), coverage: 'full_text', fetchedAt: now(), hash: contentHash, unavailable: false, outOfScope: false }); refreshed++;
+        old.set(d.id, { ...previous, ...item, ...d, contentArea: await documentArea(state, lark, item.url), url: item.url, aliases: [`${item.origin}/docx/${d.id}`], title: item.title, kind: previous?.kind || inferKind(item.title), coverage: 'full_text', fetchedAt: now(), hash: contentHash, unavailable: false, outOfScope: false }); refreshed++;
       }
     } catch (e) { failures.push({ id: item.id, code: e.code || 'ERROR' }); if (previous) previous.unavailable = true; }
     scan.pendingReads.shift(); state.documents = [...old.values()]; await saveLibrary(home, state);
@@ -149,8 +153,9 @@ export async function fetchDocument(home, id, docId, supplied) {
   const state = await loadLibrary(home, id); const old = state.documents.find(d => d.id === docId); assert(old, 'UNKNOWN_DOCUMENT', '文档不在已登记范围；先同步');
   if (state.provider === 'demo') return { ...old, demo: true };
   const lark = client(state, supplied); await lark.assertAccount(state); await lark.inScope(old.url, state.readRoots);
+  await verifyAreas(state, lark);
   const d = await lark.fetch(old.url); assert(d.id === old.id, 'DOC_ID_CHANGED', '目标文档身份变化');
-  Object.assign(old, d, { url: old.url, hash: hash(d.markdown), fetchedAt: now(), unavailable: false, outOfScope: false }); await saveLibrary(home, state); return old;
+  Object.assign(old, d, { contentArea: await documentArea(state, lark, old.url), url: old.url, hash: hash(d.markdown), fetchedAt: now(), unavailable: false, outOfScope: false }); await saveLibrary(home, state); return old;
 }
 export async function capture(home, id, { url, title, note = '' }, supplied) {
   const state = await loadLibrary(home, id); const sourceUrl = canonicalSource(url); const duplicate = state.documents.find(d => d.sourceUrl === sourceUrl);
@@ -179,7 +184,7 @@ export async function planOverview(home, state) {
   for (const file of files.filter(f => f.endsWith('.json')).sort()) {
     const p = await readJSON(path.join(dir, file)); const uncertain = p.steps.some(s => ['sending', 'unknown', 'needs_review'].includes(s.state));
     const label = p.state === 'complete' ? '已完成' : p.state === 'cancelled' ? '已取消' : p.state === 'superseded' ? '已替代' : uncertain ? '待查证' : '待确认';
-    result.push({ id: p.payload.operation, purpose: p.payload.purpose, state: p.state, label, active: !retired(p) && p.state !== 'complete', sources: p.payload.sources, digest: p.digest, replacement: p.replacement || null, results: p.steps.map(s => ({ state: s.state, url: s.url, error: s.error })) });
+    result.push({ id: p.payload.operation, purpose: p.payload.purpose, state: p.state, label, active: !retired(p) && p.state !== 'complete', sources: p.payload.sources, digest: p.digest, replacement: p.replacement || null, results: p.steps.map((s, i) => ({ state: s.state, url: s.url || p.payload.actions[i].doc, error: s.error })) });
   }
   return result;
 }
@@ -246,9 +251,18 @@ async function verifyShelfParent(state, lark, action) {
   assert(hash(actual) === hash(action.shelfPath.slice(0, -1)), 'CLASSIFICATION_CHANGED', '新分类的父路径发生变化，重新预览');
 }
 
+async function verifyActionArea(state, lark, action) {
+  const area = action.category === 'personal' ? 'personal' : action.kind === 'create' && ['source', 'topic', 'experience'].includes(action.category) ? 'links' : null;
+  if (!area || (!state.contentAreas && area === 'links')) return;
+  assert(state.contentAreas?.[area], 'RECORD_DOCUMENT', '先核验登记资料分区，再在对应分区保存');
+  const actual = action.kind === 'create' && !action.parent && action.parentStep !== undefined ? action.plannedParentPath[0]?.nodeToken === state.contentAreas[area].node_token : await documentArea(state, lark, action.kind === 'create' ? action.parent : action.doc) === area;
+  assert(actual, area === 'personal' ? 'RECORD_DOCUMENT' : 'CONTENT_AREA', '目标不在已登记的对应资料分区，先核对位置');
+}
+
 export async function makePlan(home, id, spec, supplied) {
   const state = await loadLibrary(home, id); assert(state.provider === 'feishu' && state.writeRoot, 'WRITE_DISABLED', '需要已绑定的飞书写入根');
   const lark = client(state, supplied); await lark.assertAccount(state);
+  await verifyAreas(state, lark);
   const context = await workbenchContext(home,id,lark);
   assert(Array.isArray(spec.actions) && spec.actions.length > 0 && spec.actions.length <= 12, 'ACTIONS', '每个预览计划包含 1—12 项动作');
   let remoteTitles = new Set();
@@ -259,10 +273,10 @@ export async function makePlan(home, id, spec, supplied) {
   }
   const operation = randomUUID(); const actions = []; const targets = new Set(); const titles = new Set(); const classifiedSources = new Set();
   for (let i = 0; i < spec.actions.length; i++) {
-    const a = spec.actions[i]; assert(['create', 'append', 'str_replace'].includes(a.kind), 'WRITE_KIND', '只支持创建、追加和精确行内替换'); validContent(a.content);
-    const action = { kind: a.kind, title: a.title, content: a.content, category: a.category || 'document' };
+    const a = spec.actions[i]; assert(['create', 'append', 'str_replace', 'record_append'].includes(a.kind), 'WRITE_KIND', '只支持创建、追加、精确行内替换和个人表格追加'); if (a.kind !== 'record_append') validContent(a.content);
+    const action = { kind: a.kind, title: a.title, content: a.content, category: a.kind === 'record_append' ? 'personal' : a.category || 'document' };
     if (a.summary !== undefined) { assert(typeof a.summary === 'string' && a.summary.trim() && a.summary.length <= 400, 'SUMMARY', '摘要需为 1—400 字符，描述修改后的整篇知识页'); action.summary = a.summary.trim(); }
-    assert(['document', 'source', 'topic', 'experience', 'index', 'log', 'shelf'].includes(action.category), 'CATEGORY', '未知知识类型');
+    assert(['document', 'source', 'topic', 'experience', 'index', 'log', 'shelf', 'personal'].includes(action.category), 'CATEGORY', '未知知识类型');
     assert(a.parentStep === undefined || (a.kind === 'create' && a.parent === undefined && Number.isInteger(a.parentStep) && a.parentStep >= 1 && a.parentStep <= i && actions[a.parentStep - 1]?.category === 'shelf'), 'PARENT_STEP', 'parentStep 只能引用本计划前序新分类步骤，不能与 parent 混用');
     assert(action.category !== 'shelf' || a.kind === 'create', 'CATEGORY', '分类动作仅创建，不借此修改旧分类');
     assert(a.titleSummary === undefined || (a.kind === 'create' && ['source', 'topic', 'experience'].includes(action.category) && (action.category !== 'source' || a.classification)), 'NOTE_CLASSIFICATION', 'titleSummary 用于新资料整理、主题综述或实践记录；来源笔记仍需classification');
@@ -275,7 +289,7 @@ export async function makePlan(home, id, spec, supplied) {
       }
       if (action.category === 'shelf') {
         const parentPath = action.plannedParentPath || (action.parent === state.writeRoot.url ? [] : (await classificationPath(state, lark, action.parent)).path);
-        assert(parentPath.length < 2, 'CLASSIFICATION_DEPTH', '分类最多两层，不自动创建第三层');
+        assert(areaDepth(state, parentPath) < 2, 'CLASSIFICATION_DEPTH', '资料分区下主题分类最多两层，不自动创建第三层');
         action.shelfPath = [...parentPath, { step: i + 1, title: a.title }];
       }
     }
@@ -284,7 +298,15 @@ export async function makePlan(home, id, spec, supplied) {
       assert(!targets.has(d.id), 'DUPLICATE_TARGET', '同一计划每篇文档只修改一次，请合并修改'); targets.add(d.id);
       Object.assign(action, { doc: parsed.url, documentId: d.id, baseHash: hash(d.markdown), baseRevision: d.revision });
       if (a.kind === 'str_replace') { assert(typeof a.pattern === 'string' && a.pattern.trim() && !a.pattern.includes('\n') && !a.content.includes('\n'), 'PATTERN', '精确替换只用于非空单行；多段内容用追加或官方块编辑流程'); assert(d.markdown.split(a.pattern).length === 2, 'PATTERN_AMBIGUOUS', '旧文本必须在新读取的正文中唯一出现'); action.pattern = a.pattern; action.verificationVersion = 2; action.expectedTextHash = hash(verificationText(d.markdown.replace(a.pattern, a.content))); }
+      if (a.kind === 'record_append') {
+        assert(state.contentAreas?.personal && await documentArea(state, lark, parsed.url) === 'personal', 'RECORD_DOCUMENT', '表格追加只写已登记个人记录区内的文档');
+        assert(!(await planOverview(home, state)).some(p => p.results.some(s => s.url === parsed.url && ['sending', 'unknown', 'needs_review'].includes(s.state))), 'UNKNOWN_WRITE', '同一文档仍有未核实写入，先查证，不通过新计划再次插入');
+        const live = await lark.recordTables(parsed.url, a.tableId), table = live.tables.find(t => t.id === a.tableId);
+        assert(table && live.document.id === d.id && hash(live.document.markdown) === action.baseHash, 'CONCURRENT_EDIT', '表格目标或正文版本不符，先重新读取');
+        Object.assign(action, prepareRecord(d, table, a.fields), { title: (await lark.node(parsed.url)).title }); validContent(action.content);
+      }
     }
+    await verifyActionArea(state, lark, action);
     if (a.classification !== undefined) {
       action.classification = await prepareClassification(state, lark, action, a.classification, action.parentStep === undefined ? undefined : { parentStep: action.parentStep, path: action.plannedParentPath });
       assert(!classifiedSources.has(action.classification.sourceId), 'CLASSIFICATION_DUPLICATE', '同一来源在一份计划中只创建一篇主笔记'); classifiedSources.add(action.classification.sourceId);
@@ -309,13 +331,13 @@ export async function makePlan(home, id, spec, supplied) {
       if (action.category === 'shelf') assert(![...titles, ...remoteTitles].some(t => titleKey(t) === titleKey(action.title)), 'DUPLICATE_TITLE', '已有同形分类名称，先核对复用');
       titles.add(action.title);
     }
-    if (a.kind !== 'str_replace') { action.marker = `ELX记录 ${operation}-${i + 1}`; action.content += '\n\n' + action.marker; }
+    if (!['str_replace', 'record_append'].includes(a.kind)) { action.marker = `ELX记录 ${operation}-${i + 1}`; action.content += '\n\n' + action.marker; }
     actions.push(action);
   }
   const sources = [];
   for (const sourceId of new Set([...(spec.sourceIds || []), ...classifiedSources])) { const d = state.documents.find(d => d.id === sourceId); assert(d && !d.unavailable && !d.outOfScope, 'SOURCE', '引用的来源不存在或不可用'); sources.push({ id: d.id, hash: d.hash }); }
   for (const action of actions) for (const topic of action.classification?.relatedTopics || []) assert(!targets.has(topic.id), 'CLASSIFICATION_TOPIC_WRITE', '关联主题若需更新，另作计划；本次分类只建立引用');
-  const payload = { schemaVersion: 1, operation, library: state.id, account: state.account, writeRoot: state.writeRoot, createdAt: now(), purpose: spec.purpose || '知识整理', sources, actions, ...(context.configured ? {preferencesHash:context.preferences.hash} : {}) };
+  const payload = { schemaVersion: 1, operation, library: state.id, account: state.account, writeRoot: state.writeRoot, createdAt: now(), purpose: spec.purpose || '知识整理', sources, actions, ...(state.contentAreas ? { contentAreasHash: areaHash(state) } : {}), ...(context.configured ? {preferencesHash:context.preferences.hash} : {}) };
   const plan = { payload, digest: planDigest(payload), state: 'preview', steps: actions.map(() => ({ state: 'pending' })) };
   await writeJSON(planFile(home, state.id, operation), plan);
   return { plan: operation, digest: plan.digest, purpose: payload.purpose, actions, sources, workbench: await syncWorkbench(home,id,lark), note: '已生成文章预览；配置工作台时同步管理记录，文章尚未写入。同一份计划确认后才能 apply。' };
@@ -326,6 +348,7 @@ export async function applyPlan(home, id, operation, approval, supplied) {
   assert(!retired(plan), 'PLAN_RETIRED', '计划已取消或被替代，禁止执行；新方案需要自己的摘要授权');
   assert(p.library === state.id && p.account === state.account && hash(p.writeRoot) === hash(state.writeRoot), 'PLAN_BINDING', '绑定与计划不一致');
   const lark = client(state, supplied); await lark.assertAccount(state);
+  if (p.contentAreasHash) { assert(areaHash(state) === p.contentAreasHash, 'CONTENT_AREAS_CHANGED', '资料分区绑定在预览后变化，重新核对，不执行旧方案'); await verifyAreas(state, lark); }
   const liveWriteRoot = await lark.node(state.writeRoot.url);
   assert(liveWriteRoot.node_token === state.writeRoot.node_token && String(liveWriteRoot.space_id) === String(state.writeRoot.space_id), 'ROOT_CHANGED', '写入根节点身份或所属空间变化，请重新确认');
   if (plan.state === 'complete') return { plan: operation, state: 'complete', alreadyApplied: true, workbench: await syncWorkbench(home,id,lark) };
@@ -337,6 +360,7 @@ export async function applyPlan(home, id, operation, approval, supplied) {
   for (let i = 0; i < p.actions.length; i++) {
     const step = plan.steps[i]; if (step.state === 'verified') continue;
     const a = await resolveAction(state, lark, plan, i);
+    if (p.contentAreasHash || a.kind === 'record_append') await verifyActionArea(state, lark, a);
     await verifyShelfParent(state, lark, a);
     if (a.kind === 'create') { assert(!state.documents.some(d => !d.outOfScope && d.title === a.title), 'DUPLICATE_TITLE', '计划创建的标题已经存在，请重新核对'); await lark.inScope(a.parent, [state.writeRoot]); const listing = await enumerate({ ...state, readRoots: [state.writeRoot] }, lark, 2000); assert(listing.complete, 'DEDUP_INCOMPLETE', '创建前查重范围不完整'); assert(!listing.catalog.some(d => a.category === 'shelf' ? titleKey(d.title) === titleKey(a.title) : d.title === a.title), 'DUPLICATE_TITLE', '预览后远端出现同名文档，请核对后重新制定计划'); }
     else { await lark.inScope(a.doc, [state.writeRoot]); const current = await lark.fetch(a.doc); assert(current.id === a.documentId && hash(current.markdown) === a.baseHash, 'CONCURRENT_EDIT', '文档已变化，保留用户修改；请重新生成预览'); }
@@ -345,7 +369,7 @@ export async function applyPlan(home, id, operation, approval, supplied) {
     try {
       let parent;
       if (a.kind === 'create') { parent = await lark.node(a.parent); assert(!a.parentNodeToken || parent.node_token === a.parentNodeToken, 'PARENT_CHANGED', '分类父节点身份变化，停止创建'); }
-      const result = a.kind === 'create' ? await lark.create(parent.node_token, a.title, a.content) : await lark.update(a.doc, a);
+      const result = a.kind === 'create' ? await lark.create(parent.node_token, a.title, a.content) : a.kind === 'record_append' ? await lark.recordAppend(a.doc, a) : await lark.update(a.doc, a);
       step.documentId = result.data?.document?.document_id || a.documentId;
       step.url = result.data?.document?.url || a.doc;
       step.warningCount = (result.data?.warnings || []).length; step.result = result.data?.result || 'success';
@@ -366,6 +390,7 @@ async function verifyStep(lark, state, action, step, fetched) {
   const comparison = contentComparison(action.content, actual.markdown);
   if (!comparison.matched) throw issue('VERIFY_FAILED', '回读正文没有完整匹配预期内容', comparison);
   if (action.kind === 'str_replace') assert(hash(action.verificationVersion === 2 ? verificationText(actual.markdown) : normalizeText(actual.markdown)) === action.expectedTextHash, 'VERIFY_FAILED', '回读结果与精确替换后的预期正文不一致');
+  if (action.kind === 'record_append') assert(actual.id === action.documentId && hash(verificationText(actual.markdown)) === action.expectedTextHash, 'VERIFY_FAILED', '表格新增行或其他正文与预期不符，先查证，不重复插入');
   assert(!step.warningCount && step.result !== 'partial_success' && step.result !== 'failed', 'WRITE_WARNING', '返回警告或部分成功，需要人工核对');
   step.documentId = actual.id; step.verifiedHash = hash(actual.markdown); return actual;
 }
@@ -373,7 +398,7 @@ async function finishPlan(home, state, plan, lark) {
   if (!plan.steps.every(s => s.state === 'verified')) return;
   for (let i = 0; i < plan.steps.length; i++) { const step = plan.steps[i], a = await resolveAction(state, lark, plan, i); const d = await lark.fetch(step.url); let record = state.documents.find(x => x.id === d.id);
     if (!record) { record = { id: d.id }; state.documents.push(record); }
-    Object.assign(record, d, { url: step.url, title: a.title || record.title || d.id, kind: a.category, hash: hash(d.markdown), fetchedAt: now(), coverage: 'full_text', remote: true });
+    Object.assign(record, d, { contentArea: await documentArea(state, lark, step.url), url: step.url, title: a.title || record.title || d.id, kind: a.category, hash: hash(d.markdown), fetchedAt: now(), coverage: 'full_text', remote: true });
     if (a.kind === 'create') Object.assign(record, { recordRole: ['index', 'log', 'shelf'].includes(a.category) ? 'navigation' : 'derived', producedBy: plan.payload.operation, inputVersions: plan.payload.sources });
     if (a.classification) Object.assign(record, { classification: a.classification, tags: a.classification.tags, classificationForHash: step.verifiedHash });
     if (a.summary) Object.assign(record, { summary: a.summary, summaryForHash: step.verifiedHash });

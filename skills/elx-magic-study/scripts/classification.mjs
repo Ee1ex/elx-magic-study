@@ -2,6 +2,7 @@ import path from 'node:path';
 import { assert, hash, loadLibrary, libraryPath } from './store.mjs';
 import { Lark, feishuURL } from './lark.mjs';
 import { search } from './retrieval.mjs';
+import { areaDepth } from './content-areas.mjs';
 import { knowledgeDocuments } from './workbench.mjs';
 
 const active = d => !d.unavailable && !d.outOfScope;
@@ -24,20 +25,22 @@ export async function classificationPath(state, lark, value) {
   const path = []; let node = await lark.node(parsed.url);
   while (node.node_token !== root.node_token) {
     assert(String(node.space_id) === String(root.space_id), 'OUT_OF_SCOPE', '分类位置已离开原空间');
-    assert(path.length < 2, 'CLASSIFICATION_DEPTH', '分类最多两层：大书架／主题分类；不在更深目录自动入库');
+    assert(path.length < (state.contentAreas ? 3 : 2), 'CLASSIFICATION_DEPTH', '资料分区下主题分类最多两层，不在更深目录自动入库');
     path.unshift({ nodeToken: node.node_token, title: node.title || node.node_token, url: `${root.origin}/wiki/${node.node_token}` });
     assert(node.parent_node_token, 'OUT_OF_SCOPE', '分类不在写入根下');
     node = await lark.node(`${root.origin}/wiki/${node.parent_node_token}`);
   }
   assert(String(node.space_id) === String(root.space_id), 'ROOT_CHANGED', '分类读取根空间改变');
+  assert(areaDepth(state, path) <= 2, 'CLASSIFICATION_DEPTH', '未登记分区不能用于放宽分类深度');
   assert(path.length, 'CLASSIFICATION_PARENT', '请选大书架或其主题分类，不把新资料直接放到首页');
   return { url: parsed.url, path };
 }
 
 async function locations(state, lark, limit) {
-  const root = state.writeRoot, fresh = await lark.node(root.url);
+  const root = state.contentAreas?.links || state.writeRoot, fresh = await lark.node(root.url);
   assert(fresh.node_token === root.node_token && String(fresh.space_id) === String(root.space_id), 'ROOT_CHANGED', '写入根身份改变');
-  const queue = [{ node: fresh, path: [], url: root.url }], items = [], seen = new Set([fresh.node_token]); let pages = 0;
+  const prefix = state.contentAreas ? [{ nodeToken: root.node_token, title: root.title, url: root.url }] : [];
+  const queue = [{ node: fresh, path: prefix, url: root.url }], items = [], seen = new Set([fresh.node_token]); let pages = 0;
   while (queue.length) {
     const parent = queue.shift(); await lark.inScope(parent.url, [root]);
     let token; const tokens = new Set();
@@ -51,7 +54,7 @@ async function locations(state, lark, limit) {
         if (seen.has(n.node_token)) continue; seen.add(n.node_token);
         const entry = { nodeToken: n.node_token, title: n.title || n.node_token, url: `${root.origin}/wiki/${n.node_token}` };
         const trail = [...parent.path, entry]; items.push({ ...entry, path: trail, objectType: n.obj_type });
-        if (trail.length < 2 && n.has_child) queue.push({ node: { ...n, space_id: n.space_id || root.space_id }, path: trail, url: entry.url });
+        if (trail.length < prefix.length + 2 && n.has_child) queue.push({ node: { ...n, space_id: n.space_id || root.space_id }, path: trail, url: entry.url });
       }
       token = page.has_more ? page.page_token : null;
       assert(!page.has_more || (token && !tokens.has(token)), 'PAGINATION', '目录分页游标缺失或重复，不能据此判断没有合适分类');
@@ -103,7 +106,7 @@ export async function prepareClassification(state, lark, action, input, plannedD
   const related = input.relatedTopics || []; assert(Array.isArray(related) && related.length <= 3, 'TOPIC', '最多关联 3 个已存在主题');
   assert(hasContent || (!tags.length && !related.length), 'CLASSIFICATION_COVERAGE', '只有链接时不生成内容标签和主题关联');
   const destination = plannedDestination || await classificationPath(state, lark, action.parent);
-  if (input.basis === 'insufficient') assert(destination.path.length === 1, 'CLASSIFICATION_PARENT', '依据不足时放入已确认的大书架待整理，不猜二级主题分类');
+  if (input.basis === 'insufficient') assert(areaDepth(state, destination.path) === 1, 'CLASSIFICATION_PARENT', '依据不足时放入分区内已确认的一级待整理，不猜二级主题分类');
   const relatedTopics = [], ids = new Set();
   for (const item of related) {
     const topic = state.documents.find(d => d.id === item.id && d.kind === 'topic' && active(d));
@@ -116,7 +119,7 @@ export async function prepareClassification(state, lark, action, input, plannedD
   }
   let proposedCategory = null;
   if (input.proposedCategory) {
-    assert(input.status === 'pending' && hasContent && destination.path.length === 1, 'CLASSIFICATION_PROPOSAL', '新分类建议只用于有正文且暂存大书架的待整理资料');
+    assert(input.status === 'pending' && hasContent && areaDepth(state, destination.path) === 1, 'CLASSIFICATION_PROPOSAL', '新分类建议只用于有正文且暂存一级分类的待整理资料');
     proposedCategory = { name: text(input.proposedCategory.name, 60, 'CLASSIFICATION_PROPOSAL'), reason: text(input.proposedCategory.reason, 300, 'CLASSIFICATION_PROPOSAL') };
     const catalog = await locations(state, lark, 1000);
     assert(catalog.complete, 'CLASSIFICATION_CATALOG', '目录不完整，不能认定需要新分类');

@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { setTimeout as pause } from 'node:timers/promises';
 import { assert, issue, hash } from './store.mjs';
+import { nativeTable, tableHash } from './records.mjs';
 
 export function binary() {
   if (process.env.ELX_LARK_BIN) { assert(path.isAbsolute(process.env.ELX_LARK_BIN), 'CLI_PATH', 'ELX_LARK_BIN 必须是绝对路径'); return process.env.ELX_LARK_BIN; }
@@ -119,6 +121,45 @@ export class Lark {
   async update(doc, action) {
     assert(['append', 'str_replace'].includes(action.kind), 'WRITE_KIND', '辅助脚本只支持追加或精确行内替换，不做覆盖和删除');
     return this.call(['docs', '+update', '--doc', doc, '--command', action.kind, '--doc-format', 'markdown', '--content', '-', '--as', 'user', ...(action.kind === 'str_replace' ? ['--pattern', action.pattern] : []), ...(action.baseRevision !== null && action.baseRevision !== undefined ? ['--revision-id', String(action.baseRevision)] : [])], { input: action.content });
+  }
+  async recordAPI(method, route, params, data) {
+    const r = await this.call(['api', method, route, '--params', JSON.stringify(params), '--as', 'user', ...(data ? ['--data', '-'] : [])], data ? { input: JSON.stringify(data) } : {});
+    const envelope = r.data ?? r;
+    assert((envelope.code === undefined || envelope.code === 0) && !envelope.warnings?.length && !['failed', 'partial_success'].includes(envelope.result), 'RECORD_API', '表格接口返回失败、警告或部分成功，先核对结果');
+    return envelope.data ?? envelope;
+  }
+  async recordTables(url, tableId) {
+    const document = await this.fetch(url), blocks = [], tokens = new Set(); let token;
+    for (let page = 0; page < 30; page++) {
+      const data = await this.recordAPI('GET', `/open-apis/docx/v1/documents/${document.id}/blocks`, { page_size: 500, document_revision_id: document.revision ?? -1, ...(token ? { page_token: token } : {}) });
+      assert(Array.isArray(data.items) && typeof data.has_more === 'boolean', 'RECORD_TABLE', '文档块分页响应不完整'); blocks.push(...data.items);
+      if (!data.has_more) return { document, tables: blocks.filter(b => b.block_type === 31 && (!tableId || b.block_id === tableId)).map(b => {
+        try { return nativeTable(blocks, b.block_id); } catch (e) { if (tableId || !['RECORD_TABLE', 'RECORD_RICH_CELL'].includes(e.code)) throw e; return { id: b.block_id, unsupported: e.code, headers: [], rows: [] }; }
+      }) };
+      assert(data.page_token && !tokens.has(data.page_token), 'RECORD_INCOMPLETE', '文档块分页未推进，不据此新增条目'); token = data.page_token; tokens.add(token);
+    }
+    throw issue('RECORD_INCOMPLETE', '文档块超出预算，先缩小记录文档');
+  }
+  async recordAppend(url, action) {
+    const before = await this.recordTables(url, action.tableId), table = before.tables.find(t => t.id === action.tableId);
+    assert(table && tableHash(table) === action.tableHash && hash(before.document.markdown) === action.baseHash, 'CONCURRENT_EDIT', '表格在预览后变化，先保留用户编辑并重新读取');
+    const route = `/open-apis/docx/v1/documents/${before.document.id}/blocks`;
+    await this.recordAPI('PATCH', `${route}/${table.id}`, { document_revision_id: before.document.revision ?? -1, client_token: action.nativeTokens.insert }, { insert_table_row: { row_index: -1 } });
+    await pause(350);
+    const after = await this.recordTables(url, action.tableId), appended = after.tables.find(t => t.id === table.id), width = table.headers.length;
+    assert(appended && appended.rows.length === table.rows.length + 1 && appended.rows.at(-1).every(v => !v) && tableHash({ ...appended, rows: appended.rows.slice(0, -1), cells: appended.cells.slice(0, -width) }) === tableHash(table), 'RECORD_INSERT_UNCERTAIN', '新增行或旧表格不符，保留未知状态，不重发插入');
+    const updates = [], creates = [];
+    for (let i = 0; i < width; i++) if (action.values[i]) {
+      const index = appended.cells.length - width + i, elements = [{ text_run: { content: action.values[i] } }];
+      if (appended.textIds[index]) updates.push({ block_id: appended.textIds[index], update_text_elements: { elements } });
+      else creates.push({ cell: appended.cells[index], elements, index: i });
+    }
+    if (updates.length) { await this.recordAPI('PATCH', `${route}/batch_update`, { document_revision_id: after.document.revision ?? -1, client_token: action.nativeTokens.fill }, { requests: updates }); await pause(350); }
+    for (const c of creates) {
+      await this.recordAPI('POST', `${route}/${c.cell}/children`, { document_revision_id: -1, client_token: action.nativeTokens.cells[c.index] }, { index: 0, children: [{ block_type: 2, text: { elements: c.elements } }] });
+      await pause(350);
+    }
+    return { data: { document: { document_id: before.document.id, url }, result: 'success', warnings: [] } };
   }
   async workbenchRows(base) {
     const rows=[];let offset=0;
