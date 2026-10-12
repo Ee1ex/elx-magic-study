@@ -184,7 +184,7 @@ export async function planOverview(home, state) {
   for (const file of files.filter(f => f.endsWith('.json')).sort()) {
     const p = await readJSON(path.join(dir, file)); const uncertain = p.steps.some(s => ['sending', 'unknown', 'needs_review'].includes(s.state));
     const label = p.state === 'complete' ? '已完成' : p.state === 'cancelled' ? '已取消' : p.state === 'superseded' ? '已替代' : uncertain ? '待查证' : '待确认';
-    result.push({ id: p.payload.operation, purpose: p.payload.purpose, state: p.state, label, active: !retired(p) && p.state !== 'complete', sources: p.payload.sources, digest: p.digest, replacement: p.replacement || null, results: p.steps.map((s, i) => ({ state: s.state, url: s.url || p.payload.actions[i].doc, error: s.error })) });
+    result.push({ id: p.payload.operation, purpose: p.payload.purpose, state: p.state, label, active: !retired(p) && p.state !== 'complete', sources: p.payload.sources, digest: p.digest, replacement: p.replacement || null, results: p.steps.map((s, i) => ({ state: s.state, url: s.url || p.payload.actions[i].doc, documentId: s.documentId || p.payload.actions[i].documentId, error: s.error })) });
   }
   return result;
 }
@@ -300,7 +300,7 @@ export async function makePlan(home, id, spec, supplied) {
       if (a.kind === 'str_replace') { assert(typeof a.pattern === 'string' && a.pattern.trim() && !a.pattern.includes('\n') && !a.content.includes('\n'), 'PATTERN', '精确替换只用于非空单行；多段内容用追加或官方块编辑流程'); assert(d.markdown.split(a.pattern).length === 2, 'PATTERN_AMBIGUOUS', '旧文本必须在新读取的正文中唯一出现'); action.pattern = a.pattern; action.verificationVersion = 2; action.expectedTextHash = hash(verificationText(d.markdown.replace(a.pattern, a.content))); }
       if (a.kind === 'record_append') {
         assert(state.contentAreas?.personal && await documentArea(state, lark, parsed.url) === 'personal', 'RECORD_DOCUMENT', '表格追加只写已登记个人记录区内的文档');
-        assert(!(await planOverview(home, state)).some(p => p.results.some(s => s.url === parsed.url && ['sending', 'unknown', 'needs_review'].includes(s.state))), 'UNKNOWN_WRITE', '同一文档仍有未核实写入，先查证，不通过新计划再次插入');
+        assert(!(await planOverview(home, state)).some(p => p.results.some(s => (s.documentId === d.id || s.url === parsed.url) && ['sending', 'unknown', 'needs_review'].includes(s.state))), 'UNKNOWN_WRITE', '同一文档仍有未核实写入，先查证，不通过新计划再次插入');
         const live = await lark.recordTables(parsed.url, a.tableId), table = live.tables.find(t => t.id === a.tableId);
         assert(table && live.document.id === d.id && hash(live.document.markdown) === action.baseHash, 'CONCURRENT_EDIT', '表格目标或正文版本不符，先重新读取');
         Object.assign(action, prepareRecord(d, table, a.fields), { title: (await lark.node(parsed.url)).title }); validContent(action.content);

@@ -73,6 +73,10 @@ test('REQ-020 未核实写入不能换新计划绕过；分区绑定改变阻断
   const g = await fixture(), q = await makePlan(g.home, 'test', recordSpec(), g.lark), state = await loadLibrary(g.home, 'test'); state.contentAreas.personal.title = '不同绑定'; await saveLibrary(g.home, state); await assert.rejects(applyPlan(g.home, 'test', q.plan, q.digest, g.lark), e => e.code === 'CONTENT_AREAS_CHANGED'); assert.equal(g.lark.writes, 0);
 });
 
+test('REQ-020 Wiki与docx别名仍是同一文档，未核实写入不能换链接绕过', async () => {
+  const f = await fixture(), p = await makePlan(f.home, 'test', recordSpec(), f.lark); f.lark.throwAfterRow = true; await assert.rejects(applyPlan(f.home, 'test', p.plan, p.digest, f.lark)); const spec = recordSpec({ 名称: '其他零食' }); spec.actions[0].doc = 'https://example.feishu.cn/docx/Snacks'; await assert.rejects(makePlan(f.home, 'test', spec, f.lark), e => e.code === 'UNKNOWN_WRITE'); assert.equal(f.lark.writes, 1);
+});
+
 test('REQ-020 复用不同表头，品牌不适用时不强制增加空列', async () => {
   const f = await fixture(), d = f.lark.docs.get('Snacks'); d.markdown = '| 名称 | 我的备注 |\n|-|-|\n| 聚会小游戏 | 六个人可玩 |'; const p = await makePlan(f.home, 'test', recordSpec({ 名称: '合成小游戏', 我的备注: '朋友推荐' }), f.lark); await applyPlan(f.home, 'test', p.plan, p.digest, f.lark); assert.deepEqual(markdownTables(d.markdown).tables[0].headers, ['名称', '我的备注']);
 });
