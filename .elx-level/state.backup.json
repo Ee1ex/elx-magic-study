@@ -3,11 +3,11 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "personal-records-local-completed",
+  "stage": "personal-records-installed-preview-ready",
   "gate": null,
-  "status": "completed",
+  "status": "in_progress",
   "risk": "R2",
-  "execution_policy": "AUTO",
+  "execution_policy": "CONFIRM",
   "permissions": {
     "allow_push_own_branch": false,
     "allow_create_draft_pr": false
@@ -15,9 +15,9 @@
   "current_task": {
     "id": "REQ-020",
     "owner": "项目负责人（当前用户）",
-    "scope": "本地源码、合成验证、文档和本地提交",
-    "summary": "两类资料与动态个人表格记录本地实现和验收完成",
-    "out_of_scope": "真实飞书/个人状态、旧资料导入迁移、安装、打包发布、调度、删除",
+    "scope": "授权本机备份升级及指定手工文档入库；首次新建/目录调整按具体预览确认",
+    "summary": "REQ-020本机升级完成；首次手工文档入库预览待确认",
+    "out_of_scope": "发布、删除、权限修改、未确认目录迁移及无关资料改写",
     "paths": [
       "skills/elx-magic-study",
       "tests",
@@ -28,7 +28,7 @@
       "AGENTS.md",
       ".elx-level"
     ],
-    "next_step": "当前仅本地源码；安装升级、真实表格试点、旧资料整理及发布按具体范围另行确认。EPERM环境问题继续保留。"
+    "next_step": "用户确认私有入库与目录预览后，按范围连续执行并回读。"
   },
   "artifacts": [
     {
@@ -70,6 +70,11 @@
       "command": "native Feishu / platform recommendation / global upgrade / release",
       "status": "pending",
       "summary": "本轮未授权或未执行，不冒充真实平台成功"
+    },
+    {
+      "command": "install.mjs --apply / all-file SHA256 / installed CLI / read-only workbench and catalog",
+      "status": "passed",
+      "summary": "旧40文件备份，新44文件与源码一致，安装前后146个人文件不变；已准备真实导入预览，尚未写正文"
     }
   ],
   "git": {
@@ -356,7 +361,12 @@
       "event": "req020_local_completed",
       "at": "2026-10-12T20:19:44.825324+00:00",
       "summary": "本地功能已提交，最终副本106项及新增21项通过；工作区2项EPERM和真实平台边界保留，未安装发布或改真实资料"
+    },
+    {
+      "event": "req020_installed_import_preview_ready",
+      "at": "2026-10-13T02:00:37.847082+00:00",
+      "summary": "用户当次授权安装及指定手工资料整理；开发快照安装完成，首次新建/目录调整预览待确认"
     }
   ],
-  "updated_at": "2026-10-12T20:19:44.825324+00:00"
+  "updated_at": "2026-10-13T02:00:37.847082+00:00"
 }
