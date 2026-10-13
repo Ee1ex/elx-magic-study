@@ -64,8 +64,8 @@
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "08e5b5a845a4b0bcfbdcb900ad4f91fcf4da9739",
-    "last_commit_note": "本轮首个功能提交；最终别名回归和事实收尾提交以Git日志为准",
+    "last_commit": "0cff712fed1d10b4877b7a9e37dcd7a5aa0d3333",
+    "last_commit_note": "MCP功能及本地包提交；发布预览的后续文档收尾以Git日志为准",
     "repository": true
   },
   "remote": {

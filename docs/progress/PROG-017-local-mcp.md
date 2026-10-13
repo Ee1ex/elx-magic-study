@@ -2,6 +2,8 @@
 
 日期：2026-10-14。需求：[REQ-022](../requirements/REQ-022-local-mcp.md)。基线 `f7f02b6`；接手时工作区干净，正式版本 0.10.0，MarkItDown 文件读取集成未发布。
 
+本地实现提交 `0cff712`。远端 main 仍为 `cf1164c`，发布清单见[PACKAGE-1.0.0](../releases/PACKAGE-1.0.0.md)。
+
 ## 当前实现
 
 - `mcp/` 独立包锁定官方 SDK v2、Zod；`server.mjs` 只负责 stdio 注册，`runner.mjs` 异步启动受控 worker；worker 固定映射到同一 `library.mjs`。原 CLI 只增加结构化 plan 和随机候选数组的可选入参，旧命令参数不变。

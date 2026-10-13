@@ -2,7 +2,7 @@
 
 - 本地 MCP 1.0.0 开发：[REQ-022](docs/requirements/REQ-022-local-mcp.md)、[实施与验收](docs/progress/PROG-017-local-mcp.md)、[安装及操作](mcp/README.md)、[Skill路由](skills/elx-magic-study/references/mcp.md)。
 
-- 1.0.0本地包与发布预览：[PACKAGE-1.0.0](docs/releases/PACKAGE-1.0.0.md)。
+- 1.0.0本地包与发布预览：[PACKAGE-1.0.0](docs/releases/PACKAGE-1.0.0.md)、[Release正文草稿](docs/releases/RELEASE-NOTES-1.0.0.md)。
 
 - 文件与关键资源：[REQ-021](docs/requirements/REQ-021-files-and-assets.md)、[实施记录](docs/progress/PROG-016-files-and-assets.md)、[Skill流程](skills/elx-magic-study/references/files-and-assets.md)。本地转换与官方资源上传编排，真实上传试点待验。
 
