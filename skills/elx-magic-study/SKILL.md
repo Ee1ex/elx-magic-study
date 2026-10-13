@@ -35,6 +35,7 @@ Windows上含签名参数的外部链接按reading-tools.md通过scripts/opencli
 
 | 用户意图 | 参考与操作 |
 |---|---|
+| PDF／Office等文件整理，或链接含关键图片、PDF原件 | [files-and-assets.md](references/files-and-assets.md)：本地MarkItDown转换与原件快照 → 检查关键图 → 正文及图片／附件合并预览 → 原生资源上传与独立回读，不能仅留源链接 |
 | 手动清单、朋友推荐、口述“帮我记录”、检查已有内容并建议新增列 | [personal-records.md](references/personal-records.md)：核对个人区和已有表格 → 动态字段 → 单条计划与回读；已有唯一目标直接按本次记录授权保存，首次建分类／文档／表格或扩列先预览 |
 | 推荐餐厅、零食、好物，随机推荐，结合知识库和网上搜索 | [personal-records.md](references/personal-records.md)：条目检索与原文核对 → 条件筛选／真正随机 → Exa＋Agent Reach → 分列库内与网上推荐，不自动写回 |
 | 先收藏、整理文章／视频、多来源综合、实践回写 | [capture-ingest.md](references/capture-ingest.md)：capture → source-content → 内容分类 → plan → 预览 → 确认 → apply |
@@ -51,6 +52,7 @@ Windows上含签名参数的外部链接按reading-tools.md通过scripts/opencli
 
 ## 内容与证据
 
+- 本地文件及链接内的重要图片／PDF按files-and-assets.md处理。正文、关键图和PDF原件共同纳入入库预览；文字转换不等于读过图片，链接可访问不等于原件已保存。关键图嵌入相关段落，PDF作为附件并保留出处。旧笔记补资源须有明确范围。
 - 收藏链接不等于读过正文；字幕完整不等于看过画面。记录全文／节选／字幕／仅链接，以及未覆盖部分。
 - 新资料优先补充已有主题；来源笔记保留出处，主题页综合多来源，实践记录说明环境和验证范围。
 - 原文观点、Agent 推断和用户实践分开。转述同一原文不算多个独立证据；矛盾按条件、日期和出处并列，不能无依据地覆盖。

@@ -8,6 +8,8 @@
 
 ## 来源获取
 
+常见文件先按[文件与资源流程](files-and-assets.md)用MarkItDown准备正文及原件快照。读取网页时同时检查承载重要内容的图片和PDF入口，将选中图片的原生嵌入与PDF附件纳入同一预览；不能只在末尾保留源链接。资源有独立写入／回读记录，正文成功不代表图文资料整体完成。
+
 复用宿主已可用的网页、字幕和文件工具。没有适用工具时先读 [reading-tools.md](reading-tools.md)：缺 OpenCLI 优先引导 OpenCLIApp 内安装 CLI 和 Agent Skills，再核对桥接与目标试读；Agent Reach 按平台需要另行选择。用户拒绝可只存链接或提供正文。B站可通过 Agent Reach 的 bili/OpenCLI 路由获取；仅网页简介不算视频内容。字幕缺失时可登记待处理；需要转写服务、付款或外传资料时先说明并确认。图片、图表和操作画面不能由字幕臆测。
 
 首次外部来源用 capture 登记。获取正文后用 source-content 记录覆盖范围和来源方式。已有飞书文档通过 sync/fetch 读取，不把原文重写成摘要。
