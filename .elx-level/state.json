@@ -3,56 +3,62 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "files-and-assets",
+  "stage": "local-mcp",
   "gate": null,
-  "status": "completed",
-  "risk": "R2",
-  "execution_policy": "AUTO",
+  "status": "in_progress",
+  "risk": "R3",
+  "execution_policy": "CONFIRM",
   "permissions": {
     "allow_push_own_branch": false,
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-021",
+    "id": "REQ-022",
     "owner": "项目负责人（当前用户）",
-    "scope": "MarkItDown本地转换入口、关键图/PDF资源流程、隔离运行时及本机Skill同步",
-    "summary": "文件与关键资源集成已完成；真实图文上传待具体资料试点",
-    "out_of_scope": "旧库补写、发布、云OCR/转写、删除与权限修改",
+    "scope": "本地stdio MCP、共用CLI核心、人工批准、独立包与1.0.0版本准备",
+    "summary": "本地MCP源码与独立包已验证；GitHub发布与全局配置待确认",
+    "out_of_scope": "真实飞书写入、个人状态迁移、删除、账号权限和自动全局配置",
     "paths": [
       "skills/elx-magic-study",
-      "tests/test_file_import.py",
+      "mcp",
+      "package.json",
+      "README.md",
       "docs",
       "DOCUMENT_MAP.md",
       "CHANGELOG.md",
       ".elx-level"
     ],
-    "next_step": "后续具体文件或链接按新流程预览；真实附件上传独立回读"
+    "next_step": "核对发布目标、ZIP摘要与限制后确认GitHub发布；真实飞书和Codex全局联调另行验收"
   },
   "artifacts": [
     {
-      "path": "docs/requirements/REQ-021-files-and-assets.md",
-      "summary": "文件与关键资源范围"
+      "path": "docs/requirements/REQ-022-local-mcp.md",
+      "summary": "本地MCP范围与成功标准"
     },
     {
-      "path": "docs/progress/PROG-016-files-and-assets.md",
-      "summary": "7项实际本地检查、46安装文件一致；真实远端上传待验"
+      "path": "docs/progress/PROG-017-local-mcp.md",
+      "summary": "stdio协议、旧CLI、独立ZIP与批准边界检查"
+    },
+    {
+      "path": "docs/releases/PACKAGE-1.0.0.md",
+      "summary": "Skill与MCP ZIP摘要及发布预览"
     }
   ],
   "verifications": [
     {
-      "command": "isolated Python tests/test_file_import.py",
+      "command": "cd mcp; npm test",
       "status": "passed",
-      "summary": "7项通过，PDF/Office/HTML/CSV及原件/资源/错误边界"
+      "summary": "5项合成协议与批准边界通过；拆包后独立server复测通过"
     },
     {
-      "command": "installed helper HTML smoke / file hashes / skill validation",
+      "command": "node --test --test-concurrency=1 tests/*.test.mjs (system temp copy)",
       "status": "passed",
-      "summary": "46文件一致；旧版备份；152个人状态文件不变；实际转换与格式校验通过"
+      "summary": "107/107；工作区基线106/107因已知EPERM失败"
     },
     {
-      "command": "node --test --test-concurrency=1 tests/*.test.mjs",
-      "status": "failed",
-      "summary": "106/107；旧OPT-03原子rename EPERM，核心存储未修改"
+      "command": "MCP+Skill ZIP逐文件SHA256、Skill格式、Node语法",
+      "status": "passed",
+      "summary": "Skill 47文件、MCP 2500文件与源一致；未验证真实Codex或飞书写入"
     }
   ],
   "git": {
@@ -364,7 +370,12 @@
       "at": "2026-10-13T18:21:44.952Z",
       "event": "req021_local_integration_complete",
       "summary": "文件与关键资源集成已完成；真实图文上传待具体资料试点"
+    },
+    {
+      "at": "2026-10-13T18:36:59Z",
+      "event": "req022_local_mcp_bundle_verified",
+      "summary": "1.0.0本地MCP源码、合成协议、CLI回归和独立ZIP已验证；发布待确认"
     }
   ],
-  "updated_at": "2026-10-13T18:21:44.952Z"
+  "updated_at": "2026-10-13T18:36:59Z"
 }

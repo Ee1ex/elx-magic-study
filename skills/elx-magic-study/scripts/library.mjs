@@ -14,7 +14,7 @@ import { recordContext, searchRecords } from './records.mjs';
 import { doctor, discoverSpace, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan, classificationContext } from './library-core.mjs';
 
 const HELP = {
-  version: '0.10.0', usage: 'node <SKILL_ROOT>/scripts/library.mjs <command> [--home <个人状态目录>] [--library <编号>]',
+  version: '1.0.0', usage: 'node <SKILL_ROOT>/scripts/library.mjs <command> [--home <个人状态目录>] [--library <编号>]',
   commands: {
     onboarding: '只读查看是否已介绍功能及用户提醒偏好；未绑定也可用',
     'onboarding-record': '--file <介绍及明确偏好JSON>；只保存本地引导记录，不启用功能',
@@ -64,7 +64,7 @@ function parse(argv) {
 }
 function number(value, fallback, min, max) { const n = value === undefined ? fallback : Number(value); assert(Number.isInteger(n) && n >= min && n <= max, 'LIMIT', `数量必须在 ${min}—${max} 之间`); return n; }
 async function localAccess(state, offline) { if (state.provider === 'feishu' && !offline) await new Lark(state.profile).assertAccount(state); }
-export async function run(argv) {
+export async function run(argv, input = {}) {
   const { command, options: o } = parse(argv), home = stateHome(o.home);
   if (command === 'help' || command === '--help') return HELP;
   if (command === 'doctor') return doctor(home, o.profile);
@@ -85,7 +85,7 @@ export async function run(argv) {
       assert(d.id === live.document.id && d.markdown === live.document.markdown, 'CONCURRENT_EDIT', '表格读取期间正文或文档身份变化，重新核对');
       return { ...recordContext([d], o.id), cached: false, nativeTables: live.tables.map(t => ({ tableId: t.id, headers: t.headers, rows: t.rows, ...(t.unsupported ? { unsupported: t.unsupported } : {}) })) };
     }
-    if (command === 'record-search') { await localAccess(state, o.offline); if (state.provider === 'feishu' && !o.offline) await verifyAreas(state, new Lark(state.profile)); return searchRecords(documents, o.query || [], { limit: number(o.limit, o.random ? 1 : 8, 1, 50), filters: o.filter ? JSON.parse(o.filter) : {}, random: !!o.random, eligibleIds: o.file ? await readJSON(o.file) : undefined }); }
+    if (command === 'record-search') { await localAccess(state, o.offline); if (state.provider === 'feishu' && !o.offline) await verifyAreas(state, new Lark(state.profile)); return searchRecords(documents, o.query || [], { limit: number(o.limit, o.random ? 1 : 8, 1, 50), filters: o.filter ? JSON.parse(o.filter) : {}, random: !!o.random, eligibleIds: input.eligibleIds ?? (o.file ? await readJSON(o.file) : undefined) }); }
     if (command === 'workbench-bind') return bindWorkbench(home,id,{...await readJSON(o.file),confirmed:!!o.confirm});
     if (command === 'workbench-context') return workbenchContext(home,id);
     if (command === 'workbench-sync') return syncWorkbench(home,id);
@@ -99,7 +99,7 @@ export async function run(argv) {
     if (command === 'classification-context') return classificationContext(home, id, o.id, { queries: o.query || [], limit: number(o.limit, 300, 1, 1000) });
     if (command === 'classify') return classifyDocument(home, id, o.id, o.role, !!o.confirm);
     if (command === 'source-content') return sourceContent(home, id, o.id, { markdown: await fs.readFile(o.file, 'utf8'), coverage: o.coverage, sourceNote: o.note });
-    if (command === 'plan') return makePlan(home, id, await readJSON(o.file));
+    if (command === 'plan') return makePlan(home, id, input.plan ?? await readJSON(o.file));
     if (command === 'plans') return { plans: await planOverview(home, state) };
     if (command === 'plan-cancel' || command === 'plan-supersede') { if (command === 'plan-supersede') assert(o.replacement, 'REPLACEMENT', '需要明确新计划编号'); return retirePlan(home, id, o.id, { approval: o.approve, reason: o.reason, replacement: command === 'plan-supersede' ? o.replacement : undefined }); }
     if (command === 'diagnose') return diagnosePlan(home, id, o.id, number(o.step, 1, 1, 12), o.doc);

@@ -1,8 +1,12 @@
 # 文档地图
 
+- 本地 MCP 1.0.0 开发：[REQ-022](docs/requirements/REQ-022-local-mcp.md)、[实施与验收](docs/progress/PROG-017-local-mcp.md)、[安装及操作](mcp/README.md)、[Skill路由](skills/elx-magic-study/references/mcp.md)。
+
+- 1.0.0本地包与发布预览：[PACKAGE-1.0.0](docs/releases/PACKAGE-1.0.0.md)。
+
 - 文件与关键资源：[REQ-021](docs/requirements/REQ-021-files-and-assets.md)、[实施记录](docs/progress/PROG-016-files-and-assets.md)、[Skill流程](skills/elx-magic-study/references/files-and-assets.md)。本地转换与官方资源上传编排，真实上传试点待验。
 
-- 本地 MCP（仅计划，未实施）：[开发计划](docs/plans/LOCAL_MCP_PLAN.md)、[AI 开发交接](docs/plans/LOCAL_MCP_HANDOFF.md)。轻量 Skill + stdio MCP + 复用现有核心；当前授权仅编写文档。
+- 本地 MCP 的原始方案：[开发计划](docs/plans/LOCAL_MCP_PLAN.md)、[AI 开发交接](docs/plans/LOCAL_MCP_HANDOFF.md)。其中“仅计划、未实施”为当时的历史状态，当前实现与验证以 REQ-022／PROG-017 为准。
 
 - 0.10.0：[打包安装](docs/releases/PACKAGE-0.10.0.md)、[发布记录](docs/releases/RELEASE-0.10.0.md)。
 
