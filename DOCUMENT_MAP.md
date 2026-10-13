@@ -1,5 +1,7 @@
 # 文档地图
 
+- 本地 MCP（仅计划，未实施）：[开发计划](docs/plans/LOCAL_MCP_PLAN.md)、[AI 开发交接](docs/plans/LOCAL_MCP_HANDOFF.md)。轻量 Skill + stdio MCP + 复用现有核心；当前授权仅编写文档。
+
 - 0.10.0：[打包安装](docs/releases/PACKAGE-0.10.0.md)、[发布记录](docs/releases/RELEASE-0.10.0.md)。
 
 - 0.10.0功能：[REQ-020个人记录与双来源推荐](docs/requirements/REQ-020-personal-records.md)、[PROG-015实现与验收](docs/progress/PROG-015-personal-records.md)、[Skill使用流程](skills/elx-magic-study/references/personal-records.md)。书屋管理最先，表格字段按内容调整；安装及发布以0.10.0记录为准，私人入库另行核验。
