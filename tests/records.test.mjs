@@ -162,6 +162,14 @@ test('REQ-020 插入行回执丢失停止填充，再次调用基线阻断而不
   const f = nativeFixture({ failAfterInsert: true }), live = await f.lark.recordTables(wiki('Doc1')), action = { ...prepareRecord(live.document, live.tables[0], { 名称: '米饼' }), baseHash: hash(live.document.markdown) }; await assert.rejects(f.lark.recordAppend(wiki('Doc1'), action), e => e.code === 'TIMEOUT'); await assert.rejects(f.lark.recordAppend(wiki('Doc1'), action), e => e.code === 'CONCURRENT_EDIT'); assert.equal(f.calls.filter(c => c.args[1] === 'PATCH').length, 1); assert.equal(f.rows.length, 2);
 });
 
+test('REQ-020 普通单元格的单位跨度元数据可读取，真实合并仍拒绝', () => {
+  const f = nativeFixture(), blocks = f.blocks();
+  blocks[0].table.property.merge_info = blocks[0].table.cells.map(() => ({ row_span: 1, col_span: 1 }));
+  assert.deepEqual(nativeTable(blocks, 'Table1').rows, f.rows);
+  blocks[0].table.property.merge_info[0].col_span = 2;
+  assert.throws(() => nativeTable(blocks, 'Table1'), e => e.code === 'RECORD_TABLE');
+});
+
 test('REQ-020 合并或资源单元格不做普通追加，重复表格不能猜位置', () => {
   const f = nativeFixture(), b = f.blocks(); b[0].table.property.merge_info = [{}]; assert.throws(() => nativeTable(b, 'Table1'), e => e.code === 'RECORD_TABLE');
   const other = f.blocks(); other.find(b => b.block_id === 'Text1x0').text.elements = [{ mention_doc: { token: 'SYNTHETIC' } }]; assert.throws(() => nativeTable(other, 'Table1'), e => e.code === 'RECORD_RICH_CELL');

@@ -30,7 +30,8 @@ export function markdownTables(markdown) {
 
 export function nativeTable(blocks, tableId) {
   const byId = new Map(blocks.map(b => [b.block_id, b])), b = byId.get(tableId), property = b?.table?.property;
-  assert(b?.block_type === 31 && Number.isInteger(property?.column_size) && Number.isInteger(property.row_size) && property.row_size >= 1 && property.column_size >= 2 && !property.merge_info?.length, 'RECORD_TABLE', '需要有表头、未合并单元格的原生文档表格');
+  const unmerged = property?.merge_info === undefined || (Array.isArray(property.merge_info) && property.merge_info.every(cell => cell?.row_span === 1 && cell?.col_span === 1));
+  assert(b?.block_type === 31 && Number.isInteger(property?.column_size) && Number.isInteger(property.row_size) && property.row_size >= 1 && property.column_size >= 2 && unmerged, 'RECORD_TABLE', '需要有表头、未合并单元格的原生文档表格');
   const cells = b.table.cells;
   assert(Array.isArray(cells) && cells.length === property.row_size * property.column_size, 'RECORD_TABLE', '表格单元格列表不完整');
   const textIds = [], values = cells.map(id => {

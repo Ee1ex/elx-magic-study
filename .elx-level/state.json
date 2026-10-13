@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "release-0.10.0-ready",
+  "stage": "personal-records-live-ingest",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -15,8 +15,8 @@
   "current_task": {
     "id": "REQ-020",
     "owner": "项目负责人（当前用户）",
-    "scope": "用户当次授权版本提升、收尾及GitHub上传；main、v0.10.0、Release和Skill ZIP／摘要",
-    "summary": "0.10.0版本演进、打包、本机同步及GitHub发布",
+    "scope": "确认清单内3篇新建、9分类及19子文档移动、个人记录正文和首页局部导航",
+    "summary": "确认范围内首次个人记录导入、目录导航和管理同步已完成并回读",
     "out_of_scope": "删除、权限修改、强推和历史改写；私人正文与回执不公开",
     "paths": [
       "skills/elx-magic-study",
@@ -28,7 +28,7 @@
       "AGENTS.md",
       ".elx-level"
     ],
-    "next_step": "完成0.10.0发布后继续已确认的私人文档入库和目录迁移"
+    "next_step": "后续按用户请求记录或推荐；真实单条追加与联网推荐另行验收"
   },
   "artifacts": [
     {
@@ -37,7 +37,7 @@
     },
     {
       "path": "docs/progress/PROG-015-personal-records.md",
-      "summary": "本地实现、21项新增及独立副本106项；真实平台未执行"
+      "summary": "5表69条、39篇索引、52条管理明细真实回读；107项独立副本通过，工作区EPERM仍保留"
     }
   ],
   "verifications": [
@@ -60,6 +60,16 @@
       "command": "final isolated regression / format / privacy / diff",
       "status": "passed",
       "summary": "最终版本106项通过；格式和公开文件无私人飞书对象链接"
+    },
+    {
+      "command": "approved live import / native table readback / sync / workbench",
+      "status": "passed",
+      "summary": "5表69条，管理优先三入口，28篇旧正文及24份旧操作保留，39篇索引0失败，52条管理明细及人工备注核验"
+    },
+    {
+      "command": "table regression / isolated full suite / install SHA256",
+      "status": "passed",
+      "summary": "22项记录检查及同字节副本107项通过；44安装文件一致，安装前后148个人文件不变；工作区106/107，旧EPERM未关闭"
     }
   ],
   "git": {
@@ -356,7 +366,17 @@
       "event": "v0100_release_authorized",
       "at": "2026-10-13T02:06:14.836135+00:00",
       "summary": "用户要求提升版本并收尾上传GitHub；已确认私人入库授权继续有效，待发布后执行"
+    },
+    {
+      "event": "req020_import_scope_confirmed",
+      "at": "2026-10-13T02:14:08.620778+00:00",
+      "summary": "用户确认具体预览；执行3新建、9分类整体移动及个人正文导入"
+    },
+    {
+      "event": "req020_live_import_verified",
+      "at": "2026-10-13T02:28:20.578Z",
+      "summary": "确认范围内首次个人记录导入、目录导航和管理同步已完成并回读"
     }
   ],
-  "updated_at": "2026-10-13T02:08:14.378648+00:00"
+  "updated_at": "2026-10-13T02:28:20.578Z"
 }

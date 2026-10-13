@@ -1,5 +1,9 @@
 # 变更记录
 
+## 未发布
+
+- 修复飞书为普通表格返回单位跨度 `merge_info` 时被误判为合并表格的问题；实际合并和不完整元数据仍拒绝普通追加。
+
 ## [0.10.0] - 2026-10-13
 
 - feat(records): add personal tables and split recommendation workflows
