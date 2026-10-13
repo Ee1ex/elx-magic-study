@@ -1,6 +1,6 @@
 # 1.0.0 本地包与发布预览
 
-日期：2026-10-14。当前仅完成本地版本与打包；GitHub main、Tag、Release 和本机全局 MCP 配置尚未执行。范围：[REQ-022](../requirements/REQ-022-local-mcp.md)、[PROG-017](../progress/PROG-017-local-mcp.md)。版本源 `package.json`、MCP 包、CLI help 均为 `1.0.0`。ELX Level 的自动版本 dry-run 建议 `0.11.0`；用户明确指定 1.0，采用三段格式 `1.0.0`。
+日期：2026-10-14。本文件为发布前的本地包与执行预览；main／Tag／Release已按确认发布并回读，实际结果见[发布回执](RELEASE-1.0.0.md)。本机全局 MCP 配置尚未执行。范围：[REQ-022](../requirements/REQ-022-local-mcp.md)、[PROG-017](../progress/PROG-017-local-mcp.md)。版本源 `package.json`、MCP 包、CLI help 均为 `1.0.0`。ELX Level 的自动版本 dry-run 建议 `0.11.0`；用户明确指定 1.0，采用三段格式 `1.0.0`。
 
 | 附件 | SHA256 | 内容 |
 |---|---|---|

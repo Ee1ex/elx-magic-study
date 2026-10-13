@@ -1,5 +1,7 @@
 # 进度与历史台账
 
+- 2026-10-14：1.0.0 main／注释Tag／正式Release及三个附件按确认发布，远端与下载摘要回读一致；真实Codex和飞书闭环未验收，见[RELEASE-1.0.0](../releases/RELEASE-1.0.0.md)。
+
 - 2026-10-14：REQ-022 本地 stdio MCP、异步 worker、一次性人工批准与独立包实施；验收和未执行项见[PROG-017](PROG-017-local-mcp.md)。
 
 - 2026-10-14：REQ-021文件转换与关键资源流程、隔离MarkItDown运行时及7项实际合成转换检查完成；本机同步和真实平台边界见[PROG-016](PROG-016-files-and-assets.md)。

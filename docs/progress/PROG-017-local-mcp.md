@@ -19,4 +19,4 @@
 - Skill Creator格式验证通过；Node语法与`git diff --check`通过。SDK 2.3.1、Zod 4.1.12 锁定；`npm ci --ignore-scripts`后审计为0项已知漏洞。
 - 本地1.0.0构建与摘要见[PACKAGE-1.0.0](../releases/PACKAGE-1.0.0.md)：Skill ZIP 47文件、MCP ZIP 2500文件，解包后逐文件 SHA256 一致；解包的 MCP server 同样通过5项合成协议测试。
 - 未执行真实飞书文档/表格写入、图片/PDF上传、Codex 全局 MCP 配置、其他客户端/系统验收。计划的“实际客户端授权执行”仍待用户提供具体测试目标并确认。
-- 1.0.0 GitHub main/Tag/Release 和本机全局安装待展示包、摘要和远端目标后再次确认；本文件不构成发布回执。
+- 1.0.0 GitHub main/Tag/Release已按用户再次确认发布并下载附件核对，详见[RELEASE-1.0.0](../releases/RELEASE-1.0.0.md)。本机全局安装与真实飞书试点未执行。

@@ -5,9 +5,9 @@
   "level": 1,
   "stage": "local-mcp",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R3",
-  "execution_policy": "CONFIRM",
+  "execution_policy": "AUTO",
   "permissions": {
     "allow_push_own_branch": false,
     "allow_create_draft_pr": false
@@ -16,7 +16,7 @@
     "id": "REQ-022",
     "owner": "项目负责人（当前用户）",
     "scope": "本地stdio MCP、共用CLI核心、人工批准、独立包与1.0.0版本准备",
-    "summary": "本地MCP源码与独立包已验证；GitHub发布与全局配置待确认",
+    "summary": "1.0.0本地MCP与发布已回读；真实客户端和飞书闭环待独立验收",
     "out_of_scope": "真实飞书写入、个人状态迁移、删除、账号权限和自动全局配置",
     "paths": [
       "skills/elx-magic-study",
@@ -28,7 +28,7 @@
       "CHANGELOG.md",
       ".elx-level"
     ],
-    "next_step": "核对发布目标、ZIP摘要与限制后确认GitHub发布；真实飞书和Codex全局联调另行验收"
+    "next_step": "按具体目标另行验收Codex客户端、飞书文档/表格及图片/PDF资源；全局安装前展示路径与备份"
   },
   "artifacts": [
     {
@@ -42,6 +42,10 @@
     {
       "path": "docs/releases/PACKAGE-1.0.0.md",
       "summary": "Skill与MCP ZIP摘要及发布预览"
+    },
+    {
+      "path": "docs/releases/RELEASE-1.0.0.md",
+      "summary": "main、Tag、Release及附件下载回读"
     }
   ],
   "verifications": [
@@ -59,6 +63,11 @@
       "command": "MCP+Skill ZIP逐文件SHA256、Skill格式、Node语法",
       "status": "passed",
       "summary": "Skill 47文件、MCP 2500文件与源一致；未验证真实Codex或飞书写入"
+    },
+    {
+      "command": "GitHub main/Tag/Release readback and downloaded asset SHA256",
+      "status": "passed",
+      "summary": "v1.0.0指向66e9990；三个Release附件下载后与本地摘要一致"
     }
   ],
   "git": {
@@ -375,7 +384,12 @@
       "at": "2026-10-13T18:36:59Z",
       "event": "req022_local_mcp_bundle_verified",
       "summary": "1.0.0本地MCP源码、合成协议、CLI回归和独立ZIP已验证；发布待确认"
+    },
+    {
+      "at": "2026-10-13T18:44:36Z",
+      "event": "v100_release_verified",
+      "summary": "确认后发布main/v1.0.0/Release及三个附件，下载摘要一致；真实飞书和Codex配置未执行"
     }
   ],
-  "updated_at": "2026-10-13T18:36:59Z"
+  "updated_at": "2026-10-13T18:44:36Z"
 }

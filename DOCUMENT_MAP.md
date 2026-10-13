@@ -4,6 +4,8 @@
 
 - 1.0.0本地包与发布预览：[PACKAGE-1.0.0](docs/releases/PACKAGE-1.0.0.md)、[Release正文草稿](docs/releases/RELEASE-NOTES-1.0.0.md)。
 
+- 1.0.0正式发布与附件回读：[RELEASE-1.0.0](docs/releases/RELEASE-1.0.0.md)。
+
 - 文件与关键资源：[REQ-021](docs/requirements/REQ-021-files-and-assets.md)、[实施记录](docs/progress/PROG-016-files-and-assets.md)、[Skill流程](skills/elx-magic-study/references/files-and-assets.md)。本地转换与官方资源上传编排，真实上传试点待验。
 
 - 本地 MCP 的原始方案：[开发计划](docs/plans/LOCAL_MCP_PLAN.md)、[AI 开发交接](docs/plans/LOCAL_MCP_HANDOFF.md)。其中“仅计划、未实施”为当时的历史状态，当前实现与验证以 REQ-022／PROG-017 为准。
