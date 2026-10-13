@@ -3,9 +3,9 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "personal-records-local-commit-ready",
+  "stage": "personal-records-local-completed",
   "gate": null,
-  "status": "in_progress",
+  "status": "completed",
   "risk": "R2",
   "execution_policy": "AUTO",
   "permissions": {
@@ -16,7 +16,7 @@
     "id": "REQ-020",
     "owner": "项目负责人（当前用户）",
     "scope": "本地源码、合成验证、文档和本地提交",
-    "summary": "两类资料与动态个人表格记录",
+    "summary": "两类资料与动态个人表格记录本地实现和验收完成",
     "out_of_scope": "真实飞书/个人状态、旧资料导入迁移、安装、打包发布、调度、删除",
     "paths": [
       "skills/elx-magic-study",
@@ -28,7 +28,7 @@
       "AGENTS.md",
       ".elx-level"
     ],
-    "next_step": "仅本地实现和验收；安装、真实试点及旧库调整按具体范围另行确认。"
+    "next_step": "当前仅本地源码；安装升级、真实表格试点、旧资料整理及发布按具体范围另行确认。EPERM环境问题继续保留。"
   },
   "artifacts": [
     {
@@ -37,29 +37,34 @@
     },
     {
       "path": "docs/progress/PROG-015-personal-records.md",
-      "summary": "实现、20项新增检查与105项完整回归"
+      "summary": "本地实现、21项新增及独立副本106项；真实平台未执行"
     }
   ],
   "verifications": [
     {
       "command": "HEAD isolated baseline / node --test",
       "status": "passed",
-      "summary": "原基线45文件85项通过；工作区修改前失败保留，环境根因未确认"
+      "summary": "原基线45文件85项通过；工作区修改前失败保留"
     },
     {
-      "command": "node --test --test-concurrency=1 tests/*.test.mjs",
+      "command": "node --test tests/records.test.mjs",
       "status": "passed",
-      "summary": "工作区与50文件字节一致副本各105项；20项新增，均为合成或模拟"
+      "summary": "最终21项新增合成检查通过，含Wiki/docx别名防重复"
     },
     {
-      "command": "Skill Creator quick_validate / node --check / help",
+      "command": "50-file SHA256 / isolated node --test --test-concurrency=1",
       "status": "passed",
-      "summary": "已有venv格式验证通过，15脚本语法及新增入口确认；无需安装依赖"
+      "summary": "最终源码及测试50文件字节一致，106项通过；无真实飞书调用"
     },
     {
-      "command": "local links / README images / privacy / all-file SHA256 / git diff --check",
+      "command": "final workspace node --test --test-concurrency=1",
+      "status": "failed",
+      "summary": "104/106通过，2项旧用例EPERM原子rename；不修改存储或关闭环境问题"
+    },
+    {
+      "command": "Skill Creator quick_validate / node --check / local links / README images / privacy / diff",
       "status": "passed",
-      "summary": "23篇文档无新断链，7个视觉资源保留，50文件一致，无私人飞书对象链接"
+      "summary": "已有venv格式验证、15脚本语法、23篇本地链接、7个视觉资源保留、无私人飞书对象链接；无需安装依赖"
     },
     {
       "command": "native Feishu / platform recommendation / global upgrade / release",
@@ -70,8 +75,8 @@
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "04ce7204a75dee5713ab91841df63b049ec87844",
-    "last_commit_note": "已发布Tag目标；后续文档收尾提交以Git日志为准",
+    "last_commit": "08e5b5a845a4b0bcfbdcb900ad4f91fcf4da9739",
+    "last_commit_note": "本轮首个功能提交；最终别名回归和事实收尾提交以Git日志为准",
     "repository": true
   },
   "remote": {
@@ -346,7 +351,12 @@
       "event": "req020_local_verification_passed",
       "at": "2026-10-12T20:11:28.639192+00:00",
       "summary": "105项工作区及独立副本、格式语法链接隐私通过；待仅本轮文件本地提交"
+    },
+    {
+      "event": "req020_local_completed",
+      "at": "2026-10-12T20:19:44.825324+00:00",
+      "summary": "本地功能已提交，最终副本106项及新增21项通过；工作区2项EPERM和真实平台边界保留，未安装发布或改真实资料"
     }
   ],
-  "updated_at": "2026-10-12T20:11:28.639192+00:00"
+  "updated_at": "2026-10-12T20:19:44.825324+00:00"
 }
