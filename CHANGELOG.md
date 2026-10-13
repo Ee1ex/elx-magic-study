@@ -1,5 +1,12 @@
 # 变更记录
 
+## [0.10.0] - 2026-10-13
+
+- feat(records): add personal tables and split recommendation workflows
+- docs(records): record local upgrade and pending import preview
+- fix(records): guard document aliases and record local acceptance
+- docs(release): record verified 0.9.0 publication and installation
+
 ## 未发布 - 2026-10-13
 
 - REQ-020：书屋管理最先，链接资料／个人记录分区登记；旧库与旧计划兼容，不自动迁移。
