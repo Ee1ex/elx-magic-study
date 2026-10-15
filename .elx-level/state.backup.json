@@ -3,71 +3,65 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "local-mcp",
+  "stage": "research-workflow",
   "gate": null,
   "status": "completed",
-  "risk": "R3",
+  "risk": "R1",
   "execution_policy": "AUTO",
   "permissions": {
     "allow_push_own_branch": false,
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-022",
+    "id": "REQ-023",
     "owner": "项目负责人（当前用户）",
-    "scope": "本地stdio MCP、共用CLI核心、人工批准、独立包与1.0.0版本准备",
-    "summary": "1.0.0本地MCP与发布已回读；真实客户端和飞书闭环待独立验收",
-    "out_of_scope": "真实飞书写入、个人状态迁移、删除、账号权限和自动全局配置",
+    "scope": "Skill调研指引、证据呈现、七个平台有界只读试读与项目记录",
+    "summary": "调研指引与本轮平台试读完成；各能力未通过项分别保留",
+    "out_of_scope": "MCP扩展、工具或全局安装升级、账号登录注册、付费、真实知识库写入、发布和删除",
     "paths": [
       "skills/elx-magic-study",
-      "mcp",
-      "package.json",
-      "README.md",
       "docs",
+      "AGENTS.md",
       "DOCUMENT_MAP.md",
       "CHANGELOG.md",
       ".elx-level"
     ],
-    "next_step": "按具体目标另行验收Codex客户端、飞书文档/表格及图片/PDF资源；全局安装前展示路径与备份"
+    "next_step": "按具体样本补验TikTok、B站字幕评论、京东评论及跨宿主保存闭环；全局升级与发布另行确认"
   },
   "artifacts": [
     {
-      "path": "docs/requirements/REQ-022-local-mcp.md",
-      "summary": "本地MCP范围与成功标准"
+      "path": "docs/requirements/REQ-023-research-workflow.md",
+      "summary": "确认范围与验收标准"
     },
     {
-      "path": "docs/progress/PROG-017-local-mcp.md",
-      "summary": "stdio协议、旧CLI、独立ZIP与批准边界检查"
+      "path": "docs/progress/PROG-018-research-workflow.md",
+      "summary": "七个平台试读、流程走查与证据边界"
     },
     {
-      "path": "docs/releases/PACKAGE-1.0.0.md",
-      "summary": "Skill与MCP ZIP摘要及发布预览"
-    },
-    {
-      "path": "docs/releases/RELEASE-1.0.0.md",
-      "summary": "main、Tag、Release及附件下载回读"
+      "path": "skills/elx-magic-study/references/research.md",
+      "summary": "宿主工具选择、原备注与证据、读取和保存授权"
     }
   ],
   "verifications": [
     {
-      "command": "cd mcp; npm test",
+      "command": "Skill Creator quick_validate.py (UTF-8, existing PyYAML)",
       "status": "passed",
-      "summary": "5项合成协议与批准边界通过；拆包后独立server复测通过"
+      "summary": "Skill格式有效；未安装依赖"
     },
     {
-      "command": "node --test --test-concurrency=1 tests/*.test.mjs (system temp copy)",
+      "command": "Changed Markdown relative-link check",
       "status": "passed",
-      "summary": "107/107；工作区基线106/107因已知EPERM失败"
+      "summary": "14份本次文档的相对引用均存在"
     },
     {
-      "command": "MCP+Skill ZIP逐文件SHA256、Skill格式、Node语法",
-      "status": "passed",
-      "summary": "Skill 47文件、MCP 2500文件与源一致；未验证真实Codex或飞书写入"
+      "command": "OpenCLI and bili-cli bounded live reads",
+      "status": "partial",
+      "summary": "七个平台检查已执行并记录；6个搜索非空，其他能力未通过项见PROG-018；不代表全部平台成功"
     },
     {
-      "command": "GitHub main/Tag/Release readback and downloaded asset SHA256",
+      "command": "Author scenario walkthrough",
       "status": "passed",
-      "summary": "v1.0.0指向66e9990；三个Release附件下载后与本地摘要一致"
+      "summary": "7个合成请求决策走查；不是独立Agent评测或真实保存验收"
     }
   ],
   "git": {
@@ -389,7 +383,12 @@
       "at": "2026-10-13T18:44:36Z",
       "event": "v100_release_verified",
       "summary": "确认后发布main/v1.0.0/Release及三个附件，下载摘要一致；真实飞书和Codex配置未执行"
+    },
+    {
+      "at": "2026-10-15T17:15:55.160Z",
+      "event": "req023_guidance_and_bounded_checks_completed",
+      "summary": "用户确认范围内完成调研指引和平台样本检查；保留读取缺口，不安装发布或写真实知识库"
     }
   ],
-  "updated_at": "2026-10-13T18:44:36Z"
+  "updated_at": "2026-10-15T17:15:55.160Z"
 }

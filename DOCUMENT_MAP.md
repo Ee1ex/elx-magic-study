@@ -1,5 +1,7 @@
 # 文档地图
 
+- 1.0.1发布准备：[包与具体发布清单](docs/releases/PACKAGE-1.0.1.md)、[Release说明](docs/releases/RELEASE-NOTES-1.0.1.md)。当前待发布前确认。
+
 - 收集资料时补充调研：[REQ-023](docs/requirements/REQ-023-research-workflow.md)、[实现与平台验收](docs/progress/PROG-018-research-workflow.md)、[Skill调研流程](skills/elx-magic-study/references/research.md)。
 
 - 本地 MCP 1.0.0 开发：[REQ-022](docs/requirements/REQ-022-local-mcp.md)、[实施与验收](docs/progress/PROG-017-local-mcp.md)、[安装及操作](mcp/README.md)、[Skill路由](skills/elx-magic-study/references/mcp.md)。

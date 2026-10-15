@@ -14,7 +14,7 @@ import { recordContext, searchRecords } from './records.mjs';
 import { doctor, discoverSpace, bind, importManifest, sync, fetchDocument, capture, sourceContent, makePlan, applyPlan, recoverPlan, maintenance, schedulePrompt, classifyDocument, intakeQueue, planOverview, retirePlan, diagnosePlan, classificationContext } from './library-core.mjs';
 
 const HELP = {
-  version: '1.0.0', usage: 'node <SKILL_ROOT>/scripts/library.mjs <command> [--home <个人状态目录>] [--library <编号>]',
+  version: '1.0.1', usage: 'node <SKILL_ROOT>/scripts/library.mjs <command> [--home <个人状态目录>] [--library <编号>]',
   commands: {
     onboarding: '只读查看是否已介绍功能及用户提醒偏好；未绑定也可用',
     'onboarding-record': '--file <介绍及明确偏好JSON>；只保存本地引导记录，不启用功能',
