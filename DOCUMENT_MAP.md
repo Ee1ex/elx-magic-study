@@ -1,5 +1,7 @@
 # 文档地图
 
+- 1.0.2：[包、安装与发布清单](docs/releases/PACKAGE-1.0.2.md)、[Release说明](docs/releases/RELEASE-NOTES-1.0.2.md)。本机已同步，远端待确认。
+
 - Skill-only默认入口：[REQ-024实现与验收](docs/progress/PROG-019-skill-only-default.md)。MCP保留为主动选择项，本轮未发布。
 
 - 1.0.1发布准备：[包与具体发布清单](docs/releases/PACKAGE-1.0.1.md)、[Release说明](docs/releases/RELEASE-NOTES-1.0.1.md)。已发布并下载核验，见[发布回执](docs/releases/RELEASE-1.0.1.md)。本轮未升级本机安装。

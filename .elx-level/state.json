@@ -3,11 +3,11 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "skill-only-default",
-  "gate": null,
-  "status": "completed",
-  "risk": "R1",
-  "execution_policy": "AUTO",
+  "stage": "release-1.0.2",
+  "gate": "release-confirmation",
+  "status": "waiting_approval",
+  "risk": "R3",
+  "execution_policy": "CONFIRM",
   "permissions": {
     "allow_push_own_branch": false,
     "allow_create_draft_pr": false
@@ -15,9 +15,9 @@
   "current_task": {
     "id": "REQ-024",
     "owner": "项目负责人（当前用户）",
-    "scope": "Skill-only默认CLI、MCP主动选择指引与隔离安装验收",
-    "summary": "默认入口指引已修改，安装器隔离检查通过；未发布或更新全局副本",
-    "out_of_scope": "MCP批准机制改动、真实配置变更、全局升级、发布、删除",
+    "scope": "REQ-024版本准备、打包验收和既有本机安装同步",
+    "summary": "1.0.2打包与本机同步完成，MCP保持禁用；待远端发布清单确认",
+    "out_of_scope": "未确认远端写入、真实飞书修改、个人状态迁移、删除、启用已禁用MCP",
     "paths": [
       "skills/elx-magic-study",
       "README.md",
@@ -28,24 +28,28 @@
       "CHANGELOG.md",
       ".elx-level"
     ],
-    "next_step": "按后续指令决定版本发布及全局更新；跨harness体验待反馈"
+    "next_step": "确认PACKAGE-1.0.2后发布main、Tag、Release及三个附件并回读"
   },
   "artifacts": [
     {
       "path": "docs/progress/PROG-019-skill-only-default.md",
       "summary": "范围、修改与验收边界"
+    },
+    {
+      "path": "docs/releases/PACKAGE-1.0.2.md",
+      "summary": "包摘要、本机安装及远端确认清单"
     }
   ],
   "verifications": [
     {
-      "command": "Isolated scripts/install.mjs --apply (twice)",
+      "command": "CLI / MCP / extracted MCP tests",
       "status": "passed",
-      "summary": "48文件，第二次复用；测试及真实配置不变，无MCP安装产物"
+      "summary": "107/107、5/5、5/5"
     },
     {
-      "command": "Skill Creator quick_validate / relative links / git diff --check",
+      "command": "Archive and installed file hash checks / stdio doctor/status",
       "status": "passed",
-      "summary": "格式和引用检查；未声称跨宿主行为验收"
+      "summary": "48/2501文件一致；1.0.2／13工具；授权有效，MCP禁用保留，169个人文件不变"
     }
   ],
   "git": {
@@ -387,7 +391,12 @@
       "at": "2026-10-15T17:32:40.732177+00:00",
       "event": "req024_skill_only_default_completed",
       "summary": "用户要求默认CLI，MCP入口保留但仅主动选择；本地验证通过"
+    },
+    {
+      "at": "2026-10-15T17:35:50.204482+00:00",
+      "event": "v102_prepared_and_installed",
+      "summary": "按本次授权备份同步本机，远端清单待确认"
     }
   ],
-  "updated_at": "2026-10-15T17:32:40.732177+00:00"
+  "updated_at": "2026-10-15T17:35:50.204482+00:00"
 }

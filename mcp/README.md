@@ -11,7 +11,7 @@
 以下是 Codex CLI 的**配置预览**，把路径换成实际独立包位置后，由用户确认再执行。它会修改 Codex 配置：
 
 ```powershell
-codex mcp add elx-magic-study -- node "D:\实际安装目录\elx-magic-study-1.0.1\mcp\server.mjs"
+codex mcp add elx-magic-study -- node "D:\实际安装目录\elx-magic-study-1.0.2\mcp\server.mjs"
 codex mcp get elx-magic-study
 ```
 
@@ -22,7 +22,7 @@ codex mcp get elx-magic-study
 `study_plan` 会生成完整目标和正文预览。它可能更新已配置工作台的机器区域；它不会保存文章。执行任何计划前，在本机交互式终端运行：
 
 ```powershell
-node "D:\实际安装目录\elx-magic-study-1.0.1\mcp\approve.mjs" <operationId> <digest>
+node "D:\实际安装目录\elx-magic-study-1.0.2\mcp\approve.mjs" <operationId> <digest>
 ```
 
 终端会显示计划的目标、正文和摘要；核对后按提示手动输入完整批准短语。命令只为这一计划签发一次 `approvalToken`。将三个值交给 `study_apply`，它会再次核对账号、根、版本和计划摘要，并沿用原有写后回读。完成后不能重放；两步计划只有前一步已回读核验、后一步仍待发送时，才能用原批准续行。中断或未知结果先 `study_operation`、`study_recover`，不要再发送一次新增。此入口只能证明本机用户做了交互式批准，不能抵御拥有同一系统账号权限的恶意进程。
