@@ -3,11 +3,11 @@
   "workflow_version": "2.1",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "research-workflow",
-  "gate": null,
-  "status": "completed",
-  "risk": "R1",
-  "execution_policy": "AUTO",
+  "stage": "release-1.0.1",
+  "gate": "release-confirmation",
+  "status": "waiting_approval",
+  "risk": "R3",
+  "execution_policy": "CONFIRM",
   "permissions": {
     "allow_push_own_branch": false,
     "allow_create_draft_pr": false
@@ -15,18 +15,21 @@
   "current_task": {
     "id": "REQ-023",
     "owner": "项目负责人（当前用户）",
-    "scope": "Skill调研指引、证据呈现、七个平台有界只读试读与项目记录",
-    "summary": "调研指引与本轮平台试读完成；各能力未通过项分别保留",
-    "out_of_scope": "MCP扩展、工具或全局安装升级、账号登录注册、付费、真实知识库写入、发布和删除",
+    "scope": "REQ-023发布准备、功能介绍更新、版本统一、独立包与本地验证",
+    "summary": "1.0.1功能介绍与两个独立包已验收，等待具体发布清单确认",
+    "out_of_scope": "全局安装升级、已有飞书首页和个人数据修改、权限变更、删除、未确认的远端写入",
     "paths": [
       "skills/elx-magic-study",
+      "mcp",
+      "package.json",
+      "README.md",
       "docs",
       "AGENTS.md",
       "DOCUMENT_MAP.md",
       "CHANGELOG.md",
       ".elx-level"
     ],
-    "next_step": "按具体样本补验TikTok、B站字幕评论、京东评论及跨宿主保存闭环；全局升级与发布另行确认"
+    "next_step": "确认PACKAGE-1.0.1中的main、Tag、Release、三个附件及git/gh方式后执行远端发布和回读"
   },
   "artifacts": [
     {
@@ -40,28 +43,36 @@
     {
       "path": "skills/elx-magic-study/references/research.md",
       "summary": "宿主工具选择、原备注与证据、读取和保存授权"
+    },
+    {
+      "path": "docs/releases/PACKAGE-1.0.1.md",
+      "summary": "包摘要和待确认的远端清单"
+    },
+    {
+      "path": "docs/releases/RELEASE-NOTES-1.0.1.md",
+      "summary": "完整Release说明"
     }
   ],
   "verifications": [
     {
-      "command": "Skill Creator quick_validate.py (UTF-8, existing PyYAML)",
+      "command": "node --test --test-concurrency=1 tests/*.test.mjs",
       "status": "passed",
-      "summary": "Skill格式有效；未安装依赖"
+      "summary": "当前工作区107/107；历史EPERM不宣称根治"
     },
     {
-      "command": "Changed Markdown relative-link check",
+      "command": "node --test mcp/tests/*.test.mjs",
       "status": "passed",
-      "summary": "14份本次文档的相对引用均存在"
+      "summary": "源码5/5，解包独立MCP入口5/5"
     },
     {
-      "command": "OpenCLI and bili-cli bounded live reads",
-      "status": "partial",
-      "summary": "七个平台检查已执行并记录；6个搜索非空，其他能力未通过项见PROG-018；不代表全部平台成功"
+      "command": "ZIP CRC / all member bytes / extracted source / version consistency",
+      "status": "passed",
+      "summary": "Skill48文件、MCP2501文件全部核对；6处版本1.0.1"
     },
     {
-      "command": "Author scenario walkthrough",
+      "command": "Skill format / local links / git diff --check",
       "status": "passed",
-      "summary": "7个合成请求决策走查；不是独立Agent评测或真实保存验收"
+      "summary": "格式、相对引用与差异检查；平台部分通过范围仍见PROG-018"
     }
   ],
   "git": {
@@ -388,7 +399,12 @@
       "at": "2026-10-15T17:15:55.160Z",
       "event": "req023_guidance_and_bounded_checks_completed",
       "summary": "用户确认范围内完成调研指引和平台样本检查；保留读取缺口，不安装发布或写真实知识库"
+    },
+    {
+      "at": "2026-10-15T17:22:41.329Z",
+      "event": "v101_release_prepared",
+      "summary": "功能介绍、版本与包已准备；107/5/5验证通过，具体发布清单待执行前确认"
     }
   ],
-  "updated_at": "2026-10-15T17:15:55.160Z"
+  "updated_at": "2026-10-15T17:22:41.329Z"
 }

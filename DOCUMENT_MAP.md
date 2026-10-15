@@ -1,6 +1,6 @@
 # 文档地图
 
-- 1.0.1发布准备：[包与具体发布清单](docs/releases/PACKAGE-1.0.1.md)、[Release说明](docs/releases/RELEASE-NOTES-1.0.1.md)。当前待发布前确认。
+- 1.0.1发布准备：[包与具体发布清单](docs/releases/PACKAGE-1.0.1.md)、[Release说明](docs/releases/RELEASE-NOTES-1.0.1.md)。已发布并下载核验，见[发布回执](docs/releases/RELEASE-1.0.1.md)。本轮未升级本机安装。
 
 - 收集资料时补充调研：[REQ-023](docs/requirements/REQ-023-research-workflow.md)、[实现与平台验收](docs/progress/PROG-018-research-workflow.md)、[Skill调研流程](skills/elx-magic-study/references/research.md)。
 
