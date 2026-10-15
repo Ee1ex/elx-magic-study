@@ -1,5 +1,7 @@
 # 进度与历史台账
 
+- 2026-10-16：REQ-023 收集资料时补充调研指引与有界平台验收，结果及未验证项见 [PROG-018](PROG-018-research-workflow.md)。
+
 - 2026-10-14：1.0.0 main／注释Tag／正式Release及三个附件按确认发布，远端与下载摘要回读一致；真实Codex和飞书闭环未验收，见[RELEASE-1.0.0](../releases/RELEASE-1.0.0.md)。
 
 - 2026-10-14：REQ-022 本地 stdio MCP、异步 worker、一次性人工批准与独立包实施；验收和未执行项见[PROG-017](PROG-017-local-mcp.md)。
