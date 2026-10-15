@@ -4,10 +4,10 @@
   "project_id": "elx-library-333a1b57",
   "level": 1,
   "stage": "release-1.0.1",
-  "gate": "release-confirmation",
-  "status": "waiting_approval",
+  "gate": null,
+  "status": "completed",
   "risk": "R3",
-  "execution_policy": "CONFIRM",
+  "execution_policy": "AUTO",
   "permissions": {
     "allow_push_own_branch": false,
     "allow_create_draft_pr": false
@@ -16,7 +16,7 @@
     "id": "REQ-023",
     "owner": "项目负责人（当前用户）",
     "scope": "REQ-023发布准备、功能介绍更新、版本统一、独立包与本地验证",
-    "summary": "1.0.1功能介绍与两个独立包已验收，等待具体发布清单确认",
+    "summary": "1.0.1功能介绍及正式发布完成，三个附件下载摘要已回读",
     "out_of_scope": "全局安装升级、已有飞书首页和个人数据修改、权限变更、删除、未确认的远端写入",
     "paths": [
       "skills/elx-magic-study",
@@ -29,7 +29,7 @@
       "CHANGELOG.md",
       ".elx-level"
     ],
-    "next_step": "确认PACKAGE-1.0.1中的main、Tag、Release、三个附件及git/gh方式后执行远端发布和回读"
+    "next_step": "按用户后续指令决定本机升级；平台未通过项按具体样本补验"
   },
   "artifacts": [
     {
@@ -51,6 +51,10 @@
     {
       "path": "docs/releases/RELEASE-NOTES-1.0.1.md",
       "summary": "完整Release说明"
+    },
+    {
+      "path": "docs/releases/RELEASE-1.0.1.md",
+      "summary": "远端提交、Tag、Release及下载附件核验"
     }
   ],
   "verifications": [
@@ -73,6 +77,11 @@
       "command": "Skill format / local links / git diff --check",
       "status": "passed",
       "summary": "格式、相对引用与差异检查；平台部分通过范围仍见PROG-018"
+    },
+    {
+      "command": "GitHub main/tag/release and downloaded asset SHA256",
+      "status": "passed",
+      "summary": "v1.0.1指向c01e228，正式Release与三个下载附件摘要一致"
     }
   ],
   "git": {
@@ -404,7 +413,12 @@
       "at": "2026-10-15T17:22:41.329Z",
       "event": "v101_release_prepared",
       "summary": "功能介绍、版本与包已准备；107/5/5验证通过，具体发布清单待执行前确认"
+    },
+    {
+      "at": "2026-10-15T17:27:14.155490+00:00",
+      "event": "v101_release_verified",
+      "summary": "用户确认后发布并回读，未升级全局安装或改真实飞书"
     }
   ],
-  "updated_at": "2026-10-15T17:22:41.329Z"
+  "updated_at": "2026-10-15T17:27:14.155490+00:00"
 }

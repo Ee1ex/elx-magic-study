@@ -109,6 +109,8 @@ node scripts/install.mjs --apply
 
 其他支持 Skill 的工具，可导入完整的 `skills/elx-magic-study` 文件夹。不同工具的安装位置可能不同；目前主要在 Windows 与 Codex 中验证。
 
+**直接安装Skill时，默认使用CLI，不安装或启用MCP，也不要求额外打开MCP确认窗口。** 小助手可以简短介绍这个可选入口；只有你明确要求才配置，未选择不影响正常使用。已有明确选择可以沿用，禁用状态不会自动恢复。
+
 本地 MCP 是可选的结构化入口，与 Skill 和原 CLI 共用知识库状态。源码可用 `node mcp/build.mjs` 准备独立包；客户端连接、人工批准写入与依赖说明见 [MCP 安装说明](mcp/README.md)。它仍需本机 Node.js、已授权的飞书 CLI 和宿主模型；MarkItDown 文件转换另按需配置。未配置 MCP 时，Skill 继续使用原 CLI。网站调研由宿主调用外部工具，MCP 本身不提供全平台搜索，也不自动安装采集服务。
 
 ### 2. 让它带你连接飞书
