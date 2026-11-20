@@ -1,5 +1,7 @@
 # 文档地图
 
+- [书屋转博客 Skill](skills/elx-study-to-blog/SKILL.md) 与[本地交付记录](docs/progress/PROG-021-study-to-blog.md)。
+
 - 收藏理由、外部来源读取与资产核验见 [REQ-025 实施与验收](docs/progress/PROG-020-capture-retrieval-assets.md)。
 
 - 1.0.2：[包、安装与发布清单](docs/releases/PACKAGE-1.0.2.md)、[Release说明](docs/releases/RELEASE-NOTES-1.0.2.md)。本机已同步，远端已发布并核验，见[发布回执](docs/releases/RELEASE-1.0.2.md)。

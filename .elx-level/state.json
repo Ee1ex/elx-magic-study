@@ -1,9 +1,9 @@
 {
   "schema_version": "2.0",
-  "workflow_version": "2.1",
+  "workflow_version": "3.0",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "req-025-local-validation",
+  "stage": "req-026-local-blog-preview",
   "gate": null,
   "status": "completed",
   "risk": "R3",
@@ -13,37 +13,39 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-025",
+    "id": "REQ-026",
     "owner": "项目负责人（当前用户）",
-    "summary": "收藏理由、外部来源读取和图文工作台核验已完成并实测",
-    "scope": "仓库实现、开发指南、本地回归与一篇已确认的真实飞书图文页",
-    "out_of_scope": "博客实现、发布、全局安装升级、账号权限变更和批量历史迁移",
+    "summary": "独立书屋转博客 Skill、真实单篇取材、生图及本地博客预览完成",
+    "scope": "可选安装器、复用魔法书屋读取、MDX 与配图指引、真实笔记的本地草稿与预览、测试及本地包",
+    "out_of_scope": "线上发布、Git 远端写入、现有全局 Skill 升级和飞书内容修改",
     "paths": [
-      "skills/elx-magic-study",
-      "tests",
-      "mcp",
+      "skills/elx-study-to-blog",
+      "skills/elx-magic-study/SKILL.md",
+      "scripts/install.mjs",
+      "tests/blog-skill.test.mjs",
+      "README.md",
       "docs",
       "CHANGELOG.md",
       "DOCUMENT_MAP.md",
       ".elx-level"
     ],
-    "next_step": "后续按用户选择安排安装、发布或博客草稿导出。"
+    "next_step": "从本地文章页审阅草稿。"
   },
   "artifacts": [
     {
-      "path": "docs/progress/PROG-020-capture-retrieval-assets.md",
-      "summary": "复现、合成回归及真实回执的公开摘要"
+      "path": "skills/elx-study-to-blog/SKILL.md",
+      "summary": "独立 Skill 及站点、配图和取材入口"
     },
     {
-      "path": "skills/elx-magic-study/references/files-and-assets.md",
-      "summary": "图片、PDF 回执与工作台操作指引"
+      "path": "docs/progress/PROG-021-study-to-blog.md",
+      "summary": "安装与单篇真实草稿、本地图像和浏览器验收记录"
     }
   ],
   "verifications": [
     {
       "command": "node --test --test-concurrency=1 tests/*.test.mjs",
       "status": "passed",
-      "summary": "112/112"
+      "summary": "114/114"
     },
     {
       "command": "node --test mcp/tests/*.test.mjs, python tests/test_file_import.py",
@@ -51,21 +53,26 @@
       "summary": "5/5，7/7"
     },
     {
-      "command": "Skill Creator quick_validate.py",
+      "command": "Skill Creator quick_validate, isolated install and ZIP verification",
       "status": "passed",
-      "summary": "Skill 元数据和格式有效"
+      "summary": "两份 Skill 格式通过。新 Skill 单独安装、解包与 5 文件比对通过。"
     },
     {
-      "command": "飞书正文、原生资源、下载摘要、工作台及重复回执回读",
+      "command": "corepack pnpm check (Eelex Blog preview)",
       "status": "passed",
-      "summary": "一页、两项资源；两条记录及页面版本重跑一致"
+      "summary": "博客 46 项通过，静态文章成功构建。沿用基线 4 条 lint 警告。"
+    },
+    {
+      "command": "真实笔记、ImageGen、桌面/窄屏浏览器检查",
+      "status": "passed",
+      "summary": "回读一篇飞书笔记，生成一张说明图并验证本地文章页及卡片。"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "bc643e9b24379c39beb2e0199fff91ebb9704970",
-    "last_commit_note": "本轮修改前基线，完成提交以 Git 日志为准。",
+    "last_commit": "10d7686d86542d0f6e7371662e38e390aff29750",
+    "last_commit_note": "本轮实现前的提交，完成提交以 Git 日志为准。",
     "repository": true
   },
   "remote": {
@@ -415,7 +422,18 @@
       "at": "2026-11-20T17:19:08.749450+00:00",
       "event": "req025_local_delivery",
       "summary": "三项优化、本地回归和一篇真实飞书图文验证完成"
+    },
+    {
+      "at": "2026-11-20T17:48:36.713907+00:00",
+      "event": "req026_local_skill_preview",
+      "summary": "独立书屋转博客 Skill、本地试稿与图像生成验收完成。"
+    },
+    {
+      "event": "workflow_version_updated",
+      "from_version": "2.1",
+      "to_version": "3.0",
+      "at": "2026-11-20T17:48:36.823259Z"
     }
   ],
-  "updated_at": "2026-11-20T17:19:08.749450+00:00"
+  "updated_at": "2026-11-20T17:48:36.823259Z"
 }

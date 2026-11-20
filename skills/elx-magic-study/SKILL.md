@@ -37,6 +37,7 @@ Windows上含签名参数的外部链接按reading-tools.md通过scripts/opencli
 
 | 用户意图 | 参考与操作 |
 |---|---|
+| 明确要把一篇书屋笔记写成博客草稿 | 可交给独立安装的「书屋转博客」（elx-study-to-blog），复用本书屋的检索与正文回读；日常收藏按下列流程处理 |
 | 收集资料时顺便调研、先比较再收藏、核实价格或口碑 | [research.md](references/research.md)：识别问题与保存范围 → 实时检查工具 → 搜索及来源回读 → 区分原备注／联网证据 → 沿既有授权保存；仅调研不触发工作台写入 |
 | PDF／Office等文件整理，或链接含关键图片、PDF原件 | [files-and-assets.md](references/files-and-assets.md)：本地MarkItDown转换与原件快照 → 检查关键图 → 正文及图片／附件合并预览 → 原生资源上传与独立回读，不能仅留源链接 |
 | 手动清单、朋友推荐、口述“帮我记录”、检查已有内容并建议新增列 | [personal-records.md](references/personal-records.md)：核对个人区和已有表格 → 动态字段 → 单条计划与回读；已有唯一目标直接按本次记录授权保存，首次建分类／文档／表格或扩列先预览 |

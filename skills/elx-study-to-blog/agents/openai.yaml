@@ -1,0 +1,4 @@
+interface:
+  display_name: "书屋转博客"
+  short_description: "把飞书书屋笔记写成有出处、配图和本地预览的中文博客 MDX 草稿"
+  default_prompt: "使用 $elx-study-to-blog 从魔法书屋读取我选的笔记，面向博客读者改写成草稿，按需生成说明图，并给我本地预览。"
