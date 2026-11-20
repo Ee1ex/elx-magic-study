@@ -109,7 +109,7 @@ node scripts/install.mjs --apply
 
 其他支持 Skill 的工具，可导入完整的 `skills/elx-magic-study` 文件夹。不同工具的安装位置可能不同；目前主要在 Windows 与 Codex 中验证。
 
-要把书屋笔记写成博客，可以单独安装同仓的[书屋转博客](skills/elx-study-to-blog/SKILL.md)。在仓库执行 `node scripts/install.mjs --skill elx-study-to-blog --apply`，或向支持 Skill 的宿主导入完整的 `skills/elx-study-to-blog` 文件夹。它复用已有魔法书屋取材，生成适配 Eelex Blog 的 MDX 草稿，可按内容调用图片模型并在本地预览。省略 `--apply` 可预览安装目标。
+要把书屋笔记写成博客，可以单独安装同仓的[书屋转博客](skills/elx-study-to-blog/SKILL.md)。在仓库执行 `node scripts/install.mjs --skill elx-study-to-blog --apply`，或向支持 Skill 的宿主导入完整的 `skills/elx-study-to-blog` 文件夹。它复用已有魔法书屋取材，生成适配 Eelex Blog 的 MDX 草稿，为每个二级标题准备能解释该节的配图，并在本地预览。省略 `--apply` 可预览安装目标。
 
 **直接安装Skill时，默认使用CLI，不安装或启用MCP，也不要求额外打开MCP确认窗口。** 小助手可以简短介绍这个可选入口；只有你明确要求才配置，未选择不影响正常使用。已有明确选择可以沿用，禁用状态不会自动恢复。
 

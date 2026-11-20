@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "workflow_version": "2.1",
+  "workflow_version": "3.0",
   "project_id": "elx-library-333a1b57",
   "level": 1,
   "stage": "req-026-local-blog-preview",
@@ -427,7 +427,13 @@
       "at": "2026-11-20T17:48:36.713907+00:00",
       "event": "req026_local_skill_preview",
       "summary": "独立书屋转博客 Skill、本地试稿与图像生成验收完成。"
+    },
+    {
+      "event": "workflow_version_updated",
+      "from_version": "2.1",
+      "to_version": "3.0",
+      "at": "2026-11-20T17:48:36.823259Z"
     }
   ],
-  "updated_at": "2026-11-20T17:48:36.713907+00:00"
+  "updated_at": "2026-11-20T17:48:36.823259Z"
 }

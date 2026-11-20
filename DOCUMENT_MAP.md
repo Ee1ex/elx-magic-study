@@ -1,5 +1,7 @@
 # 文档地图
 
+- 书屋转博客的[通用生图提示词](skills/elx-study-to-blog/references/illustrations.md)和[逐节配图验收](docs/progress/PROG-022-illustration-alignment.md)。
+
 - [书屋转博客 Skill](skills/elx-study-to-blog/SKILL.md) 与[本地交付记录](docs/progress/PROG-021-study-to-blog.md)。
 
 - 收藏理由、外部来源读取与资产核验见 [REQ-025 实施与验收](docs/progress/PROG-020-capture-retrieval-assets.md)。

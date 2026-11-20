@@ -3,7 +3,7 @@
   "workflow_version": "3.0",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "req-026-local-blog-preview",
+  "stage": "req-027-section-illustrations",
   "gate": null,
   "status": "completed",
   "risk": "R3",
@@ -13,65 +13,63 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-026",
+    "id": "REQ-027",
     "owner": "项目负责人（当前用户）",
-    "summary": "独立书屋转博客 Skill、真实单篇取材、生图及本地博客预览完成",
-    "scope": "可选安装器、复用魔法书屋读取、MDX 与配图指引、真实笔记的本地草稿与预览、测试及本地包",
-    "out_of_scope": "线上发布、Git 远端写入、现有全局 Skill 升级和飞书内容修改",
+    "summary": "逐节解释图、覆盖检查和两篇本地草稿复验完成",
+    "scope": "优化通用生图提示词，每个二级标题配专图，按指定笔记试稿并修订上一版配图",
+    "out_of_scope": "公开发布、修改飞书内容、全局安装升级",
     "paths": [
       "skills/elx-study-to-blog",
-      "skills/elx-magic-study/SKILL.md",
-      "scripts/install.mjs",
-      "tests/blog-skill.test.mjs",
+      "tests/blog-figures.test.mjs",
       "README.md",
       "docs",
       "CHANGELOG.md",
       "DOCUMENT_MAP.md",
       ".elx-level"
     ],
-    "next_step": "从本地文章页审阅草稿。"
+    "next_step": "在本地预览对照正文与配图。"
   },
   "artifacts": [
     {
-      "path": "skills/elx-study-to-blog/SKILL.md",
-      "summary": "独立 Skill 及站点、配图和取材入口"
+      "path": "skills/elx-study-to-blog/references/illustrations.md",
+      "summary": "逐节图义、提示词与读图核对"
     },
     {
-      "path": "docs/progress/PROG-021-study-to-blog.md",
-      "summary": "安装与单篇真实草稿、本地图像和浏览器验收记录"
+      "path": "docs/progress/PROG-022-illustration-alignment.md",
+      "summary": "新旧两稿、盲读与可重复验收"
     }
   ],
   "verifications": [
     {
       "command": "node --test --test-concurrency=1 tests/*.test.mjs",
       "status": "passed",
-      "summary": "114/114"
+      "summary": "117/117"
     },
     {
-      "command": "node --test mcp/tests/*.test.mjs, python tests/test_file_import.py",
+      "command": "MCP / 文件转换回归",
       "status": "passed",
       "summary": "5/5，7/7"
     },
     {
-      "command": "Skill Creator quick_validate, isolated install and ZIP verification",
+      "command": "Skill Creator quick_validate / isolated install / ZIP",
       "status": "passed",
-      "summary": "两份 Skill 格式通过。新 Skill 单独安装、解包与 5 文件比对通过。"
+      "summary": "两份 Skill 格式通过，独立包 6 文件字节一致"
     },
     {
-      "command": "corepack pnpm check (Eelex Blog preview)",
+      "command": "check-figures.mjs / 浏览器桌面及窄屏 / 独立读图",
       "status": "passed",
-      "summary": "博客 46 项通过，静态文章成功构建。沿用基线 4 条 lint 警告。"
+      "summary": "新稿 5/5，旧稿 3/3，每节正文图均实际解码；两张首版图经修订后再次看图核对"
     },
     {
-      "command": "真实笔记、ImageGen、桌面/窄屏浏览器检查",
+      "command": "corepack pnpm check (blog preview)",
       "status": "passed",
-      "summary": "回读一篇飞书笔记，生成一张说明图并验证本地文章页及卡片。"
+      "summary": "46/46，静态构建通过；基线已有 4 个 lint 警告"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "10d7686d86542d0f6e7371662e38e390aff29750",
+    "last_commit": "a19162bcf6969f828f357677151ea7e82bf3ed40",
     "last_commit_note": "本轮实现前的提交，完成提交以 Git 日志为准。",
     "repository": true
   },
@@ -433,7 +431,12 @@
       "from_version": "2.1",
       "to_version": "3.0",
       "at": "2026-11-20T17:48:36.823259Z"
+    },
+    {
+      "at": "2026-11-20T18:14:17.141367+00:00",
+      "event": "req027_section_illustrations_verified",
+      "summary": "逐节生成配图、语义和结构核对、独立包及本地预览完成。"
     }
   ],
-  "updated_at": "2026-11-20T17:48:36.823259Z"
+  "updated_at": "2026-11-20T18:14:17.141367+00:00"
 }

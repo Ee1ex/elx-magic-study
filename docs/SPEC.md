@@ -20,7 +20,7 @@
 
 ## 2. 已有能力与边界
 
-REQ-026 在同一仓库提供独立的 `elx-study-to-blog`。它通过现有魔法书屋的 search/fetch 读取选定笔记，按博客仓库的 MDX 约束写稿，按需使用宿主图片模型并在本地预览；安装器默认的 Skill 仍为魔法书屋。见[书屋转博客](../skills/elx-study-to-blog/SKILL.md)。
+REQ-026／027 在同一仓库提供独立的 `elx-study-to-blog`。它通过现有魔法书屋的 search/fetch 读取选定笔记，按博客的 MDX 约束写稿，为每个二级标题制作专用说明图。脚本检查章节覆盖，读图核对语义，随后本地预览；安装器默认的 Skill 仍为魔法书屋。见[书屋转博客](../skills/elx-study-to-blog/SKILL.md)。
 
 REQ-025（仓库未发布改动）保留原始收藏理由并支持备注或标题检索；外部来源读本地带采集时间的快照。工作台可通过 asset-receipt 逐项登记图片和 PDF 并显示真实核验进度。字段、兼容性与验证见[实施记录](progress/PROG-020-capture-retrieval-assets.md)。
 

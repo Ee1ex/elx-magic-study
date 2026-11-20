@@ -1,5 +1,7 @@
 # 进度与历史台账
 
+- 2026-11-21 [REQ-027 逐节配图](PROG-022-illustration-alignment.md) 记录生图、读图反馈、两篇本地稿件与回归。
+
 - 2026-11-21 [REQ-026 书屋转博客](PROG-021-study-to-blog.md) 记录独立安装、飞书取材、生成插图、博客预览和测试。
 
 - 2026-11-21 完成 [REQ-025 收藏检索与图文核验](PROG-020-capture-retrieval-assets.md)，含本地回归和一篇真实飞书试点。
