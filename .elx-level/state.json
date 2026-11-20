@@ -3,7 +3,7 @@
   "workflow_version": "3.0",
   "project_id": "elx-library-333a1b57",
   "level": 1,
-  "stage": "req-027-section-illustrations",
+  "stage": "release-study-to-blog-0.2.0",
   "gate": null,
   "status": "completed",
   "risk": "R3",
@@ -13,64 +13,65 @@
     "allow_create_draft_pr": false
   },
   "current_task": {
-    "id": "REQ-027",
+    "id": "CLOSE-STUDY-TO-BLOG-020",
     "owner": "项目负责人（当前用户）",
-    "summary": "逐节解释图、覆盖检查和两篇本地草稿复验完成",
-    "scope": "优化通用生图提示词，每个二级标题配专图，按指定笔记试稿并修订上一版配图",
-    "out_of_scope": "公开发布、修改飞书内容、全局安装升级",
+    "summary": "书屋转博客 0.2.0 独立发布、本地交付及两篇草稿 GitHub 分支归档完成",
+    "scope": "整理现有成品、只登记画风待办、上传 GitHub 并回读",
+    "out_of_scope": "重绘或调整提示词、生产博客上线、改动全局安装及个人飞书内容",
     "paths": [
-      "skills/elx-study-to-blog",
-      "tests/blog-figures.test.mjs",
-      "README.md",
       "docs",
+      "README.md",
       "CHANGELOG.md",
       "DOCUMENT_MAP.md",
       ".elx-level"
     ],
-    "next_step": "在本地预览对照正文与配图。"
+    "next_step": "配图画风待后续单独确定方向。"
   },
   "artifacts": [
     {
-      "path": "skills/elx-study-to-blog/references/illustrations.md",
-      "summary": "逐节图义、提示词与读图核对"
+      "path": "docs/releases/RELEASE-STUDY-TO-BLOG-0.2.0.md",
+      "summary": "独立组件 Release、附件下载和博客草稿分支核验"
     },
     {
-      "path": "docs/progress/PROG-022-illustration-alignment.md",
-      "summary": "新旧两稿、盲读与可重复验收"
+      "path": "docs/ROADMAP.md",
+      "summary": "配图画风待优化"
     }
   ],
   "verifications": [
     {
-      "command": "node --test --test-concurrency=1 tests/*.test.mjs",
+      "command": "书屋 CLI、MCP 和文件转换回归",
       "status": "passed",
-      "summary": "117/117"
+      "summary": "117/117、5/5、7/7"
     },
     {
-      "command": "MCP / 文件转换回归",
+      "command": "corepack pnpm check (Eelex Blog 独立草稿分支)",
       "status": "passed",
-      "summary": "5/5，7/7"
+      "summary": "46/46 与静态构建通过，4 条既有 lint 警告"
     },
     {
-      "command": "Skill Creator quick_validate / isolated install / ZIP",
+      "command": "GitHub Release 下载、逐文件比对和解包检查脚本",
       "status": "passed",
-      "summary": "两份 Skill 格式通过，独立包 6 文件字节一致"
+      "summary": "ZIP 与摘要清单回读一致，6 个成员与标签 Git 内容相同；已归档草稿配图覆盖 3/3、5/5"
     },
     {
-      "command": "check-figures.mjs / 浏览器桌面及窄屏 / 独立读图",
+      "command": "GitHub 草稿分支逐文件回读与线上 sitemap 核对",
       "status": "passed",
-      "summary": "新稿 5/5，旧稿 3/3，每节正文图均实际解码；两张首版图经修订后再次看图核对"
+      "summary": "15 个变更文件一致，生产分支与站点地图和归档前相同"
     },
     {
-      "command": "corepack pnpm check (blog preview)",
+      "command": "node --test --test-concurrency=1 tests/*.test.mjs mcp/tests/*.test.mjs",
       "status": "passed",
-      "summary": "46/46，静态构建通过；基线已有 4 个 lint 警告"
+      "exit_code": 0,
+      "at": "2026-11-20T18:30:12.746892Z",
+      "task_id": "843035e3406ca9e3bae84a4e1df0060ea885e0b3af9f6d9302155bf03f50c7ae",
+      "fingerprint": "219a8b2fe93c227609b08793fd1c0d5dade7658f9140b609e418a8ae960f41eb"
     }
   ],
   "git": {
     "skill_created_branch": false,
     "branch": "main",
-    "last_commit": "a19162bcf6969f828f357677151ea7e82bf3ed40",
-    "last_commit_note": "本轮实现前的提交，完成提交以 Git 日志为准。",
+    "last_commit": "c1306c2e200964f82080bb8a83fe5993a1723e88",
+    "last_commit_note": "独立组件标签的已核验源码提交，后续仅补收尾记录。",
     "repository": true
   },
   "remote": {
@@ -436,7 +437,12 @@
       "at": "2026-11-20T18:14:17.141367+00:00",
       "event": "req027_section_illustrations_verified",
       "summary": "逐节生成配图、语义和结构核对、独立包及本地预览完成。"
+    },
+    {
+      "at": "2026-11-20T18:29:54.211145+00:00",
+      "event": "study_to_blog_020_github_verified",
+      "summary": "上传独立安装包及 SHA256，归档博客草稿，画风意见仅作后续待办。"
     }
   ],
-  "updated_at": "2026-11-20T18:14:17.141367+00:00"
+  "updated_at": "2026-11-20T18:30:12.746892Z"
 }
