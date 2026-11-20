@@ -44,6 +44,66 @@ test('REQ-019 自动同步、幂等与备注保护；管理失败不污染文章
   const s=await loadLibrary(f.home,'test');assert.equal(f.wb.knowledgeDocuments(s).some(d=>d.id==='Main'),false);
 });
 
+test('图文核验逐份显示正文、图片和 PDF，重复回执保留用户备注和原文章',async()=>{
+  const f=await fixture();
+  const p=await core.makePlan(f.home,'test',{actions:[{kind:'create',title:'图文验收',content:'合成图文正文'}]},f.lark);
+  await core.applyPlan(f.home,'test',p.plan,p.digest,f.lark);
+  const image={operationId:p.plan,documentId:'Created1',assetId:'figure',kind:'image',name:'示意图.png',sha256:hash('image'),state:'pending'};
+  const pdf={...image,assetId:'original',kind:'pdf',name:'附录.pdf',sha256:hash('pdf')};
+  const save=receipt=>f.wb.recordAssetReceipt(f.home,'test',receipt,f.lark);
+  const rows=()=>[...f.lark.records.values()].filter(r=>r.fields['记录键'].startsWith('asset:'));
+  const main=()=>f.lark.docs.get('Main').markdown;
+  f.lark.recordAPI=async(method,route)=>{
+    assert.equal(method,'GET');assert.ok(route.includes('/Created1/blocks/'));
+    const blockId=route.split('/').at(-1);
+    return {block:blockId==='BlockImage'?{block_id:blockId,image:{token:'ImageToken'}}:{block_id:blockId,file:{token:'PdfToken'}}};
+  };
+  await save(image);
+  await save({...pdf,state:'unknown'});
+  assert.match(main(),/正文已回读/);assert.match(main(),/图片待核验/);assert.match(main(),/PDF 写入待查证/);
+  const pdfRow=rows().find(r=>r.fields['条目名称'].includes('附录.pdf'));
+  pdfRow.fields['我的备注／调整意见']='用户备注';
+  await assert.rejects(save(pdf),e=>e.code==='ASSET_STATE');
+  const proof={...pdf,state:'verified',blockId:'BlockPDF',mediaToken:'PdfToken',downloadSha256:pdf.sha256.toUpperCase()};
+  await assert.rejects(save({...proof,downloadSha256:hash('different')}),e=>e.code==='ASSET_EVIDENCE');
+  await assert.rejects(save({...proof,mediaToken:'WrongToken'}),e=>e.code==='ASSET_EVIDENCE');
+  await save(proof);
+  assert.match(main(),/PDF 已核验/);assert.match(main(),/图片待核验/);
+  const imageProof={...image,state:'verified',blockId:'BlockImage',mediaToken:'ImageToken',visualChecked:true};
+  await assert.rejects(save({...imageProof,visualChecked:false}),e=>e.code==='ASSET_EVIDENCE');
+  f.lark.fail=true;
+  assert.equal((await save(imageProof)).workbench.status,'pending');
+  f.lark.fail=false;
+  await save(imageProof);const writes=f.lark.baseWrites;await save(proof);
+  assert.equal(f.lark.baseWrites,writes);assert.equal(rows().length,2);assert.match(main(),/图片已核验/);
+  assert.equal(rows().find(r=>r.recordId===pdfRow.recordId).fields['我的备注／调整意见'],'用户备注');assert.equal(f.lark.writes,1);
+  await assert.rejects(save({...imageProof,sha256:hash('other')}),e=>e.code==='ASSET_CHANGED');
+  await assert.rejects(save({...imageProof,documentId:'Main'}),e=>e.code==='ASSET_TARGET');
+});
+
+test('工作台写后首读仍是旧记录时只重读，核对成功且没有第二次写入',async()=>{
+  const f=await fixture();
+  const realRows=f.lark.workbenchRows.bind(f.lark);
+  let staleReads=0, temporarilyStale=true;
+  f.lark.workbenchRows=async()=>{
+    const rows=await realRows();
+    if(rows.length && temporarilyStale){temporarilyStale=false;staleReads++;return [];}
+    return rows;
+  };
+  const result=await core.capture(f.home,'test',{url:'https://example.com/delayed',title:'延迟显示'},f.lark);
+  assert.equal(result.workbench.status,'complete');
+  assert.equal(staleReads,1);assert.equal(f.lark.baseWrites,1);
+  let reads=0;
+  f.lark.workbenchRows=async()=>{
+    const rows=await realRows();
+    if(++reads>1)rows[0].fields['读取覆盖']='持续不一致';
+    return rows;
+  };
+  const conflict=await f.wb.syncWorkbench(f.home,'test',f.lark);
+  assert.equal(conflict.status,'pending');assert.equal(conflict.code,'WORKBENCH_VERIFY');
+  assert.deepEqual(conflict.diagnostic.fields,['读取覆盖']);assert.equal(f.lark.baseWrites,1);
+});
+
 test('REQ-019 主题建议有双方证据及版本，记录建议不直接修改主题正文',async()=>{
   const f=await fixture(),s=await loadLibrary(f.home,'test');const source={id:'Input',title:'资料',markdown:'方法应保留适用条件。',hash:hash('方法应保留适用条件。'),remote:false,recordRole:'input',kind:'source',coverage:'full_text'},topic={id:'Topic',title:'主题',markdown:'当前方法适用于本地环境。',hash:hash('当前方法适用于本地环境。'),url:'https://example.feishu.cn/wiki/Topic',kind:'topic',remote:true};f.lark.docs.set('Topic',{...topic,revision:1});s.documents.push(source,topic);await saveLibrary(f.home,s);
   const spec={sourceId:'Input',sourceHash:source.hash,topics:[{id:'Topic',hash:topic.hash,kind:'补充',reason:'补充条件',sourceEvidence:'保留适用条件',topicEvidence:'本地环境',proposedText:'建议保留方法适用条件。'}]};

@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { assert, hash, now, loadLibrary, saveLibrary, libraryPath, readJSON, safeLink } from './store.mjs';
+import { setTimeout as pause } from 'node:timers/promises';
+import { assert, hash, now, loadLibrary, saveLibrary, libraryPath, readJSON, safeLink, identifier, issue } from './store.mjs';
 import { Lark, feishuURL } from './lark.mjs';
 import { verificationText } from './verification.mjs';
 
@@ -57,6 +58,69 @@ export async function acknowledgePreferences(home,id,spec,supplied) {
 export async function recordSourceIssue(home,id,spec,supplied) {
   const s=await loadLibrary(home,id),d=knowledgeDocuments(s).find(d=>d.id===spec.sourceId&&d.remote===false);assert(d&&d.hash===spec.hash,'SOURCE_CHANGED','异常记录需引用当前本地来源版本');assert(['读取失败','待补材料','暂缓'].includes(spec.status)&&spec.reason?.trim()&&spec.reason.length<=500&&spec.next?.trim()&&spec.next.length<=500,'SOURCE_ISSUE','需要实际异常状态、有限原因与下一步，不保存凭据或原始错误');d.ingestIssue={status:spec.status,reason:spec.reason,next:spec.next,at:now()};await saveLibrary(home,s);return {recorded:true,remoteKnowledgeChanged:false,workbench:await syncWorkbench(home,id,supplied)};
 }
+export async function recordAssetReceipt(home, id, spec, supplied) {
+  const state = await loadLibrary(home, id);
+  const { operationId, documentId, assetId, kind, name } = spec;
+  for (const value of [operationId, documentId, assetId]) identifier(value);
+  assert(['image', 'pdf'].includes(kind) && typeof spec.sha256 === 'string' && /^[a-f0-9]{64}$/i.test(spec.sha256) &&
+    typeof name === 'string' && name.trim() && name.length <= 160 && !/[\\/\r\n]/.test(name), 'ASSET_FORMAT', '资源需要类型、文件名和原件 SHA256');
+  const sha256 = spec.sha256.toLowerCase();
+  assert(['pending', 'unknown', 'verified'].includes(spec.state), 'ASSET_STATE', '资源状态需要 pending、unknown 或 verified');
+  const doc = knowledgeDocuments(state).find(d => d.id === documentId && d.remote !== false && live(d));
+  assert(state.writeRoot && doc, 'ASSET_TARGET', '需要写入范围内已登记的知识正文');
+  const key = hash([operationId, assetId]);
+  const previous = state.assetReceipts?.[key];
+  const identity = { operationId, assetId, documentId, kind, name, sha256 };
+  if (previous) {
+    assert(Object.entries(identity).every(([k,v]) => previous[k] === v), 'ASSET_CHANGED', '此回执所对应的文档或原件已改变');
+    assert(previous.state !== 'verified' || spec.state === 'verified', 'ASSET_STATE', '已核验资源不能退回待核验');
+    assert(previous.state !== 'unknown' || spec.state !== 'pending', 'ASSET_STATE', '结果未知须查证，不能重新标为待发送');
+  }
+  const plan = await readJSON(path.join(libraryPath(home, id), 'operations', operationId + '.json'), null);
+  if (plan) assert(plan.digest === hash(plan.payload) && plan.payload.library === id && plan.payload.account === state.account &&
+    hash(plan.payload.writeRoot) === hash(state.writeRoot) && plan.steps.some(s => s.state === 'verified' && s.documentId === documentId),
+    'ASSET_TARGET', '正文计划没有此文档的已核验步骤');
+  const lark = client(state, supplied);
+  await lark.assertAccount(state);
+  await lark.inScope(doc.url, [state.writeRoot]);
+  const fresh = await lark.fetch(doc.url);
+  assert(fresh.id === documentId && fresh.markdown?.trim(), 'ASSET_TARGET', '目标身份或正文未能回读');
+  const receipt = { ...identity, state: spec.state };
+  if (spec.state === 'verified') {
+    const { blockId, mediaToken } = spec;
+    identifier(blockId); identifier(mediaToken);
+    const verified = kind === 'pdf' ? typeof spec.downloadSha256 === 'string' && spec.downloadSha256.toLowerCase() === sha256 : spec.visualChecked === true;
+    assert(verified, 'ASSET_EVIDENCE', 'PDF 需下载摘要匹配，图片需实际查看');
+    const data = await lark.recordAPI('GET', `/open-apis/docx/v1/documents/${documentId}/blocks/${blockId}`, { document_revision_id: -1 });
+    const block = data.block;
+    const token = kind === 'image' ? block?.image?.token : block?.file?.token;
+    assert(block?.block_id === blockId && token === mediaToken, 'ASSET_EVIDENCE', '目标文档中的资源块、类型或 token 与回执不符');
+    assert(previous?.state !== 'verified' || (previous.blockId === blockId && previous.mediaToken === mediaToken), 'ASSET_CHANGED', '已核验的资源位置发生变化');
+    Object.assign(receipt, { blockId, mediaToken }, kind === 'pdf' ? { downloadSha256: sha256 } : { visualChecked: true });
+  }
+  if (!previous || previous.state !== receipt.state) {
+    state.assetReceipts ??= {};
+    state.assetReceipts[key] = { ...receipt, updatedAt: now() };
+    await saveLibrary(home, state);
+  }
+  return { documentId, assetId, state: receipt.state, workbench: await syncWorkbench(home, id, lark) };
+}
+
+function assetRows(state) {
+  const docs = new Map(knowledgeDocuments(state).filter(live).map(doc => [doc.id, doc]));
+  const rows = [];
+  for (const [key, receipt] of Object.entries(state.assetReceipts || {})) {
+    const doc = docs.get(receipt.documentId);
+    if (!doc) continue;
+    const type = receipt.kind === 'image' ? '图片' : 'PDF ';
+    const label = type + ({ pending:'待核验', unknown:'写入待查证', verified:'已核验' }[receipt.state]);
+    const next = { pending:'按原预览核对资源', unknown:'只查证已有资源块，保留原发送记录', verified:receipt.kind === 'pdf' ? '原生附件块和下载 SHA256 一致' : '原生图片块与显示已核对' }[receipt.state];
+    rows.push({ '记录键':'asset:' + key, '条目名称':receipt.name, '事项类型':['已有文档更新'],
+      '状态':[{ pending:'待确认', unknown:'写入待查证', verified:'已完成' }[receipt.state]], '目标分类':doc.title || doc.id,
+      '变更前':'正文已回读', '读取覆盖':label, '原因与下一步':next, '结果文档':doc.url, '最近更新':receipt.updatedAt });
+  }
+  return rows;
+}
 async function plans(home,s) {let files;const dir=path.join(libraryPath(home,s.id),'operations');try{files=await fs.readdir(dir);}catch(e){if(e.code==='ENOENT')return [];throw e;}
   const found=[];for(const f of files.filter(f=>f.endsWith('.json'))){const p=await readJSON(path.join(dir,f));assert(p.payload?.library===s.id&&p.payload.account===s.account&&hash(p.payload.writeRoot)===hash(s.writeRoot),'PLAN_BINDING','旧操作身份不符，不能同步到当前工作台');assert(p.digest===hash(p.payload),'PLAN_CHANGED','操作预览摘要变化，停止同步');found.push(p);}return found.sort((a,b)=>b.payload.createdAt.localeCompare(a.payload.createdAt));}
 function rowsFor(s,ps,existingKeys) {
@@ -72,13 +136,15 @@ function rowsFor(s,ps,existingKeys) {
   }
   for(const d of knowledgeDocuments(s).filter(live).filter(d=>(d.recordRole==='input'||(d.recordRole===undefined&&d.remote===false))&&d.hash!==d.processedHash&&!used.has(d.id)))rows.push({'记录键':`input:${d.id}`,'条目名称':d.title,'事项类型':['异常资料处理'],'状态':[d.ingestIssue?.status||(d.coverage==='link_only'?'待补材料':'待确认')],'来源链接':d.sourceUrl||d.url||'','目标分类':'','变更前':'尚无已核验的整理结果','变更后／完整预览':'','读取覆盖':d.coverage||'未知','原因与下一步':d.ingestIssue?`${d.ingestIssue.reason}；${d.ingestIssue.next}`:d.coverage==='link_only'?'只有链接；补充正文或本人完成平台登录后读取':'已获取材料；按个人偏好整理并生成具体预览','结果文档':'','最近更新':d.ingestIssue?.at||d.fetchedAt||d.createdAt||at});
   for(const error of s.lastSync?.failures||[]) {const d=knowledgeDocuments(s).find(d=>d.id===error.id);if(d)rows.push({'记录键':`read:${d.id}`,'条目名称':d.title,'事项类型':['异常资料处理'],'状态':['读取失败'],'来源链接':d.url||'','读取覆盖':'本次读取失败','原因与下一步':`${error.code}；核对权限或链接后再次读取`,'最近更新':s.lastSync.at});}
-  return rows;
+  return rows.concat(assetRows(s));
 }
 function mainText(s,rows) {
   const docs=knowledgeDocuments(s).filter(live).filter(d=>d.remote!==false),counts=status=>rows.filter(r=>r['状态'][0]===status).length;
   const notes=docs.filter(d=>['source','topic','experience'].includes(d.kind)),pending=rows.filter(r=>!['已完成','暂缓'].includes(r['状态'][0]));
   const eventTimes=[s.lastSync?.at,...rows.map(r=>r['最近更新'])].filter(Boolean).map(t=>Date.parse(t)).filter(Number.isFinite),updated=eventTimes.length?new Date(Math.max(...eventTimes)).toISOString():'暂无已核验事件';
-  return `## ${HEAD.main[0]}\n\n所属知识库：${escape(s.name)}\n\n数据事件更新至：${updated}\n\n索引时间：${s.lastSync?.at||'尚未进行远端索引'}；目录${s.lastSync?.catalogComplete?'已完整':'未证实完整'}；本轮正文剩余 ${s.lastSync?.remainingThisPass??'未知'}。统计仅覆盖当前索引。\n\n${table(['书屋状态','数量'],[['已归档知识笔记',notes.length],['旧索引类型待核对',docs.filter(d=>d.kind==='document').length],['待确认变更',counts('待确认')],['异常待处理',counts('待补材料')+counts('读取失败')],['写入待查证',counts('写入待查证')]])}\n\n### 准备怎么改 / 哪些资料待处理\n\n${pending.length?table(['事项','状态','目标','下一步'],pending.map(r=>[r['条目名称'],r['状态'][0],r['目标分类'],r['原因与下一步']])):'当前索引和操作记录内没有待处理事项。'}\n\n完整正文、变更前后与备注在[多维表格](${s.workbench.base.wikiURL})；以下入口用于按状态筛选。活动事项完整保留，初次同步只回填最近10份终态计划；旧计划原样保留。\n\n${table(['视图','入口'],Object.entries(s.workbench.base.views||{}).map(([name,url])=>[name,link('打开',url)]))}\n\n[个人整理偏好](${s.workbench.pages.preferences.url}) · [主题更新建议](${s.workbench.pages.suggestions.url})\n\n用户意见会用于重新生成预览，表格中的状态或意见不是执行授权。文章已成功而工作台失败时，仅补同步管理信息。\n\n${HEAD.main[1]}`;
+  const assets = rows.filter(r => r['记录键'].startsWith('asset:'));
+  const assetSummary = assets.length ? '\n\n### 图文入库核验\n\n' + table(['文档','正文','文件','核验结果'], assets.map(r => [link(r['目标分类'],r['结果文档']),r['变更前'],r['条目名称'],r['读取覆盖']])) : '';
+  return `## ${HEAD.main[0]}\n\n所属知识库：${escape(s.name)}\n\n数据事件更新至：${updated}\n\n索引时间：${s.lastSync?.at||'尚未进行远端索引'}；目录${s.lastSync?.catalogComplete?'已完整':'未证实完整'}；本轮正文剩余 ${s.lastSync?.remainingThisPass??'未知'}。统计仅覆盖当前索引。\n\n${table(['书屋状态','数量'],[['已归档知识笔记',notes.length],['旧索引类型待核对',docs.filter(d=>d.kind==='document').length],['待确认变更',counts('待确认')],['异常待处理',counts('待补材料')+counts('读取失败')],['写入待查证',counts('写入待查证')]])}\n\n### 准备怎么改 / 哪些资料待处理\n\n${pending.length?table(['事项','状态','目标','下一步'],pending.map(r=>[r['条目名称'],r['状态'][0],r['目标分类'],r['原因与下一步']])):'当前索引和操作记录内没有待处理事项。'}${assetSummary}\n\n完整正文、变更前后与备注在[多维表格](${s.workbench.base.wikiURL})；以下入口用于按状态筛选。活动事项完整保留，初次同步只回填最近10份终态计划；旧计划原样保留。\n\n${table(['视图','入口'],Object.entries(s.workbench.base.views||{}).map(([name,url])=>[name,link('打开',url)]))}\n\n[个人整理偏好](${s.workbench.pages.preferences.url}) · [主题更新建议](${s.workbench.pages.suggestions.url})\n\n用户意见会用于重新生成预览，表格中的状态或意见不是执行授权。文章已成功而工作台失败时，仅补同步管理信息。\n\n${HEAD.main[1]}`;
 }
 function suggestionsText(s) {const items=s.workbench.suggestions||[],pending=Object.values(s.workbench.topicReviews||{}).filter(x=>x.state==='pending');return `## ${HEAD.suggestions[0]}\n\n建议基于已读取的来源与已有主题；此处记录建议，不直接修改主题正文。\n\n待评估新资料：${pending.length}。${pending.map(x=>escape(x.title)).join('；')}\n\n${items.length?table(['来源 / 版本','主题 / 版本','类型','依据与建议'],items.map(x=>[x.sourceURL?link(x.sourceTitle,x.sourceURL,` / ${x.sourceHash.slice(0,8)}`):`${x.sourceTitle} / ${x.sourceHash.slice(0,8)}`,x.topicURL?link(x.topicTitle,x.topicURL,` / ${x.topicHash.slice(0,8)}`):'无匹配主题',x.kind,`${x.reason}；来源原文：${x.sourceEvidence||'—'}；主题原文：${x.topicEvidence||'—'}；${x.proposedText||''}`])):'尚未完成主题更新评估；没有建议记录不代表无需更新。'}\n\n${HEAD.suggestions[1]}`;}
 async function writeRegion(home,s,l,key,text) {
@@ -88,7 +154,7 @@ async function writeRegion(home,s,l,key,text) {
   assert(!p.pendingHash && current===p.regionHash,'WORKBENCH_CONFLICT','自动区域已被修改或写入结果未知，先核对，不覆盖用户内容');
   p.pendingHash=expected;await saveLibrary(home,s);
   await l.workbenchWrite(p.url,r,text);
-  const fresh=await l.workbenchRegion(p.url,...HEAD[key]);assert(regionHash(fresh.text)===expected,'WORKBENCH_VERIFY','管理页回读不符，不能重发');p.regionHash=expected;delete p.pendingHash;await saveLibrary(home,s);
+  const fresh=await l.workbenchRegion(p.url,...HEAD[key]);assert(regionHash(fresh.text)===expected,'WORKBENCH_VERIFY','管理页回读不符，不能重发',{stage:key});p.regionHash=expected;delete p.pendingHash;await saveLibrary(home,s);
 }
 export async function syncWorkbench(home,id,supplied) {
   let s;
@@ -106,10 +172,30 @@ export async function syncWorkbench(home,id,supplied) {
       if(!same){s.workbench.records[key]={...memo,pending:true};await saveLibrary(home,s);const recordId=await l.workbenchUpsert(s.workbench.base,old?.recordId,row);s.workbench.records[key]={recordId,fingerprint};await saveLibrary(home,s);}
     }
     // Verify machine-owned fields. The memo column is deliberately omitted from writes.
-    const checked=await l.workbenchRows(s.workbench.base);for(const row of rows){const r=checked.find(x=>x.fields['记录键']===row['记录键']);assert(r&&Object.entries(row).every(([k,v])=>JSON.stringify(r.fields[k]??'')===JSON.stringify(v)),'WORKBENCH_VERIFY','Base明细回读不符');}
+    await verifyWorkbenchRows(l, s.workbench.base, rows);
     await writeRegion(home,s,l,'main',mainText(s,rows));await writeRegion(home,s,l,'suggestions',suggestionsText(s));
     s.workbench.sync={status:'complete',at:now(),rows:rows.length};await saveLibrary(home,s);return s.workbench.sync;
   }catch(e){const result={status:'pending',at:now(),code:e.code||'ERROR',diagnostic:e.details||{},note:'仅管理信息待同步；不重发文章'};if(s?.workbench){s.workbench.sync=result;try{await saveLibrary(home,s);}catch(persistError){return {...result,persistence:'failed',persistenceCode:persistError.code||'ERROR'};}}return result;}
+}
+async function verifyWorkbenchRows(lark, base, expected) {
+  let mismatch;
+  // A successful upsert can precede its visibility in the Base list response.
+  for (const delay of [0, 350, 900, 1500]) {
+    if (delay) await pause(delay);
+    const records = await lark.workbenchRows(base);
+    const byKey = new Map(records.map(r => [r.fields['记录键'], r.fields]));
+    mismatch = undefined;
+    for (const row of expected) {
+      const actual = byKey.get(row['记录键']);
+      const fields = Object.keys(row).filter(k => JSON.stringify(actual?.[k] ?? '') !== JSON.stringify(row[k]));
+      if (!actual || fields.length) {
+        mismatch = { stage:'base', rowType:row['记录键'].split(':')[0], fields };
+        break;
+      }
+    }
+    if (!mismatch) return;
+  }
+  throw issue('WORKBENCH_VERIFY', 'Base明细回读不符', mismatch);
 }
 export async function recordTopicSuggestions(home,id,spec,supplied) {
   const s=await loadLibrary(home,id),l=client(s,supplied);assert(s.workbench,'WORKBENCH_REQUIRED','先确认创建或绑定管理页');await l.assertAccount(s);

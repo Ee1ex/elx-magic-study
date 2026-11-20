@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stateHome, loadLibrary, saveLibrary, libraryPath, readJSON, writeJSON, writeNew, locked, assert, identifier, now } from './store.mjs';
 import { Lark } from './lark.mjs';
-import { bindWorkbench, workbenchContext, syncWorkbench, acknowledgePreferences, recordTopicSuggestions, recordSourceIssue, knowledgeDocuments } from './workbench.mjs';
+import { bindWorkbench, workbenchContext, syncWorkbench, acknowledgePreferences, recordTopicSuggestions, recordSourceIssue, recordAssetReceipt, knowledgeDocuments } from './workbench.mjs';
 import { search, lint } from './retrieval.mjs';
 import { pendingContentClassification } from './classification.mjs';
 import { exportGraph } from './graph.mjs';
@@ -32,9 +32,10 @@ const HELP = {
     'preferences-ack': '--file <hash及choice:preview|later|no>；记录用户对整理旧资料的明确选择',
     'topic-suggest': '--file <双方证据及版本JSON>；记录主题建议，不改主题正文',
     'source-issue': '--file <sourceId/hash/status/reason/next>；记录实际读取失败或缺材料，不保存原始错误及凭据',
+    'asset-receipt': '--file <图片或PDF回执JSON>；登记待核验、结果未知或经原生块核对的资源，并同步工作台',
     sync: '[--max-docs 30] [--max-nodes 500]；[--force] [--restart-scan]；目录与正文分别续扫授权范围，零远端写入',
     search: '--query <问题关键词> [重复] [--limit 8] [--offline]；本地 BM25 和引用邻居',
-    fetch: '--id <已索引文档编号>；回远端核对后返回正文',
+    fetch: '--id <已索引文档编号>；飞书正文在线核对，外部收藏返回本地快照和采集时间，可明确加 --offline',
     capture: '--url <来源链接> --title <标题> [--note <备注>]；本地来源，已配工作台时同步管理条目，不创建知识文章',
     'source-content': '--id <来源编号> --file <UTF8正文> --coverage partial|full_text|transcript --note <获取方式>；本地快照，已配工作台时同步管理条目',
     'classification-context': '--id <输入来源编号> [--query <正文关键词>] [--limit 300]；只读分类位置、已有标签与主题候选',
@@ -72,7 +73,7 @@ export async function run(argv, input = {}) {
   if (command === 'space-discover') return discoverSpace(home, { id: o.library, profile: o.profile });
   if (command === 'onboarding') return onboardingStatus(home);
   if (command === 'onboarding-record') return locked(home, async () => recordOnboarding(home, await readJSON(o.file)));
-  const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','plan-cancel','plan-supersede','apply','recover','maintenance','schedule-record','workbench-bind','workbench-sync','preferences-ack','topic-suggest','source-issue','areas-bind','record-context']);
+  const mutations = new Set(['bind','demo-import','sync','fetch','capture','source-content','classify','plan','plan-cancel','plan-supersede','apply','recover','maintenance','schedule-record','workbench-bind','workbench-sync','preferences-ack','topic-suggest','source-issue','asset-receipt','areas-bind','record-context']);
   const execute = async () => {
     if (command === 'bind') return bind(home, { id: o.id, name: o.name, profile: o.profile, readRoots: o.root, writeRoot: o['write-root'], confirmed: !!o.confirm });
     if (command === 'demo-import') return importManifest(home, o.id, await readJSON(o.file));
@@ -92,9 +93,10 @@ export async function run(argv, input = {}) {
     if (command === 'preferences-ack') return acknowledgePreferences(home,id,await readJSON(o.file));
     if (command === 'topic-suggest') return recordTopicSuggestions(home,id,await readJSON(o.file));
     if (command === 'source-issue') return recordSourceIssue(home,id,await readJSON(o.file));
+    if (command === 'asset-receipt') return recordAssetReceipt(home,id,await readJSON(o.file));
     if (command === 'status') { const queue = intakeQueue(documents); const plans = await planOverview(home, state); const tasks = {}; for (const p of plans) tasks[p.label] = (tasks[p.label] || 0) + 1; return { id, name: state.name, provider: state.provider, readRoots: state.readRoots, writeRoot: state.writeRoot, indexed: documents.length, pendingInputs: queue.pending.length, needsClassification: queue.needsClassification.length, pendingContentClassification: pendingContentClassification(documents).length, tasks, workbench:state.workbench?.sync||null, lastSync: state.lastSync || null, schedules: state.schedules || [], next: state.documents.length ? '可 search、graph 或 maintenance；回答重要问题前 fetch 最新正文' : '先 sync 建立索引' }; }
     if (command === 'sync') return sync(home, id, { maxDocs: number(o['max-docs'], 30, 1, 200), maxNodes: number(o['max-nodes'], 500, 1, 5000), force: !!o.force, restartScan: !!o['restart-scan'] });
-    if (command === 'fetch') return fetchDocument(home, id, o.id);
+    if (command === 'fetch') return fetchDocument(home, id, o.id, undefined, { offline: !!o.offline });
     if (command === 'capture') return capture(home, id, { url: o.url, title: o.title, note: o.note });
     if (command === 'classification-context') return classificationContext(home, id, o.id, { queries: o.query || [], limit: number(o.limit, 300, 1, 1000) });
     if (command === 'classify') return classifyDocument(home, id, o.id, o.role, !!o.confirm);

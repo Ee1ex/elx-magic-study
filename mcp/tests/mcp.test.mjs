@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { McpServer } from '@modelcontextprotocol/server';
-import { importManifest } from '../../skills/elx-magic-study/scripts/library-core.mjs';
+import { capture, importManifest } from '../../skills/elx-magic-study/scripts/library-core.mjs';
 import { runWorker } from '../runner.mjs';
 import { createApproval, consumeApproval } from '../approval.mjs';
 import { libraryPath, writeJSON } from '../../skills/elx-magic-study/scripts/store.mjs';
@@ -24,7 +24,7 @@ const fixture = async () => {
 test('官方客户端完成 stdio 握手、工具发现和合成检索', async () => {
   const home = await fixture();
   const client = new Client({ name: 'magic-study-test', version: '1.0.0' });
-  const transport = new StdioClientTransport({ command: process.execPath, args: [serverPath], env: { ...process.env, ELX_MAGIC_STUDY_MCP_HOME: home, ELX_MAGIC_STUDY_MCP_LIBRARY: 'demo' }, stderr: 'pipe' });
+  const transport = new StdioClientTransport({ command: process.execPath, args: [serverPath], env: { ...process.env, ELX_MAGIC_STUDY_MCP_HOME: home, ELX_MAGIC_STUDY_MCP_LIBRARY: 'demo', ELX_LARK_BIN: path.join(home, 'no-real-lark.exe') }, stderr: 'pipe' });
   await client.connect(transport);
   try {
     const names = (await client.listTools()).tools.map(t => t.name);
@@ -35,6 +35,13 @@ test('官方客户端完成 stdio 握手、工具发现和合成检索', async (
     const found = await client.callTool({ name: 'study_search', arguments: { query: ['中文检索'], offline: true } });
     assert.equal(found.isError, undefined);
     assert.match(JSON.stringify(found.structuredContent), /中文检索样本/);
+    const source = await capture(home, 'demo', { title:'外部收藏', url:'https://example.com/article', note:'用于复习' });
+    const file = path.join(libraryPath(home, 'demo'), 'library.json');
+    const state = JSON.parse(await fs.readFile(file, 'utf8'));
+    await writeJSON(file, { ...state, provider:'feishu', account:'synthetic' });
+    const snapshot = await client.callTool({ name:'study_fetch', arguments:{ documentId:source.id, offline:true } });
+    assert.equal(snapshot.structuredContent.data.mode, 'local-source');
+    assert.equal(snapshot.structuredContent.data.captureNote, '用于复习');
     const bad = await client.callTool({ name: 'study_fetch', arguments: { documentId: '../outside' } });
     assert.equal(bad.isError, true);
     const noApproval = await client.callTool({ name: 'study_apply', arguments: { operationId: 'missing', digest: 'a'.repeat(64), approvalToken: '00000000-0000-4000-8000-000000000000' } });

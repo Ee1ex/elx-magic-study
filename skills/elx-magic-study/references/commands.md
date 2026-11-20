@@ -29,7 +29,7 @@ node CLI capture --url <链接> --title <可确认标题> --note <收藏理由>
 node CLI source-content --id <src编号> --file <正文UTF8文件> --coverage transcript --note "B站字幕；未核对画面"
 ```
 
-两个命令生成本地记录，来源正文快照按内容 hash 留存；已配置工作台时同步管理条目，不创建知识文章，不把管理条目当文章已保存。获取失败时保持 link_only，不填写虚构全文。
+capture 的收藏理由保存在 captureNote，source-content 的 --note 记录当次获取方式。更新正文保留收藏理由；旧版占位中仍可辨认的原备注会在补正文时保留。fetch 读取外部来源时返回本地正文、覆盖与采集时间，明确接受离线时可加 --offline。来源快照按正文 hash 留存，已配置工作台时同步管理条目，获取失败保持 link_only。
 
 已配置管理资源时先运行workbench-context读偏好；需要补管理同步用workbench-sync，不能重发文章。偏好确认、读取异常及主题建议协议见 [workbench.md](workbench.md)，完整命令见help。
 

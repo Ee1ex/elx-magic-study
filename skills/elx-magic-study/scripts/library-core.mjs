@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { now, hash, assert, issue, identifier, stateHome, libraryPath, readJSON, writeJSON, loadLibrary, saveLibrary, canonicalSource } from './store.mjs';
+import { now, hash, assert, issue, identifier, stateHome, libraryPath, readJSON, writeJSON, loadLibrary, saveLibrary, canonicalSource, captureNote } from './store.mjs';
 import { Lark, feishuURL } from './lark.mjs';
 import { lint } from './retrieval.mjs';
 import { contentComparison, normalizeText, verificationText } from './verification.mjs';
@@ -149,9 +149,15 @@ export async function sync(home, id, { maxDocs = 30, maxNodes = 500, force = fal
   await saveLibrary(home, state); return { ...state.lastSync, note: '目录与正文分别续扫；目录未完整或正文队列非零时继续 sync。修改时间相同仅作为跳过依据，不代表刚读取正文；--force 强制重读。' };
 }
 function inferKind(title = '') { if (/来源|收藏/.test(title)) return 'source'; if (/实践|经验/.test(title)) return 'experience'; if (/主题|概念|方法/.test(title)) return 'topic'; return 'document'; }
-export async function fetchDocument(home, id, docId, supplied) {
+export async function fetchDocument(home, id, docId, supplied, { offline = false } = {}) {
   const state = await loadLibrary(home, id); const old = state.documents.find(d => d.id === docId); assert(old, 'UNKNOWN_DOCUMENT', '文档不在已登记范围；先同步');
+  if (old.remote === false) {
+    assert(!old.unavailable && !old.outOfScope, 'OUT_OF_SCOPE', '此来源已不可用或超出绑定范围');
+    if (state.provider === 'feishu' && !offline) await client(state, supplied).assertAccount(state);
+    return { ...old, captureNote: captureNote(old), fetchedAt: old.fetchedAt || old.createdAt, mode: 'local-source', cached: true };
+  }
   if (state.provider === 'demo') return { ...old, demo: true };
+  assert(!offline, 'LIVE_FETCH_REQUIRED', '飞书文档需要在线核对账号与范围；离线可检索索引或读取已收藏的外部来源');
   const lark = client(state, supplied); await lark.assertAccount(state); await lark.inScope(old.url, state.readRoots);
   await verifyAreas(state, lark);
   const d = await lark.fetch(old.url); assert(d.id === old.id, 'DOC_ID_CHANGED', '目标文档身份变化');
@@ -161,7 +167,7 @@ export async function capture(home, id, { url, title, note = '' }, supplied) {
   const state = await loadLibrary(home, id); const sourceUrl = canonicalSource(url); const duplicate = state.documents.find(d => d.sourceUrl === sourceUrl);
   if (duplicate) return { existing: true, id: duplicate.id, status: 'local-record', note: '已有来源，未重复添加；此回执不代表飞书已写入' };
   assert(title && title.length <= 300, 'TITLE', '提供可确认的来源标题或清楚标记的用户暂定标题');
-  const d = { id: 'src-' + hash(sourceUrl).slice(0, 20), title, sourceUrl, url: sourceUrl, kind: 'source', recordRole: 'input', coverage: 'link_only', markdown: `# ${title}\n\n来源：${sourceUrl}\n\n收藏备注：${note}\n\n状态：待获取正文。\n`, createdAt: now(), remote: false };
+  const d = { id: 'src-' + hash(sourceUrl).slice(0, 20), title, sourceUrl, url: sourceUrl, captureNote: note, kind: 'source', recordRole: 'input', coverage: 'link_only', markdown: `# ${title}\n\n来源：${sourceUrl}\n\n收藏备注：${note}\n\n状态：待获取正文。\n`, createdAt: now(), remote: false };
   d.hash = hash(d.markdown); state.documents.push(d); await saveLibrary(home, state);
   return { id: d.id, status: 'local-draft', remoteSaved: false, workbench: await syncWorkbench(home,id,supplied), next: '按 capture-ingest.md 生成飞书来源页计划；用户明确收藏且目标已确认时，可作为该单条写入的授权。' };
 }
@@ -173,7 +179,7 @@ export async function sourceContent(home, id, sourceId, { markdown, coverage, so
   const snapshotFile = path.join(libraryPath(home, state.id), 'snapshots', `${sourceId}-${snapshot.hash}.json`);
   if (!await readJSON(snapshotFile, null)) await writeJSON(snapshotFile, snapshot);
   delete d.ingestIssue;
-  Object.assign(d, { markdown, coverage, sourceNote, hash: snapshot.hash, fetchedAt: snapshot.capturedAt }); await saveLibrary(home, state); return { id: sourceId, hash: d.hash, coverage, remoteSaved: false, workbench: await syncWorkbench(home,id,supplied) };
+  Object.assign(d, { captureNote: captureNote(d), markdown, coverage, sourceNote, hash: snapshot.hash, fetchedAt: snapshot.capturedAt }); await saveLibrary(home, state); return { id: sourceId, hash: d.hash, coverage, remoteSaved: false, workbench: await syncWorkbench(home,id,supplied) };
 }
 const planFile = (home, id, operation) => path.join(libraryPath(home, id), 'operations', identifier(operation) + '.json');
 const retired = plan => ['cancelled', 'superseded'].includes(plan.state);

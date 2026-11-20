@@ -13,9 +13,9 @@
 
 Node.js 22 或更高版本；飞书操作需要官方 lark-cli。辅助脚本没有 npm 运行依赖。Windows 已完成本地验证；其他系统尚未做完整端到端验证。
 
-当前已发布及本机安装0.9.0，包含REQ-018／019。回归宜使用 `node --test --test-concurrency=1 tests/*.test.mjs`，分别记录合成、实际平台和环境检查，不以工作区偶尔通过关闭历史EPERM。包及发布闭环见 [PACKAGE-0.9.0](releases/PACKAGE-0.9.0.md)和[RELEASE-0.9.0](releases/RELEASE-0.9.0.md)。
+源码版本以 [package.json](../package.json) 为准，正式发布与安装核验见[版本记录](../CHANGELOG.md)和[发布回执目录](releases/)。回归宜使用 `node --test --test-concurrency=1 tests/*.test.mjs`，分别记录合成、实际平台和环境检查，历史 EPERM 另行跟踪。
 
-工作台入口为workbench-bind/context/sync、preferences-ack、source-issue、topic-suggest；配置及恢复见Skill包references/workbench.md。脚本没有常驻后台，管理资源随当前新版命令调用同步。本机40文件与源码及ZIP核对一致；宿主在新对话发现新版仍与文件安装核验区分。
+工作台入口包括 workbench-bind、workbench-context、workbench-sync、preferences-ack、source-issue、asset-receipt 和 topic-suggest。管理资源随命令调用同步，配置及恢复见[工作台指引](../skills/elx-magic-study/references/workbench.md)。
 
 ```bash
 npm test

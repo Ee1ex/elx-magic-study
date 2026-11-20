@@ -1,4 +1,4 @@
-import { hash, links, safeLink } from './store.mjs';
+import { hash, links, safeLink, captureNote } from './store.mjs';
 import { graphSummary } from './summaries.mjs';
 
 const segmenter = new Intl.Segmenter('zh', { granularity: 'word' });
@@ -21,7 +21,16 @@ function frequencies(tokens) { const out = new Map(); for (const t of tokens) ou
 export function search(documents, queries, { limit = 8, expand = true } = {}) {
   const available = documents.filter(d => !d.unavailable && !d.outOfScope);
   const byId = new Map(available.map(d => [d.id, d]));
-  const rows = available.flatMap(d => chunks(d)).map(c => ({ ...c, terms: frequencies(tokenize(c.text)), titleTerms: new Set(tokenize(byId.get(c.docId).title)) }));
+  const rows = available.flatMap(doc => {
+    const linkOnly = doc.remote === false && doc.coverage === 'link_only';
+    const parts = linkOnly ? [] : chunks(doc);
+    if (!parts.length) parts.push({ docId: doc.id, text: '', field: 'title' });
+    const note = captureNote(doc);
+    if (note?.trim()) parts.push({ docId: doc.id, text: note, field: 'capture-note' });
+    if (linkOnly && doc.sourceUrl) parts.push({ docId: doc.id, text: doc.sourceUrl, field: 'source-url' });
+    const titleTerms = new Set(tokenize(doc.title));
+    return parts.map(part => ({ ...part, terms: frequencies(tokenize(part.text)), titleTerms: !part.field || part.field === 'title' ? titleTerms : null }));
+  });
   const df = new Map(); let totalLength = 0;
   for (const row of rows) { row.length = [...row.terms.values()].reduce((a, b) => a + b, 0); totalLength += row.length; for (const t of row.terms.keys()) df.set(t, (df.get(t) || 0) + 1); }
   const avg = totalLength / (rows.length || 1) || 1;
@@ -31,9 +40,12 @@ export function search(documents, queries, { limit = 8, expand = true } = {}) {
     for (const t of queryTerms) {
       const tf = row.terms.get(t) || 0;
       if (tf) { const idf = Math.log(1 + (rows.length - (df.get(t) || 0) + .5) / ((df.get(t) || 0) + .5)); score += idf * tf * 2.2 / (tf + 1.2 * (.25 + .75 * row.length / avg)); matched.push(t); }
-      if (row.titleTerms.has(t)) score += 1.4;
+      if (row.titleTerms?.has(t)) score += 1.4;
     }
-    for (const q of queries) if (q.trim() && (byId.get(row.docId).title || '').toLowerCase().includes(q.toLowerCase())) score += 3;
+    if (row.titleTerms) {
+      const title = (byId.get(row.docId).title || '').toLowerCase();
+      for (const q of queries) if (q.trim() && title.includes(q.toLowerCase())) score += 3;
+    }
     return { ...row, score, matched };
   }).filter(r => r.score > 0).sort((a, b) => b.score - a.score || a.docId.localeCompare(b.docId));
   const found = new Map();
@@ -41,10 +53,13 @@ export function search(documents, queries, { limit = 8, expand = true } = {}) {
     if (found.size >= limit && !found.has(row.docId)) continue;
     if (!found.has(row.docId)) {
       const doc = byId.get(row.docId);
-      found.set(row.docId, { id: doc.id, title: doc.title, url: doc.url, score: +row.score.toFixed(3), matchType: 'bm25', fetchedAt: doc.fetchedAt, revision: doc.revision, excerpts: [] });
+      const matchType = row.matched.length ? row.field || 'bm25' : 'title';
+      const item = { id: doc.id, title: doc.title, url: doc.url, score: +row.score.toFixed(3), matchType, coverage: doc.coverage, fetchedAt: doc.fetchedAt || doc.createdAt, revision: doc.revision, excerpts: [] };
+      if (matchType === 'capture-note') item.captureNote = row.text;
+      found.set(row.docId, item);
     }
     const item = found.get(row.docId);
-    if (item.excerpts.length < 2) item.excerpts.push({ heading: row.heading, startLine: row.startLine, endLine: row.endLine, text: row.text.slice(0, 1000), matched: row.matched.slice(0, 12) });
+    if (!row.field && row.matched.length && item.excerpts.length < 2) item.excerpts.push({ heading: row.heading, startLine: row.startLine, endLine: row.endLine, text: row.text.slice(0, 1000), matched: row.matched.slice(0, 12) });
   }
   const neighbors = [];
   if (expand && found.size) {

@@ -16,7 +16,7 @@ function command(action, args) {
     case 'doctor': case 'status': case 'plans': case 'workbench-context': break;
     case 'search': repeat('query', args.query); value('limit', args.limit); if (args.offline) base.push('--offline'); break;
     case 'record-search': repeat('query', args.query); value('limit', args.limit); if (args.filters) value('filter', JSON.stringify(args.filters)); if (args.random) base.push('--random'); if (args.offline) base.push('--offline'); break;
-    case 'fetch': case 'record-context': value('id', identifier(args.documentId)); if (action === 'record-context' && args.offline) base.push('--offline'); break;
+    case 'fetch': case 'record-context': value('id', identifier(args.documentId)); if (args.offline) base.push('--offline'); break;
     case 'sync': value('max-docs', args.maxDocs); value('max-nodes', args.maxNodes); if (args.restartScan) base.push('--restart-scan'); break;
     case 'plan': break;
     case 'plan-show': case 'apply': value('id', identifier(args.operationId)); if (action === 'apply') value('approve', args.digest); break;

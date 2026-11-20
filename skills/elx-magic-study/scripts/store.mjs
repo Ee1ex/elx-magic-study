@@ -7,7 +7,7 @@ import { createHash, randomUUID } from 'node:crypto';
 export const now = () => new Date().toISOString();
 export const hash = value => createHash('sha256').update(typeof value === 'string' ? value : JSON.stringify(value)).digest('hex');
 export const issue = (code, message, details = {}) => Object.assign(new Error(message), { code, details });
-export const assert = (condition, code, message) => { if (!condition) throw issue(code, message); };
+export const assert = (condition, code, message, details) => { if (!condition) throw issue(code, message, details); };
 export const identifier = value => { assert(/^[a-zA-Z0-9_-]{1,100}$/.test(value || ''), 'INVALID_ID', '编号只能包含字母、数字、下划线或短横线'); return value; };
 export const stateHome = value => path.resolve(value || process.env.ELX_MAGIC_STUDY_HOME || process.env.ELX_LIBRARY_HOME || path.join(os.homedir(), '.elx-library'));
 export const libraryPath = (home, id) => path.join(stateHome(home), 'libraries', identifier(id));
@@ -43,6 +43,16 @@ export async function loadLibrary(home, id) {
   return state;
 }
 export const saveLibrary = (home, state) => writeJSON(path.join(libraryPath(home, state.id), 'library.json'), state);
+export function captureNote(doc) {
+  if (doc.captureNote !== undefined) return doc.captureNote;
+  if (doc.remote !== false || doc.coverage !== 'link_only') return;
+  // Pre-REQ-025 captures stored the original note inside this exact placeholder.
+  const prefix = `# ${doc.title}\n\n来源：${doc.sourceUrl}\n\n收藏备注：`;
+  const suffix = '\n\n状态：待获取正文。\n';
+  if (doc.markdown?.startsWith(prefix) && doc.markdown.endsWith(suffix)) {
+    return doc.markdown.slice(prefix.length, -suffix.length);
+  }
+}
 export function canonicalSource(value) {
   let url; try { url = new URL(value); } catch { throw issue('SOURCE_URL', '来源需要完整的 HTTP(S) URL'); }
   assert(['https:', 'http:'].includes(url.protocol) && !url.username && !url.password, 'SOURCE_URL', '来源仅允许不带账号密码的 HTTP(S) URL');

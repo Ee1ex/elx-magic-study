@@ -10,7 +10,7 @@ const entries = [
   ['study_doctor', 'doctor', '检查本机依赖、飞书授权与绑定；不登录。', z.object({})],
   ['study_search', 'search', '按索引搜索文档；重要结论再读取最新正文。', z.object({ query: queries, limit: z.number().int().min(1).max(30).optional(), offline: z.boolean().optional() })],
   ['study_records_search', 'record-search', '搜索个人表格条目；随机仅从已核实候选 ID 中抽取。', z.object({ query: z.array(z.string().trim().min(1).max(200)).max(8).optional(), filters: z.record(z.string(), z.string().max(200)).optional(), random: z.boolean().optional(), eligibleIds: z.array(id).max(100).optional(), limit: z.number().int().min(1).max(50).optional(), offline: z.boolean().optional() })],
-  ['study_fetch', 'fetch', '读取已索引文档的最新正文并更新本地缓存。', z.object({ documentId: id })],
+  ['study_fetch', 'fetch', '在线核对飞书正文，或读取外部收藏的本地快照与采集时间。', z.object({ documentId: id, offline: z.boolean().optional() })],
   ['study_record_context', 'record-context', '核对个人文档原生表格、动态表头和正文基线。', z.object({ documentId: id, offline: z.boolean().optional() })],
   ['study_workbench_context', 'workbench-context', '读取整理偏好与用户意见；沿用现有工作台逻辑。', z.object({})],
   ['study_sync', 'sync', '有界同步授权范围的目录和正文，保留扫描断点。', z.object({ maxDocs: z.number().int().min(1).max(200).optional(), maxNodes: z.number().int().min(1).max(5000).optional(), restartScan: z.boolean().optional() })],

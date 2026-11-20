@@ -63,6 +63,16 @@ PDF原件在用户要求整理该PDF，或它是文章重要依据时，默认�
 5. 超时、部分成功、未回读均记unknown，按目标文档和已有块只读查证，不重新上传，不删除重来。已有token只证明存在，不能替代本次资源身份核对。无法确定时保留“正文已存、资源待核验”，不能返回全成功。
 6. 原生资源完成后重新fetch目标文档刷新索引，工作台仅补管理同步；不要重新apply正文。普通正文计划与独立资源回执分别保留，结束时只有两者均满足各自核验条件才报告本次图文入库完成。
 
+### 把资源进度显示在工作台
+
+正文回读后，在发送资源前为每个已确认的位置各运行一次 `node <SKILL_ROOT>/scripts/library.mjs asset-receipt --file <回执JSON>`。以下为合成示例，执行时换成实际值。
+
+```json
+{"operationId":"body-plan-id","documentId":"TargetDoc","assetId":"figure-1","kind":"image","name":"figure.png","sha256":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef","state":"pending"}
+```
+
+同一位置沿用原 operationId、assetId、目标、文件名和原件 SHA256。正文通过普通计划保存时使用该计划编号，直接用官方 XML 保存时使用独立操作日志编号。发送前先把发送尝试持久登记到独立日志。超时或中断后沿原日志登记 unknown，查证已有块。核验后登记 verified 并给出 blockId 和 mediaToken。图片在实际查看显示或官方图片预览后填 visualChecked=true，并报告查看方式。PDF 用 kind=pdf 并填实际下载文件的 downloadSha256。脚本回读目标原生块并核对 token，工作台同步失败后可运行 workbench-sync。已有私人资源回执可按需显式登记。
+
 ## 来源与依赖
 
 - [Microsoft MarkItDown](https://github.com/microsoft/markitdown)：转换器与可选依赖。

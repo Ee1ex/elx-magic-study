@@ -83,6 +83,66 @@ test('绑定需确认，不覆盖已有绑定', async () => {
   const dir=home(),lark=new FakeLark(); await assert.rejects(bind(dir,{id:'test',readRoots:[root]},lark),e=>e.code==='CONFIRM_REQUIRED');
   await bind(dir,{id:'test',readRoots:[root],confirmed:true},lark); await assert.rejects(bind(dir,{id:'test',readRoots:[root],confirmed:true},lark),e=>e.code==='ALREADY_BOUND');
 });
+test('收藏备注经过两次补正文后仍可检索，旧版占位备注按原样保留', async () => {
+  const { dir, lark } = await fixture();
+  for (const legacy of [false, true]) {
+    const note = '下次剪访谈时用\n保留  原话 mixcheck' + (legacy ? 'legacy' : 'fresh');
+    const item = await capture(dir, 'test', { url: 'https://example.com/' + legacy, title: '片头设计', note }, lark);
+    if (legacy) {
+      const state = await loadLibrary(dir, 'test');
+      delete state.documents.find(d => d.id === item.id).captureNote;
+      await saveLibrary(dir, state);
+    }
+    for (const markdown of ['合成正文第一版', '合成正文第二版']) {
+      await sourceContent(dir, 'test', item.id, { markdown, coverage: 'full_text', sourceNote: '用户提供的原文' }, lark);
+      const state = await loadLibrary(dir, 'test'), saved = state.documents.find(d => d.id === item.id);
+      assert.equal(saved.captureNote, note);
+      assert.equal(saved.markdown, markdown);
+      assert.equal(saved.hash, hash(markdown));
+      const [hit] = (await run(['search','--home',dir,'--library','test','--offline','--query',legacy ? 'mixchecklegacy' : 'mixcheckfresh'])).results;
+      assert.equal(hit.id, item.id);
+      assert.equal(hit.matchType, 'capture-note');
+      assert.equal(hit.excerpts.length, 0);
+    }
+  }
+});
+
+test('标题可独立命中空正文，仍过滤不可用或越界的条目', () => {
+  const doc = { id: 'onlytitle', title: '原片时间码核对', markdown: '' };
+  const hits = search([doc, {...doc, id:'hidden', outOfScope:true}, {...doc, id:'failed', unavailable:true}], [doc.title]).results;
+  assert.deepEqual(hits.map(d => d.id), [doc.id]);
+  assert.equal(hits[0].matchType, 'title');
+  assert.deepEqual(hits[0].excerpts, []);
+});
+
+test('外部收藏读取本地版本与采集时间，飞书正文仍核对账号和范围', async () => {
+  const { dir, lark } = await fixture();
+  const item = await capture(dir, 'test', { url: 'https://example.com/source', title: '实测收藏' }, lark);
+  const placeholder = await core.fetchDocument(dir, 'test', item.id, lark);
+  assert.equal(placeholder.coverage, 'link_only');
+  assert.equal(placeholder.mode, 'local-source');
+  const searchPlaceholder = (await run(['search','--home',dir,'--library','test','--offline','--query','实测收藏'])).results[0];
+  assert.equal(searchPlaceholder.matchType, 'title');
+  assert.equal(searchPlaceholder.coverage, 'link_only');
+  assert.deepEqual(searchPlaceholder.excerpts, []);
+  assert.deepEqual((await run(['search','--home',dir,'--library','test','--offline','--query','待获取正文'])).results, []);
+  await sourceContent(dir, 'test', item.id, { markdown:'合成正文', coverage:'partial', sourceNote:'作者提供' }, lark);
+  const fresh = await core.fetchDocument(dir, 'test', item.id, lark);
+  assert.equal(fresh.markdown, '合成正文');
+  assert.equal(fresh.coverage, 'partial');
+  assert.ok(Date.parse(fresh.fetchedAt));
+  assert.equal(fresh.sourceNote, '作者提供');
+  assert.equal((await run(['fetch','--home',dir,'--library','test','--id',item.id,'--offline'])).mode, 'local-source');
+  lark.account = 'changed';
+  await assert.rejects(core.fetchDocument(dir,'test',item.id,lark), e => e.code === 'ACCOUNT_CHANGED');
+  const state = await loadLibrary(dir,'test');
+  state.documents.find(d => d.id === item.id).outOfScope = true;
+  state.documents.push({ id:'remote-target', remote:true, url:'https://example.feishu.cn/docx/Other', markdown:'旧文本' });
+  await saveLibrary(dir,state);
+  await assert.rejects(run(['fetch','--home',dir,'--library','test','--id',item.id,'--offline']), e => e.code === 'OUT_OF_SCOPE');
+  await assert.rejects(run(['fetch','--home',dir,'--library','test','--id','remote-target','--offline']), e => e.code === 'LIVE_FETCH_REQUIRED');
+});
+
 test('收藏重复与原始快照不可变，始终标明尚未写飞书', async () => {
   const {dir}=await fixture(); const first=await capture(dir,'test',{url:'https://example.com/a?utm_source=x',title:'文章'}); const second=await capture(dir,'test',{url:'https://example.com/a',title:'文章'}); assert.equal(second.id,first.id); assert.equal(second.existing,true); assert.equal(first.remoteSaved,false);
   const input={markdown:'原文',coverage:'full_text',sourceNote:'用户提供的全文'}; await sourceContent(dir,'test',first.id,input); const file=path.join(libraryPath(dir,'test'),'snapshots',first.id+'-'+hash('原文')+'.json'); const before=await fs.readFile(file,'utf8'); await sourceContent(dir,'test',first.id,input); assert.equal(await fs.readFile(file,'utf8'),before);

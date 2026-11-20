@@ -1,5 +1,7 @@
 # 进度与历史台账
 
+- 2026-11-21 完成 [REQ-025 收藏检索与图文核验](PROG-020-capture-retrieval-assets.md)，含本地回归和一篇真实飞书试点。
+
 - 2026-10-16：1.0.2包与本机同步完成，MCP保留禁用；远端待确认，见[PACKAGE-1.0.2](../releases/PACKAGE-1.0.2.md)。
 
 - 2026-10-16：REQ-024默认CLI与MCP主动选择指引完成；隔离安装两次及配置不变检查通过，见[PROG-019](PROG-019-skill-only-default.md)。
